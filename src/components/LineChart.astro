@@ -1,5 +1,7 @@
 ---
 // 双源增长折线图（纯 SVG）
+// 说明：轴刻度为年份/数字，series 名为 QCE/TQE，均无需翻译；唯一的中文是 SVG aria-label
+// （属性是单行文本，无法用 display:none 分流），故按 StackedBars <title> 的同一折衷中英拼接
 interface Props {
   series: { name: string; color: string; points: [number, number][] }[]; // (year, count)
 }
@@ -13,7 +15,7 @@ const x2px = (y: number) => padL + ((y - years[0]) / Math.max(years[years.length
 const y2px = (v: number) => padT + plotH - (v / niceMax) * plotH;
 const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(niceMax * f));
 ---
-<svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="两源逐年论文数折线图">
+<svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="两源逐年论文数折线图 / Papers per Year by Source">
   {ticks.map((v) => {
     const py = y2px(v);
     return (

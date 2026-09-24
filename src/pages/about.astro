@@ -3,61 +3,104 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { CATEGORIES, SITE } from '../data/meta';
 
 const base = import.meta.env.BASE_URL;
+
+// meta.ts 的 CATEGORIES 只有中文 blurb，英文覆盖范围在本页内补齐（key 与 CATEGORIES 一一对应）
+const CAT_BLURB_EN: Record<string, string> = {
+  QEC: 'Surface codes, LDPC, bosonic codes, decoders, fault-tolerant architectures',
+  ALG: 'VQE/QAOA, quantum simulation, optimization, chemistry, finance',
+  ARCH: 'Compilers, scheduling, simulators, benchmarking protocols, verification',
+  COMM: 'QKD, quantum internet, repeaters, entanglement distribution',
+  QML: 'Quantum neural networks, kernel methods, generative models',
+  SUP: 'Transmon, fluxonium, Josephson junctions, cavities',
+  PLAT: 'Quantum dots, trapped ions, Rydberg atoms, NV centers',
+  PHOT: 'Single-photon sources and detectors, integrated photonics, continuous variables',
+  SENS: 'Magnetometers, atomic clocks, quantum-enhanced measurement',
+  CRYO: 'Cryo-CMOS, SFQ, control links, readout',
+  MAT: 'Thin films, loss, fabrication, 3D integration and packaging',
+  REV: 'Reviews, tutorials, roadmaps, outlooks',
+  OTHER: 'Education and outreach, plus items not covered above',
+};
 ---
 <BaseLayout title="数据说明">
   <div class="wrap page-head">
-    <div class="kicker">About · Data & Methodology</div>
-    <h1>数据说明</h1>
-    <p class="lede">{SITE.short}（{SITE.name}）的数据来源、分类法、更新机制与「中文说明」的补全流程。</p>
+    <div class="kicker"><span class="i18n-zh">关于 · 数据与方法</span><span class="i18n-en">About · Data and Methodology</span></div>
+    <h1><span class="i18n-zh">数据说明</span><span class="i18n-en">About the Data</span></h1>
+    <p class="lede"><span class="i18n-zh">{SITE.short}（{SITE.name}）的数据来源、分类法、更新机制与「中文说明」的补全流程。</span><span class="i18n-en">Data sources, taxonomy, update pipeline and the workflow for completing the Chinese summaries in {SITE.short} ({SITE.name}).</span></p>
   </div>
   <div class="wrap page-body prose">
-    <h2>收录范围与来源</h2>
+    <h2><span class="i18n-zh">收录范围与来源</span><span class="i18n-en">Coverage and Sources</span></h2>
     <table>
-      <thead><tr><th>来源</th><th>范围</th><th>记录数</th><th>数据出处</th></tr></thead>
+      <thead><tr>
+        <th><span class="i18n-zh">来源</span><span class="i18n-en">Source</span></th>
+        <th><span class="i18n-zh">范围</span><span class="i18n-en">Coverage</span></th>
+        <th><span class="i18n-zh">记录数</span><span class="i18n-en">Records</span></th>
+        <th><span class="i18n-zh">数据出处</span><span class="i18n-en">Data provenance</span></th>
+      </tr></thead>
       <tbody>
-        <tr><td>IEEE QCE 会议论文集</td><td>2020–2025</td><td>1674 条（1523 论文 + 151 前置/附录）</td><td>IEEE Xplore / Crossref DOI 元数据，经 OpenAlex 交叉核对</td></tr>
-        <tr><td>QCE 2026 官方日程</td><td>2026（论文集尚未出版）</td><td>372 篇技术论文（9 Track，27 篇 Best Paper）</td><td>IEEE 官方 Technical Papers Schedule PDF，arXiv 按标题匹配 214 篇（含摘要）</td></tr>
-        <tr><td>IEEE TQE 期刊</td><td>2020–2026（Vol. 1–7）</td><td>465 条（443 论文 + 22 前置页）</td><td>Crossref（ISSN 2689-1808）；摘要来自 OpenAlex / Semantic Scholar / arXiv 三源合并</td></tr>
+        <tr>
+          <td><span class="i18n-zh">IEEE QCE 会议论文集</span><span class="i18n-en">IEEE QCE proceedings</span></td>
+          <td>2020–2025</td>
+          <td><span class="i18n-zh">1674 条（1523 论文 + 151 前置/附录）</span><span class="i18n-en">1674 entries (1523 papers + 151 front matter/appendix)</span></td>
+          <td><span class="i18n-zh">IEEE Xplore / Crossref DOI 元数据，经 OpenAlex 交叉核对</span><span class="i18n-en">IEEE Xplore / Crossref DOI metadata, cross-checked against OpenAlex</span></td>
+        </tr>
+        <tr>
+          <td><span class="i18n-zh">QCE 2026 官方日程</span><span class="i18n-en">QCE 2026 official program</span></td>
+          <td><span class="i18n-zh">2026（论文集尚未出版）</span><span class="i18n-en">2026 (proceedings not yet published)</span></td>
+          <td><span class="i18n-zh">372 篇技术论文（9 Track，27 篇 Best Paper）</span><span class="i18n-en">372 technical papers (9 tracks, 27 Best Papers)</span></td>
+          <td><span class="i18n-zh">IEEE 官方 Technical Papers Schedule PDF，arXiv 按标题匹配 214 篇（含摘要）</span><span class="i18n-en">IEEE official Technical Papers Schedule PDF; 214 records matched to arXiv by title (abstracts included)</span></td>
+        </tr>
+        <tr>
+          <td><span class="i18n-zh">IEEE TQE 期刊</span><span class="i18n-en">IEEE TQE journal</span></td>
+          <td><span class="i18n-zh">2020–2026（Vol. 1–7）</span><span class="i18n-en">2020–2026 (Vol. 1–7)</span></td>
+          <td><span class="i18n-zh">465 条（443 论文 + 22 前置页）</span><span class="i18n-en">465 entries (443 papers + 22 front matter)</span></td>
+          <td><span class="i18n-zh">Crossref（ISSN 2689-1808）；摘要来自 OpenAlex / Semantic Scholar / arXiv 三源合并</span><span class="i18n-en">Crossref (ISSN 2689-1808); abstracts merged from OpenAlex / Semantic Scholar / arXiv</span></td>
+        </tr>
       </tbody>
     </table>
 
-    <h2>研究方向分类法（13 类）</h2>
-    <p>沿用 IEEE TQE 主题划分并归一为 13 类。QCE 会议条目按其主题标签映射（硬件与器件类按标题关键词细分为超导/平台/光子/低温/材料）；QCE26 日程按 Track 映射；TQE 条目直接使用其既有分类。分类为构建期自动打分，可能存在个别误判，欢迎在 GitHub 提 issue 指正。</p>
+    <h2><span class="i18n-zh">研究方向分类法（13 类）</span><span class="i18n-en">Research Area Taxonomy (13 categories)</span></h2>
+    <p><span class="i18n-zh">沿用 IEEE TQE 主题划分并归一为 13 类。QCE 会议条目按其主题标签映射（硬件与器件类按标题关键词细分为超导/平台/光子/低温/材料）；QCE26 日程按 Track 映射；TQE 条目直接使用其既有分类。分类为构建期自动打分，可能存在个别误判，欢迎在 GitHub 提 issue 指正。</span><span class="i18n-en">The taxonomy follows IEEE TQE’s subject divisions, normalized into 13 categories. QCE conference entries are mapped from their topic tags (the hardware and devices group is split further into superconducting / platforms / photonics / cryogenics / materials by title keywords); QCE26 program entries are mapped by track; TQE entries keep their existing classifications. Categories are assigned by automated scoring at build time, so occasional misclassifications are possible — please open a GitHub issue if you spot one.</span></p>
     <table>
-      <thead><tr><th>类别</th><th>覆盖范围</th></tr></thead>
+      <thead><tr>
+        <th><span class="i18n-zh">类别</span><span class="i18n-en">Category</span></th>
+        <th><span class="i18n-zh">覆盖范围</span><span class="i18n-en">Scope</span></th>
+      </tr></thead>
       <tbody>
         {CATEGORIES.map((c) => (
-          <tr><td><span style={`display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c-${c.key});margin-right:6px`}></span><b>{c.zh}</b></td><td>{c.blurb}</td></tr>
+          <tr>
+            <td><span style={`display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c-${c.key});margin-right:6px`}></span><b><span class="i18n-zh">{c.zh}</span><span class="i18n-en">{c.en}</span></b></td>
+            <td><span class="i18n-zh">{c.blurb}</span><span class="i18n-en">{CAT_BLURB_EN[c.key] ?? c.blurb}</span></td>
+          </tr>
         ))}
       </tbody>
     </table>
 
-    <h2>更新机制</h2>
+    <h2><span class="i18n-zh">更新机制</span><span class="i18n-en">Update Pipeline</span></h2>
     <ul>
-      <li><b>每周自动更新</b>：GitHub Actions 每周一 03:17 UTC 运行 <code>scripts/update_data.py</code>——增量抓取 Crossref 新 DOI（TQE 按 ISSN；QCE 按会议论文集探测新年度卷），OpenAlex 补摘要与引用数；有变更才提交并触发重新部署。也可随时在 Actions 页面手动触发。</li>
-      <li><b>抓取失败兜底</b>：任一步失败即保留上次数据，网站不受影响；抓取窗口与上次运行重叠 2 天防边界漏抓。</li>
-      <li><b>QCE 2026 过渡</b>：论文集正式进 IEEE Xplore 后，自动以 DOI 记录替换日程记录（按标题匹配），Track/Session/获奖信息保留。</li>
+      <li><span class="i18n-zh"><b>每周自动更新</b>：GitHub Actions 每周一 03:17 UTC 运行 <code>scripts/update_data.py</code>——增量抓取 Crossref 新 DOI（TQE 按 ISSN；QCE 按会议论文集探测新年度卷），OpenAlex 补摘要与引用数；有变更才提交并触发重新部署。也可随时在 Actions 页面手动触发。</span><span class="i18n-en"><b>Weekly automated updates</b>: GitHub Actions runs <code>scripts/update_data.py</code> every Monday at 03:17 UTC — incrementally fetching new DOIs from Crossref (TQE by ISSN; QCE by probing the proceedings for new annual volumes) and filling in abstracts and citation counts from OpenAlex. A commit and redeploy happen only when something changed. You can also trigger a run manually from the Actions page.</span></li>
+      <li><span class="i18n-zh"><b>抓取失败兜底</b>：任一步失败即保留上次数据，网站不受影响；抓取窗口与上次运行重叠 2 天防边界漏抓。</span><span class="i18n-en"><b>Failure fallback</b>: if any step fails, the previous data is kept and the site is unaffected; each fetch window overlaps the previous run by 2 days so nothing is missed at the boundary.</span></li>
+      <li><span class="i18n-zh"><b>QCE 2026 过渡</b>：论文集正式进 IEEE Xplore 后，自动以 DOI 记录替换日程记录（按标题匹配），Track/Session/获奖信息保留。</span><span class="i18n-en"><b>QCE 2026 transition</b>: once the proceedings are published in IEEE Xplore, program entries are replaced automatically by DOI-based records (matched by title), while track, session and award information is retained.</span></li>
     </ul>
 
-    <h2>中文说明的生成与补全</h2>
+    <h2><span class="i18n-zh">中文说明的生成与补全</span><span class="i18n-en">Generating and Completing the Chinese Summaries</span></h2>
     <ul>
-      <li>现有 1522+443 条中文说明由 AI 逐条依据摘要撰写，突出创新点与主要结果。</li>
-      <li>自动更新抓取到的<b>新论文</b>中文说明暂为「待补充」：将 <code>data_src/overrides/zh_new.json</code> 按 <code>{'{"论文id": "中文说明"}'}</code> 格式补充后提交，构建时自动覆盖。</li>
+      <li><span class="i18n-zh">现有 1522+443 条中文说明由 AI 逐条依据摘要撰写，突出创新点与主要结果。</span><span class="i18n-en">The existing 1522 + 443 Chinese summaries were written one by one by AI from the abstracts, highlighting the key contributions and main results.</span></li>
+      <li><span class="i18n-zh">自动更新抓取到的<b>新论文</b>中文说明暂为「待补充」：将 <code>data_src/overrides/zh_new.json</code> 按 <code>{'{"论文id": "中文说明"}'}</code> 格式补充后提交，构建时自动覆盖。</span><span class="i18n-en">Newly fetched <b>papers</b> keep a placeholder Chinese summary (“pending”) until you add an entry to <code>data_src/overrides/zh_new.json</code> in the form <code>{'{"paper id": "Chinese summary"}'}</code> and commit it; the build then applies the override automatically.</span></li>
     </ul>
 
-    <h2>使用提示</h2>
+    <h2><span class="i18n-zh">使用提示</span><span class="i18n-en">Usage Tips</span></h2>
     <ul>
-      <li>浏览器页按 <code>/</code> 聚焦搜索、空格分多词（AND）、Esc 清空；年份与类别芯片可叠加；筛选状态写入地址栏 hash，复制链接即可分享。</li>
-      <li>各条目链接直达 DOI（IEEE Xplore）；QCE26 条目附 arXiv 预印本链接。</li>
-      <li>封面、版权页、索引等「前置页」默认隐藏，可在工具条开启查看。</li>
+      <li><span class="i18n-zh">浏览器页按 <code>/</code> 聚焦搜索、空格分多词（AND）、Esc 清空；年份与类别芯片可叠加；筛选状态写入地址栏 hash，复制链接即可分享。</span><span class="i18n-en">In the browser pages, press <code>/</code> to focus the search box, separate terms with spaces (AND), and press Esc to clear; year and category chips stack; the filter state is written to the URL hash, so copying the link shares your view.</span></li>
+      <li><span class="i18n-zh">各条目链接直达 DOI（IEEE Xplore）；QCE26 条目附 arXiv 预印本链接。</span><span class="i18n-en">Every entry links straight to its DOI (IEEE Xplore); QCE26 entries also link to their arXiv preprint.</span></li>
+      <li><span class="i18n-zh">封面、版权页、索引等「前置页」默认隐藏，可在工具条开启查看。</span><span class="i18n-en">Front matter such as covers, copyright pages and indexes is hidden by default and can be shown from the toolbar.</span></li>
     </ul>
 
-    <h2>相关链接</h2>
+    <h2><span class="i18n-zh">相关链接</span><span class="i18n-en">Related Links</span></h2>
     <p>
-      <a href={`${base}qce/`}>QCE 会议浏览器</a> ·
-      <a href={`${base}tqe/`}>TQE 期刊浏览器</a> ·
-      <a href={`${base}stats/`}>方向统计</a> ·
-      <a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub 仓库</a>
+      <a href={`${base}qce/`}><span class="i18n-zh">QCE 会议浏览器</span><span class="i18n-en">QCE Conference Browser</span></a> ·
+      <a href={`${base}tqe/`}><span class="i18n-zh">TQE 期刊浏览器</span><span class="i18n-en">TQE Journal Browser</span></a> ·
+      <a href={`${base}stats/`}><span class="i18n-zh">方向统计</span><span class="i18n-en">Statistics</span></a> ·
+      <a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener"><span class="i18n-zh">GitHub 仓库</span><span class="i18n-en">GitHub repository</span></a>
     </p>
   </div>
 </BaseLayout>

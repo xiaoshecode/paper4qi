@@ -1,5 +1,6 @@
 ---
-interface Row { key: string; label: string; value: number; }
+// 方向分布条形图：labelEn 可选，有则中英双 span 渲染
+interface Row { key: string; label: string; labelEn?: string; value: number; }
 interface Props { rows: Row[]; }
 const { rows } = Astro.props;
 const max = Math.max(...rows.map((r) => r.value), 1);
@@ -7,7 +8,11 @@ const max = Math.max(...rows.map((r) => r.value), 1);
 <div class="catbar">
   {rows.map((r) => (
     <div class="row">
-      <span class="name" title={r.label}>{r.label}</span>
+      <span class="name" title={r.label}>
+        {r.labelEn
+          ? <><span class="i18n-zh">{r.label}</span><span class="i18n-en">{r.labelEn}</span></>
+          : r.label}
+      </span>
       <div class="track">
         <div class="fill" style={`width:${(r.value / max) * 100}%;background:var(--c-${r.key}, var(--accent))`}></div>
       </div>

@@ -15,28 +15,30 @@ const catTotals: [string, number][] = cats
   .map((c) => [c, years.reduce((s, y) => s + (combined[String(y)]?.[c] ?? 0), 0)] as [string, number])
   .filter(([, n]) => n > 0)
   .sort((a, b) => b[1] - a[1]);
+// 图例/SVG tooltip 用英文类别名（图例是 DOM，tooltip 是单行 <title>，中英拼接）
+const CAT_EN: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => [c.key, c.en]));
 ---
 <BaseLayout title="方向统计">
   <div class="wrap page-head">
-    <div class="kicker">Statistics · {stats.generated.slice(0, 10)}</div>
-    <h1>方向统计仪表盘</h1>
-    <p class="lede">13 类统一分类法下，QCE 会议与 TQE 期刊的逐年结构、增长与引用影响力。</p>
+    <div class="kicker"><span class="i18n-zh">统计 · {stats.generated.slice(0, 10)}</span><span class="i18n-en">Statistics · {stats.generated.slice(0, 10)}</span></div>
+    <h1><span class="i18n-zh">方向统计仪表盘</span><span class="i18n-en">Research Area Dashboard</span></h1>
+    <p class="lede"><span class="i18n-zh">13 类统一分类法下，QCE 会议与 TQE 期刊的逐年结构、增长与引用影响力。</span><span class="i18n-en">Year-by-year structure, growth and citation impact of the QCE conference and the TQE journal under a unified 13-category taxonomy.</span></p>
   </div>
   <div class="wrap page-body">
     <div class="card chart-card">
-      <h3>年 × 研究方向（两源合并）</h3>
-      <p class="hint">每年一根竖条，按 13 类堆叠 · 悬停查看各类别数值</p>
-      <StackedBars years={years} cats={cats} matrix={combined} catZh={CAT_ZH} />
+      <h3><span class="i18n-zh">年 × 研究方向（两源合并）</span><span class="i18n-en">Year × Research Area (both sources combined)</span></h3>
+      <p class="hint"><span class="i18n-zh">每年一根竖条，按 13 类堆叠 · 悬停查看各类别数值</span><span class="i18n-en">One bar per year, stacked across the 13 categories · Hover for per-category counts</span></p>
+      <StackedBars years={years} cats={cats} matrix={combined} catZh={CAT_ZH} catEn={CAT_EN} />
       <div class="legend">
         {catTotals.map(([key, n]) => (
-          <span class="lg"><span class="sw" style={`background:var(--c-${key})`}></span>{CAT_ZH[key]} {n}</span>
+          <span class="lg"><span class="sw" style={`background:var(--c-${key})`}></span><span class="i18n-zh">{CAT_ZH[key]} {n}</span><span class="i18n-en">{CAT_EN[key]} {n}</span></span>
         ))}
       </div>
     </div>
 
     <div class="card chart-card">
-      <h3>两源逐年论文数</h3>
-      <p class="hint">QCE = 会议论文集 2020–2025 + 2026 日程口径 · TQE = 期刊正式论文（不含前置页）</p>
+      <h3><span class="i18n-zh">两源逐年论文数</span><span class="i18n-en">Papers per Year by Source</span></h3>
+      <p class="hint"><span class="i18n-zh">QCE = 会议论文集 2020–2025 + 2026 日程口径 · TQE = 期刊正式论文（不含前置页）</span><span class="i18n-en">QCE = 2020–2025 proceedings + 2026 program · TQE = journal articles (front matter excluded)</span></p>
       <LineChart series={[
         { name: 'QCE', color: 'var(--c-ALG)', points: growth.map((g) => [g.year, g.qce]) },
         { name: 'TQE', color: 'var(--c-QEC)', points: growth.map((g) => [g.year, g.tqe]) },
@@ -48,13 +50,13 @@ const catTotals: [string, number][] = cats
     </div>
 
     <div class="card chart-card">
-      <h3>TQE 被引 Top 20（OpenAlex）</h3>
-      <p class="hint">IEEE TQE 2020–2026 被引量最高的论文，周更时同步刷新</p>
+      <h3><span class="i18n-zh">TQE 被引 Top 20（OpenAlex）</span><span class="i18n-en">TQE Top 20 by Citations (OpenAlex)</span></h3>
+      <p class="hint"><span class="i18n-zh">IEEE TQE 2020–2026 被引量最高的论文，周更时同步刷新</span><span class="i18n-en">The most-cited IEEE TQE papers, 2020–2026, refreshed with the weekly update</span></p>
       <ol class="toplist">
         {topCited.map((p) => (
           <li>
             <a href={`https://doi.org/${p.id.replace('tqe:', '')}`} target="_blank" rel="noopener">{p.title}</a>
-            <span class="cn">({p.year} · 被引 {p.cited_by})</span>
+            <span class="cn"><span class="i18n-zh">({p.year} · 被引 {p.cited_by})</span><span class="i18n-en">({p.year} · {p.cited_by} citations)</span></span>
           </li>
         ))}
       </ol>

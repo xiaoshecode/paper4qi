@@ -1,6 +1,9 @@
 ---
 // 文献浏览器壳：静态工具条 + 挂载点；交互逻辑全部在 src/scripts/paper-browser.ts
 // 样式全部复用 global.css 现有类（browser-bar / search-box / chip / paper-list / sentinel …）
+// 双语约定：静态文本用 <span class="i18n-zh">/<span class="i18n-en"> 成对书写，
+//   显隐由 global.css 控制；属性类文案（placeholder / aria-label / title）无法用 span，
+//   由 paper-browser.ts 在初始化与 'p4q:langchange' 时按当前语言设置。
 interface Props {
   source: 'qce' | 'tqe';
 }
@@ -20,13 +23,15 @@ const { source } = Astro.props;
         autocomplete="off"
         spellcheck="false"
         aria-label="搜索文献（标题 / 作者 / 中文说明 / 摘要 / DOI / arXiv / 标签 / 会议）"
-        placeholder="搜索标题 / 作者 / 中文说明 / 摘要 / DOI / arXiv / 标签 …（按 / 聚焦，Esc 清空）">
+        placeholder="搜索标题 / 作者 / 中文说明 / 摘要 / DOI…（空格分隔多词，按 / 聚焦）">
     </div>
     <label class="tgl" for="b-fm">
       <input id="b-fm" type="checkbox" checked>
-      只看论文
+      <span class="i18n-zh">只看论文</span><span class="i18n-en">Papers only</span>
     </label>
-    <button class="btn" id="b-csv" type="button" title="导出当前筛选结果为 CSV">导出 CSV</button>
+    <button class="btn" id="b-csv" type="button" title="导出当前筛选结果为 CSV">
+      <span class="i18n-zh">导出 CSV</span><span class="i18n-en">Export CSV</span>
+    </button>
   </div>
   <div class="chip-row" id="b-years" role="group" aria-label="按年份筛选"></div>
   <div class="chip-row" id="b-cats" role="group" aria-label="按研究方向筛选"></div>
@@ -34,11 +39,11 @@ const { source } = Astro.props;
 
 <div id="browser" data-source={source}>
   <div class="browser-meta" aria-live="polite">
-    <span id="b-meta-count">正在加载…</span>
+    <span id="b-meta-count"><span class="i18n-zh">正在加载…</span><span class="i18n-en">Loading…</span></span>
     <span id="b-meta-kw"></span>
   </div>
   <div class="paper-list" id="b-list"></div>
-  <div class="loading-state" id="b-loading">正在加载文献数据…</div>
+  <div class="loading-state" id="b-loading"><span class="i18n-zh">正在加载文献数据…</span><span class="i18n-en">Loading papers…</span></div>
   <div class="sentinel" id="b-sentinel" aria-hidden="true"></div>
 </div>
 

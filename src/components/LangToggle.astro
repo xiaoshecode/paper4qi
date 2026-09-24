@@ -1,0 +1,28 @@
+---
+// 中英双语切换：zh ⇄ en，与 ThemeToggle 并排（同款 34px 圆钮）
+// 按钮文字复用 i18n 约定：两个 span 由 html[data-lang] 决定显示哪个
+// （zh 时显示「中」，en 时显示「EN」），切换时派发 p4q:langchange 供 paper-browser.ts 重渲染
+---
+<button class="theme-toggle lang-toggle" id="lang-toggle" type="button" aria-label="切换语言 / Switch language" title="切换到 English">
+  <span class="i18n-zh">中</span><span class="i18n-en">EN</span>
+</button>
+<script>
+  const KEY = 'p4q-lang';
+  type Lang = 'zh' | 'en';
+  const btn = document.getElementById('lang-toggle')!;
+  const titles: Record<Lang, string> = { zh: '切换到 English', en: 'Switch to 中文' };
+  // head 里的防 FOUC 内联脚本已经落过 data-lang，以 DOM 为准
+  const getLang = (): Lang => (document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'zh');
+  const apply = (lang: Lang) => {
+    document.documentElement.setAttribute('data-lang', lang);
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+    btn.title = titles[lang];
+  };
+  btn.addEventListener('click', () => {
+    const next: Lang = getLang() === 'zh' ? 'en' : 'zh';
+    try { localStorage.setItem(KEY, next); } catch {}
+    apply(next);
+    window.dispatchEvent(new CustomEvent('p4q:langchange', { detail: next }));
+  });
+  apply(getLang());
+</script>

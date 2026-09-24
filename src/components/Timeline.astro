@@ -1,5 +1,7 @@
 ---
-interface Item { when: string; title: string; body: string; color?: string; }
+// 时间线：每项可选 titleEn / bodyEn，有英文时中英双 span 渲染（语言由 html[data-lang] + CSS 控制），
+// 无英文时退回单语渲染（向后兼容）
+interface Item { when: string; title: string; body: string; titleEn?: string; bodyEn?: string; color?: string; }
 interface Props { items: Item[]; }
 const { items } = Astro.props;
 ---
@@ -7,8 +9,14 @@ const { items } = Astro.props;
   {items.map((it) => (
     <div class="tl-item" style={it.color ? `--tc:${it.color}` : undefined}>
       <div class="tl-when">{it.when}</div>
-      <div class="tl-title">{it.title}</div>
-      <div class="tl-body" set:html={it.body} />
+      <div class="tl-title">
+        {it.titleEn
+          ? <><span class="i18n-zh">{it.title}</span><span class="i18n-en">{it.titleEn}</span></>
+          : it.title}
+      </div>
+      {it.bodyEn
+        ? <div class="tl-body"><span class="i18n-zh" set:html={it.body} /><span class="i18n-en" set:html={it.bodyEn} /></div>
+        : <div class="tl-body" set:html={it.body} />}
     </div>
   ))}
 </div>

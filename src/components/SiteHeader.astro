@@ -1,15 +1,16 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
+import LangToggle from './LangToggle.astro';
 import { SITE } from '../data/meta';
 interface Props { active: string; }
 const { active } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const links = [
-  { href: `${base}`, label: '总览', match: (p: string) => p === base || p === base.replace(/\/$/, '') + '/' },
-  { href: `${base}qce/`, label: 'QCE 会议', match: (p: string) => p.startsWith(`${base}qce/`) },
-  { href: `${base}tqe/`, label: 'TQE 期刊', match: (p: string) => p.startsWith(`${base}tqe/`) },
-  { href: `${base}stats/`, label: '方向统计', match: (p: string) => p.startsWith(`${base}stats/`) },
-  { href: `${base}about/`, label: '数据说明', match: (p: string) => p.startsWith(`${base}about/`) },
+  { href: `${base}`, zh: '总览', en: 'Overview', match: (p: string) => p === base || p === base.replace(/\/$/, '') + '/' },
+  { href: `${base}qce/`, zh: 'QCE 会议', en: 'QCE Conference', match: (p: string) => p.startsWith(`${base}qce/`) },
+  { href: `${base}tqe/`, zh: 'TQE 期刊', en: 'TQE Journal', match: (p: string) => p.startsWith(`${base}tqe/`) },
+  { href: `${base}stats/`, zh: '方向统计', en: 'Statistics', match: (p: string) => p.startsWith(`${base}stats/`) },
+  { href: `${base}about/`, zh: '数据说明', en: 'About Data', match: (p: string) => p.startsWith(`${base}about/`) },
 ];
 ---
 <header class="site-header">
@@ -19,8 +20,11 @@ const links = [
     </a>
     <nav class="site-nav">
       {links.map((l) => (
-        <a href={l.href} class={l.match(active) ? 'active' : ''} aria-current={l.match(active) ? 'page' : undefined}>{l.label}</a>
+        <a href={l.href} class={l.match(active) ? 'active' : ''} aria-current={l.match(active) ? 'page' : undefined}>
+          <span class="i18n-zh">{l.zh}</span><span class="i18n-en">{l.en}</span>
+        </a>
       ))}
+      <LangToggle />
       <ThemeToggle />
     </nav>
   </div>

@@ -11,7 +11,7 @@ const { title, description = `${SITE.tagline}。汇总 IEEE QCE（2020–2026）
 const base = import.meta.env.BASE_URL;
 ---
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-lang="zh">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,6 +25,11 @@ const base = import.meta.env.BASE_URL;
     try { s = localStorage.getItem(KEY) || 'auto'; } catch (e) {}
     const dark = s === 'dark' || (s === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    const LANG_KEY = 'p4q-lang';
+    let lang = 'zh';
+    try { if (localStorage.getItem(LANG_KEY) === 'en') lang = 'en'; } catch (e) {}
+    document.documentElement.setAttribute('data-lang', lang);
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
   })();
 </script>
 </head>
@@ -32,7 +37,7 @@ const base = import.meta.env.BASE_URL;
 <SiteHeader active={Astro.url.pathname} />
 <slot />
 <footer class="site-footer"><div class="wrap">
-  数据：IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 官方日程 ｜ 每周自动更新 · <a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub</a>
+  <span class="i18n-zh">数据：IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 官方日程 ｜ 每周自动更新 · </span><span class="i18n-en">Data: IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 program ｜ Updated weekly · </span><a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub</a>
 </div></footer>
 </body>
 </html>

@@ -321,7 +321,8 @@ mark { background: var(--mark); padding: 0 1.5px; border-radius: 3px; color: var
   .wrap { padding: 0 14px; }
   :root { --header-h: 54px; }
   .page-head { padding: 30px 0 6px; }
-  .site-nav a { padding: 6px 9px; font-size: 12.5px; }
+  /* EN 标签更长，收紧导航链接避免折行 */
+  .site-nav a { padding: 5px 9px; font-size: 12px; }
   .brand .sub { display: none; }
   /* 窄屏工具条：放宽 flex 下限，避免"只看论文 / 导出 CSV"被顶出视口 */
   .search-box { min-width: 120px; }
@@ -334,3 +335,11 @@ mark { background: var(--mark); padding: 0 1.5px; border-radius: 3px; color: var
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ============ i18n ============ */
+/* 双语元素：成对 span，由 <html data-lang="zh|en"> 决定显示哪个 */
+html[data-lang="en"] .i18n-zh { display: none; }
+html[data-lang="zh"] .i18n-en { display: none; }
+.lang-toggle { font-size: 12px; font-weight: 650; line-height: 1; letter-spacing: .01em; }
+.lang-toggle span { line-height: 1; }
+

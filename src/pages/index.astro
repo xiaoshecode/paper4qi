@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CategoryBar from '../components/CategoryBar.astro';
 import Timeline from '../components/Timeline.astro';
-import { CAT_ZH, SITE } from '../data/meta';
+import { CATEGORIES, CAT_ZH, SITE } from '../data/meta';
 
 const base = import.meta.env.BASE_URL;
 const stats = JSON.parse(readFileSync('public/data/stats.json', 'utf-8'));
@@ -16,38 +16,48 @@ const catTotals: [string, number][] = stats.cats
   .filter(([, n]) => n > 0)
   .sort((a, b) => b[1] - a[1]);
 
+const catEn: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => [c.key, c.en]));
+
 const tlItems = [
   {
     when: '2020–2021',
     title: '奠基期：算法与量子互联网愿景',
+    titleEn: 'Foundations: Algorithms and the Quantum-Internet Vision',
     body: 'QCE 创办，算法与理论、量子机器学习双主导；TQE 创刊，量子算法与量子通信网络（中继、纠缠分发、QKD）为两大支柱。领域关键词：NISQ 时代能做什么。',
+    bodyEn: 'QCE is founded, led jointly by algorithms &amp; theory and quantum machine learning; TQE launches with quantum algorithms and quantum communication networks (repeaters, entanglement distribution, QKD) as its two pillars. The field\'s defining question: what can be done in the NISQ era.',
     color: 'var(--c-ALG)',
   },
   {
     when: '2022–2023',
     title: '工程化工具链崛起',
+    titleEn: 'The Rise of Engineering Toolchains',
     body: 'QCE 体量翻倍（156→334 篇），软件与工具、编译与电路优化标签放量；TQE 体系结构/编译/基准类跃升，硬件平台论文增多——从"证明可行"转向"如何高效实现与评估"。',
+    bodyEn: 'QCE doubles in volume (156 → 334 papers), with software &amp; tools and compilation &amp; circuit optimization growing fast; TQE sees a jump in architecture / compilation / benchmarking and more hardware-platform papers — the emphasis shifts from proving feasibility to implementing and evaluating efficiently.',
     color: 'var(--c-ARCH)',
   },
   {
     when: '2023–2024',
     title: '硬件多样化与机器学习热潮',
+    titleEn: 'Hardware Diversification and the Machine-Learning Wave',
     body: 'TQE 量子机器学习达峰（9 篇），超导/离子阱/自旋/中性原子/光子多平台并进，材料工艺论文出现；QCE 硬件与器件标签升至 52→77 次。',
+    bodyEn: 'Quantum machine learning peaks at TQE (9 papers), superconducting, trapped-ion, spin, neutral-atom and photonic platforms advance in parallel, and materials &amp; fabrication papers appear; QCE hardware &amp; device tags climb from 52 to 77.',
     color: 'var(--c-PLAT)',
   },
   {
     when: '2024–2026',
     title: '容错与规模化',
+    titleEn: 'Fault Tolerance and Scaling',
     body: '纠错论文回升（TQE 2026 年 15 篇；QCE 纠错标签累计 94 次）；低温测控成为 TQE 显著类别；QCE26 日程中 QSYS+QAPP 占 39%、27 篇 Best Paper 集中在解码/网络/系统——量子互联网工程化与容错架构成为共同主线。',
+    bodyEn: 'Error-correction papers rebound (15 in TQE 2026; 94 error-correction tags at QCE in total); cryogenic control becomes a prominent TQE category; QSYS + QAPP make up 39% of the QCE26 program, with 27 Best Papers concentrated in decoding, networking and systems — engineering the quantum internet and fault-tolerant architectures become the shared thread.',
     color: 'var(--c-QEC)',
   },
 ];
 ---
 <BaseLayout title="总览">
   <div class="wrap page-head">
-    <div class="kicker">{SITE.name}</div>
-    <h1>{SITE.nameZh}</h1>
-    <p class="lede">{SITE.short}（Paper for Quantum Infrastructure）汇总 IEEE QCE 会议（2020–2026）与 IEEE TQE 期刊（2020–2026，Vol. 1–7）共 <b>{t.all.toLocaleString()}</b> 条出版记录，按研究方向分类、附中文创新点说明与英文摘要，每周自动更新。</p>
+    <div class="kicker"><span class="i18n-zh">{SITE.name}</span><span class="i18n-en">Paper for Quantum Infrastructure</span></div>
+    <h1><span class="i18n-zh">{SITE.nameZh}</span><span class="i18n-en">Quantum Infrastructure Paper Library</span></h1>
+    <p class="lede"><span class="i18n-zh">{SITE.short}（Paper for Quantum Infrastructure）汇总 IEEE QCE 会议（2020–2026）与 IEEE TQE 期刊（2020–2026，Vol. 1–7）共 <b>{t.all.toLocaleString()}</b> 条出版记录，按研究方向分类、附中文创新点说明与英文摘要，每周自动更新。</span><span class="i18n-en">{SITE.short} (Paper for Quantum Infrastructure) aggregates <b>{t.all.toLocaleString()}</b> publication records from the IEEE QCE conference (2020–2026) and the IEEE TQE journal (2020–2026, Vol. 1–7), classified by research area, with Chinese key-contribution notes and English abstracts. Updated weekly.</span></p>
   </div>
 
   <div class="wrap page-body">
@@ -55,39 +65,44 @@ const tlItems = [
       <div class="stat-card card" style="--sc: var(--c-ALG)">
         <a href={`${base}qce/`}>
           <div class="num">{(t.qce + t.qce26).toLocaleString()}</div>
-          <div class="lbl">IEEE QCE 会议论文（2020–2026）</div>
-          <div class="ext">2020–2025 论文集 {t.qce.toLocaleString()} 篇 + 2026 官方日程 {t.qce26} 篇 · 27 篇 Best Paper</div>
+          <div class="lbl"><span class="i18n-zh">IEEE QCE 会议论文（2020–2026）</span><span class="i18n-en">IEEE QCE Conference Papers (2020–2026)</span></div>
+          <div class="ext"><span class="i18n-zh">2020–2025 论文集 {t.qce.toLocaleString()} 篇 + 2026 官方日程 {t.qce26} 篇 · 27 篇 Best Paper</span><span class="i18n-en">{t.qce.toLocaleString()} papers from 2020–2025 proceedings + {t.qce26} from the 2026 official program · 27 Best Papers</span></div>
         </a>
       </div>
       <div class="stat-card card" style="--sc: var(--c-QEC)">
         <a href={`${base}tqe/`}>
           <div class="num">{t.tqe.toLocaleString()}</div>
-          <div class="lbl">IEEE TQE 期刊论文（Vol. 1–7）</div>
-          <div class="ext">443 篇研究论文，含中文创新点与英文摘要 · 被引数据 OpenAlex</div>
+          <div class="lbl"><span class="i18n-zh">IEEE TQE 期刊论文（Vol. 1–7）</span><span class="i18n-en">IEEE TQE Journal Articles (Vol. 1–7)</span></div>
+          <div class="ext"><span class="i18n-zh">443 篇研究论文，含中文创新点与英文摘要 · 被引数据 OpenAlex</span><span class="i18n-en">443 research articles with Chinese key-contribution notes and English abstracts · Citations from OpenAlex</span></div>
         </a>
       </div>
       <div class="stat-card card" style="--sc: var(--c-COMM)">
         <a href={`${base}stats/`}>
           <div class="num">{catTotals.length}</div>
-          <div class="lbl">研究方向分类</div>
-          <div class="ext">13 类统一分类法覆盖两个 venue · 年×类统计见仪表盘</div>
+          <div class="lbl"><span class="i18n-zh">研究方向分类</span><span class="i18n-en">Research Areas</span></div>
+          <div class="ext"><span class="i18n-zh">13 类统一分类法覆盖两个 venue · 年×类统计见仪表盘</span><span class="i18n-en">A unified 13-category taxonomy across both venues · Year × category figures on the dashboard</span></div>
         </a>
       </div>
     </div>
 
     <div class="card" style="margin-top:22px;padding:20px 24px">
-      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700">研究方向分布（两源合并，{t.all.toLocaleString()} 条）</h2>
-      <p style="margin:0 0 14px;font-size:12px;color:var(--faint)">13 类统一分类 · 不含封面/索引等前置页 · 点击图例可在 <a href={`${base}stats/`}>统计页</a> 看逐年演变</p>
-      <CategoryBar rows={catTotals.map(([key, n]) => ({ key, label: CAT_ZH[key] ?? key, value: n }))} />
+      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">研究方向分布（两源合并，{t.all.toLocaleString()} 条）</span><span class="i18n-en">Research Area Distribution (both sources combined, {t.all.toLocaleString()} records)</span></h2>
+      <p style="margin:0 0 14px;font-size:12px;color:var(--faint)"><span class="i18n-zh">13 类统一分类 · 不含封面/索引等前置页 · 点击图例可在 <a href={`${base}stats/`}>统计页</a> 看逐年演变</span><span class="i18n-en">Unified 13-category taxonomy · Excludes front matter such as covers and indexes · Click the legend to see year-by-year trends on the <a href={`${base}stats/`}>statistics page</a></span></p>
+      <CategoryBar rows={catTotals.map(([key, n]) => ({ key, label: CAT_ZH[key] ?? key, labelEn: catEn[key] ?? key, value: n }))} />
     </div>
 
     <div class="card" style="margin-top:18px;padding:20px 24px">
-      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700">研究脉络 2020–2026</h2>
-      <p style="margin:0 0 16px;font-size:12px;color:var(--faint)">会议快照（QCE，反映投稿热度）× 期刊档案（TQE，反映工程沉淀）双轨视角 · 分源叙述见下</p>
+      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">研究脉络 2020–2026</span><span class="i18n-en">Research Trajectory, 2020–2026</span></h2>
+      <p style="margin:0 0 16px;font-size:12px;color:var(--faint)"><span class="i18n-zh">会议快照（QCE，反映投稿热度）× 期刊档案（TQE，反映工程沉淀）双轨视角 · 分源叙述见下</span><span class="i18n-en">Two lenses: conference snapshots (QCE, reflecting submission activity) × journal records (TQE, reflecting engineering depth) · Per-source narratives below</span></p>
       <Timeline items={tlItems} />
       <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
+        <span class="i18n-zh">
         分源详细脉络：〈<a href={`${base}qce/`}>QCE 会议六年演变</a>〉与〈<a href={`${base}tqe/`}>TQE 期刊四阶段</a>〉；
         逐年分类数据见〈<a href={`${base}stats/`}>方向统计</a>〉。
+        </span><span class="i18n-en">
+        Detailed per-source narratives: “<a href={`${base}qce/`}>Six Years of QCE</a>” and “<a href={`${base}tqe/`}>Four Phases of TQE</a>”;
+        year-by-year category figures under “<a href={`${base}stats/`}>Statistics</a>”.
+        </span>
       </p>
     </div>
   </div>
