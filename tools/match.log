@@ -1,0 +1,43 @@
+[13/372] done=10 hits=4 pdfs=4 elapsed=3.9min
+[23/372] done=20 hits=9 pdfs=9 elapsed=6.3min
+[33/372] done=30 hits=16 pdfs=16 elapsed=13.8min
+[43/372] done=40 hits=24 pdfs=24 elapsed=16.3min
+[53/372] done=50 hits=31 pdfs=31 elapsed=17.9min
+[63/372] done=60 hits=37 pdfs=37 elapsed=22.7min
+[73/372] done=70 hits=44 pdfs=44 elapsed=26.1min
+[83/372] done=80 hits=51 pdfs=51 elapsed=29.1min
+[93/372] done=90 hits=55 pdfs=55 elapsed=30.4min
+[103/372] done=100 hits=65 pdfs=65 elapsed=37.1min
+[113/372] done=110 hits=71 pdfs=71 elapsed=38.4min
+[123/372] done=120 hits=78 pdfs=78 elapsed=42.4min
+[133/372] done=130 hits=86 pdfs=86 elapsed=50.2min
+[143/372] done=140 hits=95 pdfs=95 elapsed=64.6min
+[153/372] done=150 hits=101 pdfs=101 elapsed=73.0min
+[163/372] done=160 hits=105 pdfs=105 elapsed=82.5min
+[173/372] done=170 hits=112 pdfs=112 elapsed=86.9min
+[183/372] done=180 hits=117 pdfs=117 elapsed=89.9min
+[193/372] done=190 hits=123 pdfs=123 elapsed=97.4min
+[203/372] done=200 hits=128 pdfs=128 elapsed=100.1min
+      pdf-dl-fail 2608.25042: HTTP Error 406: Not Acceptable
+      pdf-dl-fail 2405.04490: IncompleteRead(2097152 bytes read, 5672261 more expected)
+      pdf-dl-fail 2511.12416: HTTP Error 406: Not Acceptable
+[213/372] done=210 hits=135 pdfs=132 elapsed=103.1min
+[223/372] done=220 hits=140 pdfs=137 elapsed=107.8min
+[233/372] done=230 hits=145 pdfs=142 elapsed=109.0min
+[243/372] done=240 hits=149 pdfs=146 elapsed=110.7min
+[253/372] done=250 hits=152 pdfs=149 elapsed=112.0min
+      pdf-dl-fail 2606.24933: IncompleteRead(3145728 bytes read, 3777593 more expected)
+[263/372] done=260 hits=158 pdfs=154 elapsed=114.5min
+[273/372] done=270 hits=160 pdfs=156 elapsed=116.1min
+[283/372] done=280 hits=165 pdfs=161 elapsed=118.3min
+[293/372] done=290 hits=169 pdfs=165 elapsed=120.1min
+[303/372] done=300 hits=173 pdfs=169 elapsed=122.0min
+[313/372] done=310 hits=182 pdfs=178 elapsed=123.7min
+[324/372] done=320 hits=187 pdfs=183 elapsed=124.9min
+[334/372] done=330 hits=190 pdfs=186 elapsed=126.2min
+[344/372] done=340 hits=197 pdfs=193 elapsed=127.9min
+[354/372] done=350 hits=204 pdfs=200 elapsed=129.7min
+      pdf-dl-fail 2605.14001: IncompleteRead(1048576 bytes read, 2341614 more expected)
+[364/372] done=360 hits=208 pdfs=203 elapsed=132.3min
+FINISHED segment [0:372] new=368 hits=211 pdfs=206
+OVERALL matches=213/372 pdfs=208

@@ -1,0 +1,930 @@
+[
+{
+"d": "10.1109/qce52317.2021.00001",
+"t": "Title Page i",
+"a": [],
+"p": "1-1"
+},
+{
+"d": "10.1109/qce52317.2021.00015",
+"t": "Normalized Gradient Descent for Variational Quantum Algorithms",
+"a": [
+"Yudai Suzuki",
+"Hiroshi Yano",
+"Rudy Raymond",
+"Naoki Yamamoto"
+],
+"p": "1-9"
+},
+{
+"d": "10.1109/qce52317.2021.00002",
+"t": "[Title page iii]",
+"a": [],
+"p": "3-3"
+},
+{
+"d": "10.1109/qce52317.2021.00003",
+"t": "Copyright Page",
+"a": [],
+"p": "4-4"
+},
+{
+"d": "10.1109/qce52317.2021.00004",
+"t": "Table of Contents",
+"a": [],
+"p": "5-14"
+},
+{
+"d": "10.1109/qce52317.2021.00016",
+"t": "Parameters Fixing Strategy for Quantum Approximate Optimization Algorithm",
+"a": [
+"Xinwei Lee",
+"Yoshiyuki Saito",
+"Dongsheng Cai",
+"Nobuyoshi Asai"
+],
+"p": "10-16"
+},
+{
+"d": "10.1109/qce52317.2021.00005",
+"t": "Message from the Chairs",
+"a": [],
+"p": "15-17"
+},
+{
+"d": "10.1109/qce52317.2021.00017",
+"t": "Quantum-inspired algorithm for Vehicle Sharing Problem",
+"a": [
+"Whei Yeap Suen",
+"Chun Yat Lee",
+"Hoong Chuin Lau"
+],
+"p": "17-23"
+},
+{
+"d": "10.1109/qce52317.2021.00006",
+"t": "Organizing Committee",
+"a": [],
+"p": "18-19"
+},
+{
+"d": "10.1109/qce52317.2021.00007",
+"t": "Program Committee",
+"a": [],
+"p": "20-23"
+},
+{
+"d": "10.1109/qce52317.2021.00008",
+"t": "Workshops Committee",
+"a": [],
+"p": "24-24"
+},
+{
+"d": "10.1109/qce52317.2021.00018",
+"t": "Decision Diagrams for Quantum Measurements with Shallow Circuits",
+"a": [
+"Stefan Hillmich",
+"Charles Hadfield",
+"Rudy Raymond",
+"Antonio Mezzacapo",
+"Robert Wille"
+],
+"p": "24-34"
+},
+{
+"d": "10.1109/qce52317.2021.00009",
+"t": "Tutorials Committee",
+"a": [],
+"p": "25-25"
+},
+{
+"d": "10.1109/qce52317.2021.00010",
+"t": "Panels Committee",
+"a": [],
+"p": "26-26"
+},
+{
+"d": "10.1109/qce52317.2021.00011",
+"t": "Posters Committee",
+"a": [],
+"p": "27-27"
+},
+{
+"d": "10.1109/qce52317.2021.00012",
+"t": "Birds-of-a-Feather Committee",
+"a": [],
+"p": "28-28"
+},
+{
+"d": "10.1109/qce52317.2021.00013",
+"t": "Steering Committee",
+"a": [],
+"p": "29-29"
+},
+{
+"d": "10.1109/qce52317.2021.00055",
+"t": "Keynote Presentation Abstracts",
+"a": [],
+"p": "30-40"
+},
+{
+"d": "10.1109/qce52317.2021.00019",
+"t": "Multi-car paint shop optimization with quantum annealing",
+"a": [
+"Sheir Yarkoni",
+"Alex Alekseyenko",
+"Michael Streif",
+"David Von Dollen",
+"Florian Neukart",
+"Thomas Back"
+],
+"p": "35-41"
+},
+{
+"d": "10.1109/qce52317.2021.00090",
+"t": "Workshop Abstracts",
+"a": [],
+"p": "41-64"
+},
+{
+"d": "10.1109/qce52317.2021.00020",
+"t": "The Effect of Noise on the Performance of Variational Algorithms for Quantum Chemistry",
+"a": [
+"Waheeda Saib",
+"Petros Wallden",
+"Ismail Akhalwaya"
+],
+"p": "42-53"
+},
+{
+"d": "10.1109/qce52317.2021.00021",
+"t": "A simple method for sampling random Clifford operators",
+"a": [
+"Ewout Van Den Berg"
+],
+"p": "54-59"
+},
+{
+"d": "10.1109/qce52317.2021.00022",
+"t": "P T-Enhanced Bayesian Parameter Estimation",
+"a": [
+"Yaroslav Balytskyi",
+"Manohar Raavi",
+"Sang-Yoon Chang"
+],
+"p": "60-70"
+},
+{
+"d": "10.1109/qce52317.2021.00091",
+"t": "Tutorial Abstracts",
+"a": [],
+"p": "65-83"
+},
+{
+"d": "10.1109/qce52317.2021.00023",
+"t": "QuGAN: A Quantum State Fidelity based Generative Adversarial Network",
+"a": [
+"Samuel A. Stein",
+"Betis Baheri",
+"Daniel Chen",
+"Ying Mao",
+"Qiang Guan",
+"Ang Li",
+"Bo Fang",
+"Shuai Xu"
+],
+"p": "71-81"
+},
+{
+"d": "10.1109/qce52317.2021.00024",
+"t": "Modified Layerwise Learning for Data Re-uploading Classifier in High-Energy Physics Event Classification",
+"a": [
+"Eraraya Ricardo Muten",
+"Togan Tlimakhov Yusuf",
+"Andrei Voicu Tomut"
+],
+"p": "82-88"
+},
+{
+"d": "10.1109/qce52317.2021.00092",
+"t": "Panel Abstracts",
+"a": [],
+"p": "84-102"
+},
+{
+"d": "10.1109/qce52317.2021.00025",
+"t": "Quantum Image Representation on Clusters",
+"a": [
+"Arijit Mandal",
+"Shreya Banerjee",
+"Prasanta K. Panigrahi"
+],
+"p": "89-99"
+},
+{
+"d": "10.1109/qce52317.2021.00026",
+"t": "Optimizing Parameterized Quantum Circuits with Free-Axis Selection",
+"a": [
+"Hiroshi C. Watanabe",
+"Rudy Raymond",
+"Yu-Ya Ohnishi",
+"Eriko Kaminishi",
+"Michihiko Sugawara"
+],
+"p": "100-111"
+},
+{
+"d": "10.1109/qce52317.2021.00014",
+"t": "Sponsors",
+"a": [],
+"p": "103-104"
+},
+{
+"d": "10.1109/qce52317.2021.00027",
+"t": "Simpler (Classical) and Faster (Quantum) Algorithms for Gibbs Partition Functions",
+"a": [
+"Srinivasan Arunachalam",
+"Vojtech Havlicek",
+"Giacomo Nannicini",
+"Kristan Temme",
+"Pawel Wocjan"
+],
+"p": "112-122"
+},
+{
+"d": "10.1109/qce52317.2021.00028",
+"t": "Photonic Quantum Policy Learning in OpenAI Gym",
+"a": [
+"Daniel Nagy",
+"Zsolt Tabi",
+"Peter Haga",
+"Zsofia Kallus",
+"Zoltan Zimboras"
+],
+"p": "123-129"
+},
+{
+"d": "10.1109/qce52317.2021.00029",
+"t": "Towards a Quantum Modeling Approach to Reactive Agents",
+"a": [
+"Abder Koukam",
+"Abdeljalil Abbas-Turki",
+"Vincent Hilaire",
+"Yassine Ruichek"
+],
+"p": "130-136"
+},
+{
+"d": "10.1109/qce52317.2021.00030",
+"t": "Threshold-Based Quantum Optimization",
+"a": [
+"John Golden",
+"Andreas Bartschi",
+"Daniel O'Malley",
+"Stephan Eidenbenz"
+],
+"p": "137-147"
+},
+{
+"d": "10.1109/qce52317.2021.00031",
+"t": "A Quantum-Inspired Classical Solver for Boolean k-Satisfiability Problems",
+"a": [
+"S. Andrew Lanham",
+"Brian R. La Cour"
+],
+"p": "148-154"
+},
+{
+"d": "10.1109/qce52317.2021.00032",
+"t": "Numerical Simulations of Noisy Variational Quantum Eigensolver Ansatz Circuits",
+"a": [
+"Meenambika Gowrishankar",
+"Jerimiah Wright",
+"Daniel Claudino",
+"Thien Nguyen",
+"Alexander McCaskey",
+"Travis S. Humble"
+],
+"p": "155-159"
+},
+{
+"d": "10.1109/qce52317.2021.00033",
+"t": "Quantum Optimization Heuristics with an Application to Knapsack Problems",
+"a": [
+"Wim van Dam",
+"Karim Eldefrawy",
+"Nicholas Genise",
+"Natalie Parham"
+],
+"p": "160-170"
+},
+{
+"d": "10.1109/qce52317.2021.00034",
+"t": "Transferability of optimal QAOA parameters between random graphs",
+"a": [
+"Alexey Galda",
+"Xiaoyuan Liu",
+"Danylo Lykov",
+"Yuri Alexeev",
+"Ilya Safro"
+],
+"p": "171-180"
+},
+{
+"d": "10.1109/qce52317.2021.00035",
+"t": "Adapting Quantum Approximation Optimization Algorithm (QAOA) for Unit Commitment",
+"a": [
+"Samantha Koretsky",
+"Pranav Gokhale",
+"Jonathan M. Baker",
+"Joshua Viszlai",
+"Honghao Zheng",
+"Niroj Gurung",
+"Ryan Burg",
+"Esa Aleksi Paaso",
+"Amin Khodaei",
+"Rozhin Eskandarpour",
+"Frederic T. Chong"
+],
+"p": "181-187"
+},
+{
+"d": "10.1109/qce52317.2021.00036",
+"t": "Sampling Strategy Optimization for Randomized Benchmarking",
+"a": [
+"Toshinari Itoko",
+"Rudy Raymond"
+],
+"p": "188-198"
+},
+{
+"d": "10.1109/qce52317.2021.00037",
+"t": "Hybrid Schrödinger-Feynman Simulation of Quantum Circuits With Decision Diagrams",
+"a": [
+"Lukas Burgholzer",
+"Hartwig Bauer",
+"Robert Wille"
+],
+"p": "199-206"
+},
+{
+"d": "10.1109/qce52317.2021.00038",
+"t": "Sampling on NISQ Devices: \"Who’s the Fairest One of All?\"",
+"a": [
+"Elijah Pelofske",
+"John Golden",
+"Andreas Bartschi",
+"Daniel O'Malley",
+"Stephan Eidenbenz"
+],
+"p": "207-217"
+},
+{
+"d": "10.1109/qce52317.2021.00039",
+"t": "A Simple Heuristic for Expressing a Truth Table as a Quadratic Pseudo-Boolean Function",
+"a": [
+"Scott Pakin"
+],
+"p": "218-224"
+},
+{
+"d": "10.1109/qce52317.2021.00040",
+"t": "Resource Optimal Executable Quantum Circuit Generation Using Approximate Computing",
+"a": [
+"Smaran Adarsh",
+"Matthias Moller"
+],
+"p": "225-231"
+},
+{
+"d": "10.1109/qce52317.2021.00041",
+"t": "QFAST: Conflating Search and Numerical Optimization for Scalable Quantum Circuit Synthesis",
+"a": [
+"Ed Younis",
+"Koushik Sen",
+"Katherine Yelick",
+"Costin Iancu"
+],
+"p": "232-243"
+},
+{
+"d": "10.1109/qce52317.2021.00042",
+"t": "A Quantum Computing Programming Language for Transparent Experiment Descriptions",
+"a": [
+"Virginia Frey",
+"Richard Rademacher",
+"Elijah Durso-Sabina",
+"Noah Greenberg",
+"Nikolay Videnov",
+"Matthew L. Day",
+"Rajibul Islam",
+"Crystal Senko"
+],
+"p": "244-254"
+},
+{
+"d": "10.1109/qce52317.2021.00043",
+"t": "A MLIR Dialect for Quantum Assembly Languages",
+"a": [
+"Alexander McCaskey",
+"Thien Nguyen"
+],
+"p": "255-264"
+},
+{
+"d": "10.1109/qce52317.2021.00044",
+"t": "Quantum Annealing Stencils with Applications to Fuel Loading of a Nuclear Reactor",
+"a": [
+"Joseph Fustero",
+"Scott Palmtag",
+"Frank Mueller"
+],
+"p": "265-275"
+},
+{
+"d": "10.1109/qce52317.2021.00045",
+"t": "Quantum Fan-out: Circuit Optimizations and Technology Modeling",
+"a": [
+"Pranav Gokhale",
+"Samantha Koretsky",
+"Shilin Huang",
+"Swarnadeep Majumder",
+"Andrew Drucker",
+"Kenneth R. Brown",
+"Frederic T. Chong"
+],
+"p": "276-290"
+},
+{
+"d": "10.1109/qce52317.2021.00046",
+"t": "Error Mitigation for Deep Quantum Optimization Circuits by Leveraging Problem Symmetries",
+"a": [
+"Ruslan Shaydulin",
+"Alexey Galda"
+],
+"p": "291-300"
+},
+{
+"d": "10.1109/qce52317.2021.00047",
+"t": "Adaptive job and resource management for the growing quantum cloud",
+"a": [
+"Gokul Subramanian Ravi",
+"Kaitlin N. Smith",
+"Prakash Murali",
+"Frederic T. Chong"
+],
+"p": "301-312"
+},
+{
+"d": "10.1109/qce52317.2021.00048",
+"t": "A quantum walk control plane for distributed quantum computing in quantum networks",
+"a": [
+"Matheus Guedes de Andrade",
+"Wenhan Dai",
+"Saikat Guha",
+"Don Towsley"
+],
+"p": "313-323"
+},
+{
+"d": "10.1109/qce52317.2021.00049",
+"t": "Distributing Graph States Across Quantum Networks",
+"a": [
+"Alex Fischer",
+"Don Towsley"
+],
+"p": "324-333"
+},
+{
+"d": "10.1109/qce52317.2021.00050",
+"t": "Distance-Independent Entanglement Generation in a Quantum Network using Space-Time Multiplexed Greenberger–Horne–Zeilinger (GHZ) Measurements",
+"a": [
+"Ashlesha Patil",
+"Eliana S. Jacobson",
+"Emily Van Milligen",
+"Don Towsley",
+"Saikat Guha"
+],
+"p": "334-345"
+},
+{
+"d": "10.1109/qce52317.2021.00051",
+"t": "Password authentication schemes on a quantum computer",
+"a": [
+"Sherry Wang",
+"Carlisle Adams",
+"Anne Broadbent"
+],
+"p": "346-350"
+},
+{
+"d": "10.1109/qce52317.2021.00052",
+"t": "Performance Analysis of the Quantum Safe Multivariate Polynomial Public Key Algorithm",
+"a": [
+"Randy Kuang",
+"Michel Barbeau"
+],
+"p": "351-358"
+},
+{
+"d": "10.1109/qce52317.2021.00053",
+"t": "Pseudo Quantum Random Number Generator with Quantum Permutation Pad",
+"a": [
+"Randy Kuang",
+"Dafu Lou",
+"Alex He",
+"Chris McKenzie",
+"Michael Redding"
+],
+"p": "359-364"
+},
+{
+"d": "10.1109/qce52317.2021.00054",
+"t": "The Quantum Internet: a Communication Engineering Perspective",
+"a": [
+"Marcello Caleffi",
+"Jessica Illiano",
+"Seid Koudia",
+"Angela Sara Cacciapuoti"
+],
+"p": "365-365"
+},
+{
+"d": "10.1109/qce52317.2021.00056",
+"t": "A Complete Quantum Circuit to Solve the Information Set Decoding Problem",
+"a": [
+"Simone Perriello",
+"Alessandro Barenghi",
+"Gerardo Pelosi"
+],
+"p": "366-377"
+},
+{
+"d": "10.1109/qce52317.2021.00057",
+"t": "GraphStateVis: Interactive Visual Analysis of Qubit Graph States and their Stabilizer Groups",
+"a": [
+"Matthias Miller",
+"Daniel Miller"
+],
+"p": "378-384"
+},
+{
+"d": "10.1109/qce52317.2021.00058",
+"t": "Teaching quantum computing with an interactive textbook",
+"a": [
+"James R. Wootton",
+"Francis Harkins",
+"Nicholas T. Bronn",
+"Almudena Carrera Vazquez",
+"Anna Phan",
+"Abraham T. Asfaw"
+],
+"p": "385-391"
+},
+{
+"d": "10.1109/qce52317.2021.00059",
+"t": "IBM-HBCU Quantum Center: A model for industry-academic partnerships to advance the creation of a diverse, quantum aware workforce",
+"a": [
+"Kayla B. Lee",
+"ThomasA. Searles"
+],
+"p": "392-396"
+},
+{
+"d": "10.1109/qce52317.2021.00060",
+"t": "Quantum Computing for Undergraduate Engineering Students: Report of an Experience",
+"a": [
+"Laura Gatti",
+"Rafael Sotelo"
+],
+"p": "397-401"
+},
+{
+"d": "10.1109/qce52317.2021.00061",
+"t": "Practical implications of SFQ-based two-qubit gates",
+"a": [
+"Mohammad Reza Jokar",
+"Richard Rines",
+"Frederic T. Chong"
+],
+"p": "402-412"
+},
+{
+"d": "10.1109/qce52317.2021.00062",
+"t": "Efficient Quantum Gate Discovery with Optimal Control",
+"a": [
+"Paul Kairys",
+"Travis S. Humble"
+],
+"p": "413-418"
+},
+{
+"d": "10.1109/qce52317.2021.00063",
+"t": "Adaptive Circuit Learning for Quantum Metrology",
+"a": [
+"Ziqi Ma",
+"Pranav Gokhale",
+"Tian-Xing Zheng",
+"Sisi Zhou",
+"Xiaofei Yu",
+"Liang Jiang",
+"Peter Maurer",
+"Frederic T. Chong"
+],
+"p": "419-430"
+},
+{
+"d": "10.1109/qce52317.2021.00064",
+"t": "Measurement of Ion Motion Caused by Laser-Induced Stray Charges on Microfabricated Ion Trap Chip Surfaces",
+"a": [
+"Changhyun Jung",
+"Woojun Lee",
+"Junho Jeong",
+"Taehyun Kim",
+"Dong-Il Dan Cho"
+],
+"p": "431-432"
+},
+{
+"d": "10.1109/qce52317.2021.00065",
+"t": "Detecting Energy Levels of Spin Systems on IBM’s Quantum Computer by Evolution of Mean Value of Physical Quantity",
+"a": [
+"Kh. P. Gnatenko",
+"H. P. Laba",
+"V. M. Tkachuk"
+],
+"p": "433-434"
+},
+{
+"d": "10.1109/qce52317.2021.00066",
+"t": "Implementing the Simplex Method with Grover’s Search",
+"a": [
+"Adeline Jordon",
+"Prashanti Priya Angara",
+"Saasha Joshi"
+],
+"p": "435-436"
+},
+{
+"d": "10.1109/qce52317.2021.00067",
+"t": "Simulation of Continuous-Variable Quantum Systems with Tensor Network",
+"a": [
+"Ryutaro Nagai",
+"Takao Tomono",
+"Yuichiro Minato"
+],
+"p": "437-438"
+},
+{
+"d": "10.1109/qce52317.2021.00068",
+"t": "Optimistic Entanglement Purification With Few Quantum Memories",
+"a": [
+"Mohammad Mobayenjarihani",
+"Gayane Vardoyan",
+"Don Towsley"
+],
+"p": "439-440"
+},
+{
+"d": "10.1109/qce52317.2021.00069",
+"t": "qopt: An experiment-oriented Qubit Simulation and Quantum Optimal Control Package",
+"a": [
+"Julian D. Teske",
+"Hendrik Bluhm"
+],
+"p": "441-442"
+},
+{
+"d": "10.1109/qce52317.2021.00070",
+"t": "Open-source multi-channel Smart Arbitrary Waveform Generators (SAWG) for quantum information processing",
+"a": [
+"David Allcock",
+"Christopher Balance",
+"Sebastien Bourdeauducq",
+"Joseph Britton",
+"Michal Gaska",
+"Thomas Harty",
+"Jakub Jarosinski",
+"Robert Jordens",
+"Grzegorz Kasprowicz",
+"Norman Krackow",
+"Pawel Kulik",
+"David Nadlinger",
+"Dorota Nowicka",
+"Krzysztof Pozniak",
+"Tomasz Przywozki",
+"Daniel Slichter",
+"Mikolaj Sowinski",
+"Marius Weber",
+"Weida Zhang"
+],
+"p": "443-444"
+},
+{
+"d": "10.1109/qce52317.2021.00071",
+"t": "Extended Abstract: Joint Parity-Time and Anti-Parity-Time-symmetric Qubits",
+"a": [
+"Julia Cen",
+"Avadh Saxena"
+],
+"p": "445-446"
+},
+{
+"d": "10.1109/qce52317.2021.00072",
+"t": "On Generating a Probability Distribution Amenable to NISQ Using Modifications to Grover’s Algorithm",
+"a": [
+"Sayantan Pramanik",
+"M Girish Chandra"
+],
+"p": "447-449"
+},
+{
+"d": "10.1109/qce52317.2021.00073",
+"t": "A low-noise and scalable FPGA-based analog signal generator for quantum gas experiments",
+"a": [
+"D. Pahl",
+"L. Pahl",
+"E. Mustafa",
+"Z. Liu",
+"P. Fabritius",
+"J. Mohan",
+"P. Clements",
+"A. Akin",
+"T. Esslinger"
+],
+"p": "450-451"
+},
+{
+"d": "10.1109/qce52317.2021.00074",
+"t": "Optimal Policies for Distributed Quantum Computing with Quantum Walk Control Plane Protocol",
+"a": [
+"Matheus Guedes de Andrade",
+"Wenhan Dai",
+"Saikat Guha",
+"Don Towsley"
+],
+"p": "452-453"
+},
+{
+"d": "10.1109/qce52317.2021.00075",
+"t": "Quantum algorithms for Monte Carlo integration using pseudo-random numbers",
+"a": [
+"Koichi Miyamoto"
+],
+"p": "454-455"
+},
+{
+"d": "10.1109/qce52317.2021.00076",
+"t": "Optimal Linear Optical Discrimination of Bell-Like states",
+"a": [
+"Dov Fields",
+"Vladimir S. Malinovsky",
+"János Bergou",
+"Mark Hillery"
+],
+"p": "456-458"
+},
+{
+"d": "10.1109/qce52317.2021.00077",
+"t": "Developing SLH Theory for Use with Microwave Circuits",
+"a": [
+"Antonio J. Cobarrubia",
+"Kyle M. Sundqvist"
+],
+"p": "459-460"
+},
+{
+"d": "10.1109/qce52317.2021.00078",
+"t": "Rebalancing Bike Sharing Systems under Uncertainty using Quantum Bayesian Networks",
+"a": [
+"Ramkumar Harikrishnakumar",
+"Sima E. Borujeni",
+"Syed Farhan Ahmad",
+"Saideep Nannapaneni"
+],
+"p": "461-462"
+},
+{
+"d": "10.1109/qce52317.2021.00079",
+"t": "Solving Sensor Placement Problems In Real Water Distribution Networks Using Adiabatic Quantum Computation",
+"a": [
+"Stefano Speziali",
+"Federico Bianchi",
+"Andrea Marini",
+"Lorenzo Menculini",
+"Massimiliano Proietti",
+"Loris F. Termite",
+"Alberto Garinei",
+"Marcello Marconi",
+"Andrea Delogu"
+],
+"p": "463-464"
+},
+{
+"d": "10.1109/qce52317.2021.00080",
+"t": "Quantifying Geometric Measure of Entanglement of Multi-qubit Graph States on the IBM’s Quantum Computer",
+"a": [
+"N. A. Susulovska",
+"Kh. P. Gnatenko"
+],
+"p": "465-466"
+},
+{
+"d": "10.1109/qce52317.2021.00081",
+"t": "A Modular Quantum Key Distribution Software Stack for Rapid Experimental Prototyping",
+"a": [
+"Omar Amer",
+"Kevin Freyberg",
+"Vaibhav Garg",
+"Walter O. Krawec"
+],
+"p": "467-468"
+},
+{
+"d": "10.1109/qce52317.2021.00082",
+"t": "A polarization diversity CV-QKD detection scheme for channels with strong polarization drift",
+"a": [
+"Daniel Pereira",
+"Nuno A. Silva",
+"Armando N. Pinto"
+],
+"p": "469-470"
+},
+{
+"d": "10.1109/qce52317.2021.00083",
+"t": "Experiments on Fraud Detection use case with QML and TDA Mapper",
+"a": [
+"Satanik Mitra",
+"Kameshwar Rao JV"
+],
+"p": "471-472"
+},
+{
+"d": "10.1109/qce52317.2021.00084",
+"t": "Multi-Qubit Size-Hopping Deutsch-Jozsa Algorithm with Qubit Reordering for Secure Quantum Key Distribution",
+"a": [
+"Rohit De",
+"Raymond Moberly",
+"Colton Beery",
+"Jeremy Juybari",
+"Kyle Sundqvist"
+],
+"p": "473-474"
+},
+{
+"d": "10.1109/qce52317.2021.00085",
+"t": "Graph State Distribution: Integer Formulation",
+"a": [
+"Wenbo Xie",
+"Wenhan Dai",
+"Don Towsley"
+],
+"p": "475-476"
+},
+{
+"d": "10.1109/qce52317.2021.00086",
+"t": "A Quantum Binary Classifier based on Cosine Similarity",
+"a": [
+"Davide Pastorello",
+"Enrico Blanzieri"
+],
+"p": "477-478"
+},
+{
+"d": "10.1109/qce52317.2021.00087",
+"t": "Trainable Discrete Feature Embeddings for Quantum Machine Learning",
+"a": [
+"Napat Thumwanit",
+"Chayaphol Lortaraprasert",
+"Hiroshi Yano",
+"Rudy Raymond"
+],
+"p": "479-480"
+},
+{
+"d": "10.1109/qce52317.2021.00088",
+"t": "Discriminating Quantum States with Quantum Machine Learning",
+"a": [
+"David Quiroga",
+"Prasanna Date",
+"Raphael Pooser"
+],
+"p": "481-482"
+},
+{
+"d": "10.1109/qce52317.2021.00089",
+"t": "An Engineer’s Brief Introduction to Microwave Quantum Optics",
+"a": [
+"Malida Hecht",
+"Antonio Cobarrubia",
+"Kyle Sundqvist"
+],
+"p": "483-484"
+},
+{
+"d": "10.1109/qce52317.2021.00093",
+"t": "Author Index",
+"a": [],
+"p": "485-488"
+}
+]
