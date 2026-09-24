@@ -1,3 +1,11 @@
+// 站点级品牌常量：paper4qi = Paper for Quantum Infra（量子基础设施文献）
+export const SITE = {
+  short: 'paper4qi',
+  name: 'Paper for Quantum Infra',
+  nameZh: '量子基础设施文献库',
+  tagline: 'Paper for Quantum Infrastructure — 量子计算与工程文献库',
+} as const;
+
 // 站点共享元数据：分类、来源、导航
 export interface Category {
   key: string;

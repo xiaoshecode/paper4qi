@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
+import { SITE } from '../data/meta';
 interface Props { active: string; }
 const { active } = Astro.props;
 const base = import.meta.env.BASE_URL;
@@ -14,7 +15,7 @@ const links = [
 <header class="site-header">
   <div class="wrap">
     <a class="brand" href={base}>
-      paper4qi<span class="sub">量子计算文献库</span>
+      {SITE.short}<span class="sub">{SITE.name}</span>
     </a>
     <nav class="site-nav">
       {links.map((l) => (

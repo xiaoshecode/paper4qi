@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CategoryBar from '../components/CategoryBar.astro';
 import Timeline from '../components/Timeline.astro';
-import { CAT_ZH } from '../data/meta';
+import { CAT_ZH, SITE } from '../data/meta';
 
 const base = import.meta.env.BASE_URL;
 const stats = JSON.parse(readFileSync('public/data/stats.json', 'utf-8'));
@@ -45,9 +45,9 @@ const tlItems = [
 ---
 <BaseLayout title="总览">
   <div class="wrap page-head">
-    <div class="kicker">paper4qi · Quantum Literature</div>
-    <h1>量子计算文献库</h1>
-    <p class="lede">汇总 IEEE QCE 会议（2020–2026）与 IEEE TQE 期刊（2020–2026，Vol. 1–7）共 <b>{t.all.toLocaleString()}</b> 条出版记录，按研究方向分类、附中文创新点说明与英文摘要，每周自动更新。</p>
+    <div class="kicker">{SITE.name}</div>
+    <h1>{SITE.nameZh}</h1>
+    <p class="lede">{SITE.short}（Paper for Quantum Infrastructure）汇总 IEEE QCE 会议（2020–2026）与 IEEE TQE 期刊（2020–2026，Vol. 1–7）共 <b>{t.all.toLocaleString()}</b> 条出版记录，按研究方向分类、附中文创新点说明与英文摘要，每周自动更新。</p>
   </div>
 
   <div class="wrap page-body">

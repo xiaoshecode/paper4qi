@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { CATEGORIES } from '../data/meta';
+import { CATEGORIES, SITE } from '../data/meta';
 
 const base = import.meta.env.BASE_URL;
 ---
@@ -8,7 +8,7 @@ const base = import.meta.env.BASE_URL;
   <div class="wrap page-head">
     <div class="kicker">About · Data & Methodology</div>
     <h1>数据说明</h1>
-    <p class="lede">数据来源、分类法、更新机制与「中文说明」的补全流程。</p>
+    <p class="lede">{SITE.short}（{SITE.name}）的数据来源、分类法、更新机制与「中文说明」的补全流程。</p>
   </div>
   <div class="wrap page-body prose">
     <h2>收录范围与来源</h2>
