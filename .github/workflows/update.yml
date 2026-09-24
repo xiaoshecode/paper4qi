@@ -2,9 +2,9 @@ name: Weekly data update
 
 on:
   schedule:
-    # Mondays 03:17 UTC. GitHub may delay scheduled runs, so the fetch window
+    # Mondays 03:14 UTC. GitHub may delay scheduled runs, so the fetch window
     # always overlaps the previous run by a couple of days.
-    - cron: '17 3 * * 1'
+    - cron: '14 3 * * 1'
   workflow_dispatch:
 
 permissions:

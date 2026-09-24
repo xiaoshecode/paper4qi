@@ -15,7 +15,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Step 1: data pipeline (Python). Isolated so a data failure surfaces here,
+  # not buried in the site build.
+  data:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Build data files
+        run: python scripts/build_data.py
+
+      - name: Validate data outputs
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          for f in ("qce.json", "tqe.json", "stats.json"):
+              p = os.path.join("public", "data", f)
+              assert os.path.exists(p), f"missing {p}"
+              d = json.load(open(p, encoding="utf-8"))
+              print(f"{f}: ok ({os.path.getsize(p)} bytes)")
+          q = json.load(open("public/data/qce.json", encoding="utf-8"))
+          t = json.load(open("public/data/tqe.json", encoding="utf-8"))
+          assert q["count"] > 0 and t["count"] > 0, "empty dataset"
+          print(f"records: qce={q['count']} tqe={t['count']}")
+          PY
+
+      - name: Upload data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-data
+          path: public/data
+          retention-days: 1
+
+  # Step 2: site build (Node). Downloads the data artifact, runs pnpm build,
+  # and uploads the Pages artifact.
   build:
+    needs: data
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,25 +70,33 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build data files
-        run: python scripts/build_data.py
+      - name: Download data artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-data
+          path: public/data
 
       - name: Build site
         run: pnpm build
 
+      - name: Verify built output
+        run: |
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          test -f dist/data/qce.json || { echo "dist/data/qce.json missing"; exit 1; }
+          echo "dist pages:" && find dist -name "*.html" | sort
+          echo "data size:" && du -sh dist/data
+
       - uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
+  # Step 3: deploy to Pages.
   deploy:
     needs: build
     runs-on: ubuntu-latest
