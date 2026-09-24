@@ -1,0 +1,606 @@
+[
+{
+"d": "10.1109/qce49297.2020.00001",
+"t": "Title Page",
+"a": [],
+"p": "1-1"
+},
+{
+"d": "10.1109/qce49297.2020.00002",
+"t": "Title Page",
+"a": [],
+"p": "1-1"
+},
+{
+"d": "10.1109/qce49297.2020.00003",
+"t": "Copyright Page",
+"a": [],
+"p": "1-1"
+},
+{
+"d": "10.1109/qce49297.2020.00011",
+"t": "Iterative quantum phase estimation with optimized sample complexity",
+"a": [
+"Ewout van den Berg"
+],
+"p": "1-10"
+},
+{
+"d": "10.1109/qce49297.2020.00012",
+"t": "Efficient Discrete Feature Encoding for Variational Quantum Classifier",
+"a": [
+"Hiroshi Yano",
+"Yudai Suzuki",
+"Rudy Raymond",
+"Naoki Yamamoto"
+],
+"p": "11-21"
+},
+{
+"d": "10.1109/qce49297.2020.00013",
+"t": "Polyadic Quantum Classifier",
+"a": [
+"William Cappelletti",
+"Rebecca Erbanni",
+"Joaquin Keller"
+],
+"p": "22-29"
+},
+{
+"d": "10.1109/qce49297.2020.00014",
+"t": "Designing high-fidelity multi-qubit gates for semiconductor quantum dots through deep reinforcement learning",
+"a": [
+"Sahar Daraeizadeh",
+"Shavindra P. Premaratne",
+"A. Y. Matsuura"
+],
+"p": "30-36"
+},
+{
+"d": "10.1109/qce49297.2020.00015",
+"t": "Detection-Based Measurements for Quantum Emulation Devices",
+"a": [
+"S. Andrew Lanham",
+"Brian R. La Cour"
+],
+"p": "37-46"
+},
+{
+"d": "10.1109/qce49297.2020.00017",
+"t": "Quantum-Enhanced Simulation-Based Optimization",
+"a": [
+"Julien Gacon",
+"Christa Zoufal",
+"Stefan Woerner"
+],
+"p": "47-55"
+},
+{
+"d": "10.1109/qce49297.2020.00018",
+"t": "Quantum Optimization for the Graph Coloring Problem with Space-Efficient Embedding",
+"a": [
+"Zsolt Tabi",
+"Kareem H. El-Safty",
+"Zsofia Kallus",
+"Peter Haga",
+"Tamas Kozsik",
+"Adam Glos",
+"Zoltan Zimboras"
+],
+"p": "56-62"
+},
+{
+"d": "10.1109/qce49297.2020.00019",
+"t": "A non-algorithmic approach to “programming” quantum computers via machine learning",
+"a": [
+"Nathan Thompson",
+"James Steck",
+"Elizabeth Behrman"
+],
+"p": "63-71"
+},
+{
+"d": "10.1109/qce49297.2020.00020",
+"t": "Grover Mixers for QAOA: Shifting Complexity from Mixer Design to State Preparation",
+"a": [
+"Andreas Bartschi",
+"Stephan Eidenbenz"
+],
+"p": "72-82"
+},
+{
+"d": "10.1109/qce49297.2020.00021",
+"t": "The Quantum Alternating Operator Ansatz on Maximum k-Vertex Cover",
+"a": [
+"Jeremy Cook",
+"Stephan Eidenbenz",
+"Andreas Bartschi"
+],
+"p": "83-92"
+},
+{
+"d": "10.1109/qce49297.2020.00022",
+"t": "Performance of non-CSS LDGM-based quantum codes over the misidentified depolarizing channel",
+"a": [
+"Patricio Fuentes",
+"Josu Etxezarreta Martinez",
+"Pedro M. Crespo",
+"Javier Garcia-Frias"
+],
+"p": "93-101"
+},
+{
+"d": "10.1109/qce49297.2020.00023",
+"t": "Pauli Channel Online Estimation Protocol for Quantum Turbo Codes",
+"a": [
+"Josu Etxezarreta Martinez",
+"Patricio Fuentes",
+"Pedro M. Crespo",
+"Javier Garcia-Frias"
+],
+"p": "102-108"
+},
+{
+"d": "10.1109/qce49297.2020.00024",
+"t": "A Numerical Study of Bravyi-Bacon-Shor and Subsystem Hypergraph Product Codes",
+"a": [
+"Muyuan Li",
+"Theodore J. Yoder"
+],
+"p": "109-119"
+},
+{
+"d": "10.1109/qce49297.2020.00025",
+"t": "Quantum Annealing Approaches to the Phase-Unwrapping Problem in Synthetic-Aperture Radar Imaging",
+"a": [
+"Khaled A. Helal Kelany",
+"Nikitas Dimopoulos",
+"Clemens P. J. Adolphs",
+"Bardia Barabadi",
+"Amirali Baniasadi"
+],
+"p": "120-129"
+},
+{
+"d": "10.1109/qce49297.2020.00026",
+"t": "Variational learning for quantum artificial neural networks",
+"a": [
+"Francesco Tacchino",
+"Panagiotis Kl. Barkoutsos",
+"Chiara Macchiavello",
+"Dario Gerace",
+"Ivano Tavernelli",
+"Daniele Bajoni"
+],
+"p": "130-136"
+},
+{
+"d": "10.1109/qce49297.2020.00027",
+"t": "Efficient Routing for Quantum Key Distribution Networks",
+"a": [
+"Omar Amer",
+"Walter O. Krawec",
+"Bing Wang"
+],
+"p": "137-147"
+},
+{
+"d": "10.1109/qce49297.2020.00028",
+"t": "Capacity Requirements in Networks of Quantum Repeaters and Terminals",
+"a": [
+"Michel Barbeau",
+"Joaquin Garcia-Alfaro",
+"Evangelos Kranakis"
+],
+"p": "148-157"
+},
+{
+"d": "10.1109/qce49297.2020.00029",
+"t": "Efficient Optimization of Cut-offs in Quantum Repeater Chains",
+"a": [
+"Boxi Li",
+"Tim Coopmans",
+"David Elkouss"
+],
+"p": "158-168"
+},
+{
+"d": "10.1109/qce49297.2020.00030",
+"t": "Efficient Quantum Circuits for Accurate State Preparation of Smooth, Differentiable Functions",
+"a": [
+"Adam Holmes",
+"A. Y. Matsuura"
+],
+"p": "169-179"
+},
+{
+"d": "10.1109/qce49297.2020.00031",
+"t": "On connectivity-dependent resource requirements for digital quantum simulation of d-level particles",
+"a": [
+"Nicolas P. D. Sawaya",
+"Gian Giacomo Guerreschi",
+"Adam Holmes"
+],
+"p": "180-190"
+},
+{
+"d": "10.1109/qce49297.2020.00032",
+"t": "Quantum Public Key Distribution using Randomized Glauber States",
+"a": [
+"Randy Kuang",
+"Nicolas Bettenburg"
+],
+"p": "191-196"
+},
+{
+"d": "10.1109/qce49297.2020.00033",
+"t": "Efficient BIKE Hardware Design with Constant-Time Decoder",
+"a": [
+"Andrew H. Reinders",
+"Rafael Misoczki",
+"Santosh Ghosh",
+"Manoj R. Sastry"
+],
+"p": "197-204"
+},
+{
+"d": "10.1109/qce49297.2020.00034",
+"t": "Decoy-state quantum key distribution with direct modulated commercial off-the-shelf VCSEL lasers",
+"a": [
+"Noel De La Cruz",
+"Uttam Paudel",
+"Pavel Ionov",
+"Ethan H. Tucker",
+"Andrew Mollner",
+"Joseph Touch",
+"Joseph Betser",
+"Joshua Stoermer"
+],
+"p": "205-211"
+},
+{
+"d": "10.1109/qce49297.2020.00035",
+"t": "Cache Blocking Technique to Large Scale Quantum Computing Simulation on Supercomputers",
+"a": [
+"Jun Doi",
+"Hiroshi Horii"
+],
+"p": "212-222"
+},
+{
+"d": "10.1109/qce49297.2020.00036",
+"t": "Towards Optimal Topology Aware Quantum Circuit Synthesis",
+"a": [
+"Marc G. Davis",
+"Ethan Smith",
+"Ana Tudor",
+"Koushik Sen",
+"Irfan Siddiqi",
+"Costin Iancu"
+],
+"p": "223-234"
+},
+{
+"d": "10.1109/qce49297.2020.00037",
+"t": "Sequential measurements on qubits by multiple observers: Joint Best Guess strategy",
+"a": [
+"Dov Fields",
+"Janos A. Bergou",
+"Arpad Varga"
+],
+"p": "235-241"
+},
+{
+"d": "10.1109/qce49297.2020.00038",
+"t": "Entanglement-Enhanced Communication Networks",
+"a": [
+"Janis Notzel",
+"Stephen DiAdamo"
+],
+"p": "242-248"
+},
+{
+"d": "10.1109/qce49297.2020.00039",
+"t": "Shannon Perfect Secrecy in a Discrete Hilbert Space",
+"a": [
+"Randy Kuang",
+"Nicolas Bettenburg"
+],
+"p": "249-255"
+},
+{
+"d": "10.1109/qce49297.2020.00040",
+"t": "Advanced anneal paths for improved quantum annealing",
+"a": [
+"Elijah Pelofske",
+"Georg Hahn",
+"Hristo N. Djidjev"
+],
+"p": "256-266"
+},
+{
+"d": "10.1109/qce49297.2020.00041",
+"t": "Classical Optimizers for Noisy Intermediate-Scale Quantum Devices",
+"a": [
+"Wim Lavrijsen",
+"Ana Tudor",
+"Juliane Muller",
+"Costin Iancu",
+"Wibe de Jong"
+],
+"p": "267-277"
+},
+{
+"d": "10.1109/qce49297.2020.00042",
+"t": "Engineering a Cost Function for Real-world Implementation of a Variational Quantum Algorithm",
+"a": [
+"Shavindra P. Premaratne",
+"A. Y. Matsuura"
+],
+"p": "278-285"
+},
+{
+"d": "10.1109/qce49297.2020.00043",
+"t": "Critical faults of leakage errors on the surface code",
+"a": [
+"Natalie C. Brown",
+"Andrew Cross",
+"Kenneth R. Brown"
+],
+"p": "286-294"
+},
+{
+"d": "10.1109/qce49297.2020.00044",
+"t": "Improving performance of logical qubits by parameter tuning and topology compensation",
+"a": [
+"Jack Raymond",
+"Ndiame Ndiaye",
+"Gautam Rayaprolu",
+"Andrew D. King"
+],
+"p": "295-305"
+},
+{
+"d": "10.1109/qce49297.2020.00045",
+"t": "Digital zero noise extrapolation for quantum error mitigation",
+"a": [
+"Tudor Giurgica-Tiron",
+"Yousef Hindy",
+"Ryan LaRose",
+"Andrea Mari",
+"William J. Zeng"
+],
+"p": "306-316"
+},
+{
+"d": "10.1109/qce49297.2020.00046",
+"t": "Educational Resources for Promoting Talent in Quantum Computing",
+"a": [
+"Parham Pashaei",
+"Haris Amiri",
+"Rafael Haenel",
+"Pedro L. S. Lopes",
+"Lukas Chrostowski"
+],
+"p": "317-322"
+},
+{
+"d": "10.1109/qce49297.2020.00047",
+"t": "Quantum Computing for High-School Students An Experience Report",
+"a": [
+"Prashanti Priya Angara",
+"Ulrike Stege",
+"Andrew MacLean"
+],
+"p": "323-329"
+},
+{
+"d": "10.1109/qce49297.2020.00048",
+"t": "A Survey of Educational Efforts to Accelerate a Growing Quantum Workforce",
+"a": [
+"Thomas Plunkett",
+"Terrill L. Frantz",
+"Hamida Khatri",
+"Praveen Rajendran",
+"Sunny Midha"
+],
+"p": "330-336"
+},
+{
+"d": "10.1109/qce49297.2020.00049",
+"t": "Scheduling of Operations in Quantum Compiler",
+"a": [
+"Toshinari Itoko",
+"Takashi Imamichi"
+],
+"p": "337-344"
+},
+{
+"d": "10.1109/qce49297.2020.00050",
+"t": "Just-in-time Quantum Circuit Transpilation Reduces Noise",
+"a": [
+"Ellis Wilson",
+"Sudhakar Singh",
+"Frank Mueller"
+],
+"p": "345-355"
+},
+{
+"d": "10.1109/qce49297.2020.00051",
+"t": "Verifying Results of the IBM Qiskit Quantum Circuit Compilation Flow",
+"a": [
+"Lukas Burgholzer",
+"Rudy Raymond",
+"Robert Wille"
+],
+"p": "356-365"
+},
+{
+"d": "10.1109/qce49297.2020.00052",
+"t": "Quantum Circuits for Functionally Controlled NOT Gates",
+"a": [
+"Mathias Soeken",
+"Martin Roetteler"
+],
+"p": "366-371"
+},
+{
+"d": "10.1109/qce49297.2020.00053",
+"t": "Experimental evaluation of quantum Bayesian networks on IBM QX hardware",
+"a": [
+"Sima E. Borujeni",
+"Nam H. Nguyen",
+"Saideep Nannapaneni",
+"Elizabeth C. Behrman",
+"James E. Steck"
+],
+"p": "372-378"
+},
+{
+"d": "10.1109/qce49297.2020.00054",
+"t": "Optimization of Simultaneous Measurement for Variational Quantum Eigensolver Applications",
+"a": [
+"Pranav Gokhale",
+"Olivia Angiuli",
+"Yongshan Ding",
+"Kaiwen Gui",
+"Teague Tomesh",
+"Martin Suchara",
+"Margaret Martonosi",
+"Frederic T. Chong"
+],
+"p": "379-390"
+},
+{
+"d": "10.1109/qce49297.2020.00055",
+"t": "Extending XACC for Quantum Optimal Control",
+"a": [
+"Thien Nguyen",
+"Anthony Santana",
+"Alexander McCaskey"
+],
+"p": "391-401"
+},
+{
+"d": "10.1109/qce49297.2020.00056",
+"t": "Just Another Quantum Assembly Language (Jaqal)",
+"a": [
+"B. C. A. Morrison",
+"A. J. Landahl",
+"D. S. Lobser",
+"K. M. Rudinger",
+"A. E. Russo",
+"J. W. Van Der Wall",
+"P. Maunz"
+],
+"p": "402-408"
+},
+{
+"d": "10.1109/qce49297.2020.00057",
+"t": "In Situ Noise Characterization of the D-Wave Quantum Annealer",
+"a": [
+"Tristan Zaborniak",
+"Rogerio de Sousa"
+],
+"p": "409-412"
+},
+{
+"d": "10.1109/qce49297.2020.00058",
+"t": "Noise Mitigation with Delay Pulses in the IBM Quantum Experience",
+"a": [
+"Sam Tomkins",
+"Rogerio de Sousa"
+],
+"p": "413-418"
+},
+{
+"d": "10.1109/qce49297.2020.00059",
+"t": "Characterizing the Stability of NISQ Devices",
+"a": [
+"Samudra Dasgupta",
+"Travis S. Humble"
+],
+"p": "419-429"
+},
+{
+"d": "10.1109/qce49297.2020.00060",
+"t": "Scalable quantum processor noise characterization",
+"a": [
+"Kathleen E. Hamilton",
+"Tyler Kharazi",
+"Titus Morris",
+"Alexander J. McCaskey",
+"Ryan S. Bennink",
+"Raphael C. Pooser"
+],
+"p": "430-440"
+},
+{
+"d": "10.1109/qce49297.2020.00016",
+"t": "IEEE Quantum Week 2020 Panel Abstracts",
+"a": [
+"Erik DeBenedictis"
+],
+"p": "441-448"
+},
+{
+"d": "10.1109/qce49297.2020.00008",
+"t": "IEEE Quantum Week 2020 Tutorial Abstracts",
+"a": [
+"Scott Koziol",
+"Bruce Kraemer"
+],
+"p": "449-465"
+},
+{
+"d": "10.1109/qce49297.2020.00009",
+"t": "IEEE Quantum Week 2020 Workshop Abstracts",
+"a": [
+"Travis Humble",
+"Kristel Michielsen"
+],
+"p": "466-487"
+},
+{
+"d": "10.1109/qce49297.2020.00010",
+"t": "IEEE Quantum Week 2020 Poster Abstracts",
+"a": [],
+"p": "488-518"
+},
+{
+"d": "10.1109/qce49297.2020.00061",
+"t": "Author Index",
+"a": [],
+"p": "519-521"
+},
+{
+"d": "10.1109/qce49297.2020.00004",
+"t": "Table of Contents",
+"a": [],
+"p": "v-xi"
+},
+{
+"d": "10.1109/qce49297.2020.00005",
+"t": "IEEE Quantum Week 2020 Chairs' Message",
+"a": [],
+"p": "xii-xiv"
+},
+{
+"d": "10.1109/qce49297.2020.00006",
+"t": "IEEE Quantum Week 2020 Committees",
+"a": [],
+"p": "xv-xxiv"
+},
+{
+"d": "10.1109/qce49297.2020.00007",
+"t": "IEEE Quantum Week 2020 Keynote Abstracts",
+"a": [],
+"p": "xxviii-xxxviii"
+},
+{
+"d": "10.1109/qce49297.2020.00062",
+"t": "IEEE Quantum Week 2020 Exhibitors and Supporters",
+"a": [],
+"p": "xxv-xxvii"
+}
+]

@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PaperBrowser from '../../components/PaperBrowser.astro';
+---
+
+<BaseLayout title="TQE 期刊论文浏览器">
+  <main class="wrap">
+    <section class="page-head">
+      <div class="kicker">IEEE Transactions on Quantum Engineering · Vol. 1–7</div>
+      <h1>TQE 期刊论文浏览器</h1>
+      <p class="lede">
+        IEEE TQE 2020–2026 年（Vol. 1–7）出版记录 <b>465</b> 条，其中 <b>443</b> 篇论文附有中文创新点说明与英文摘要，
+        被引数据来自 OpenAlex。支持多关键词检索、年份与 13 个研究方向叠加筛选、命中高亮与 CSV 导出。
+      </p>
+    </section>
+    <section class="page-body">
+      <PaperBrowser source="tqe" />
+    </section>
+  </main>
+</BaseLayout>

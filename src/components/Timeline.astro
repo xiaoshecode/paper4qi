@@ -1,0 +1,14 @@
+---
+interface Item { when: string; title: string; body: string; color?: string; }
+interface Props { items: Item[]; }
+const { items } = Astro.props;
+---
+<div class="timeline">
+  {items.map((it) => (
+    <div class="tl-item" style={it.color ? `--tc:${it.color}` : undefined}>
+      <div class="tl-when">{it.when}</div>
+      <div class="tl-title">{it.title}</div>
+      <div class="tl-body" set:html={it.body} />
+    </div>
+  ))}
+</div>

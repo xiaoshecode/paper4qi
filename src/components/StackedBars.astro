@@ -1,0 +1,56 @@
+---
+// 年×类堆叠条形图（纯 SVG，双主题自适应）
+interface Props {
+  years: number[];
+  cats: string[];
+  matrix: Record<string, Record<string, number>>; // year -> cat -> count
+  catZh: Record<string, string>;
+}
+const { years, cats, matrix, catZh } = Astro.props;
+
+const maxTotal = Math.max(...years.map((y) => cats.reduce((s, c) => s + (matrix[String(y)]?.[c] ?? 0), 0)), 1);
+const W = 920, H = 300, padL = 40, padB = 26, padT = 10;
+const plotW = W - padL - 16, plotH = H - padT - padB;
+const bw = Math.min(56, (plotW / years.length) * 0.62);
+const barGap = plotW / years.length;
+const y2px = (v: number) => padT + plotH - (v / maxTotal) * plotH;
+// 圆整 y 轴刻度
+const niceMax = Math.ceil(maxTotal / 100) * 100;
+const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(niceMax * f));
+---
+<svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="年×研究方向堆叠条形图">
+  {/* 网格线 */}
+  {ticks.map((v) => {
+    const py = padT + plotH - (v / niceMax) * plotH;
+    return (
+      <g>
+        <line x1={padL} y1={py} x2={W - 8} y2={py} stroke="var(--line)" stroke-width="1" />
+        <text x={padL - 6} y={py + 3.5} text-anchor="end" font-size="10" fill="var(--faint)">{v}</text>
+      </g>
+    );
+  })}
+  {years.map((y, i) => {
+    const x0 = padL + barGap * i + (barGap - bw) / 2;
+    let acc = 0;
+    const segs = cats
+      .map((c) => ({ c, n: matrix[String(y)]?.[c] ?? 0 }))
+      .filter((s) => s.n > 0)
+      .map((s) => {
+        const y0 = y2px(acc + s.n), y1 = y2px(acc);
+        const seg = { ...s, y0, h: y1 - y0 };
+        acc += s.n;
+        return seg;
+      });
+    return (
+      <g>
+        {segs.map((s) => (
+          <rect x={x0} y={s.y0} width={bw} height={Math.max(s.h, 0)} fill={`var(--c-${s.c})`} rx={s.h > 2 ? 1.5 : 0}>
+            <title>{`${y} · ${catZh[s.c] ?? s.c}: ${s.n}`}</title>
+          </rect>
+        ))}
+        {acc > 0 && <text x={x0 + bw / 2} y={y2px(acc) - 5} text-anchor="middle" font-size="10.5" font-weight="650" fill="var(--muted)">{acc}</text>}
+        <text x={x0 + bw / 2} y={H - 8} text-anchor="middle" font-size="11" fill="var(--faint)">{y}</text>
+      </g>
+    );
+  })}
+</svg>

@@ -1,0 +1,63 @@
+---
+import { readFileSync } from 'node:fs';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StackedBars from '../components/StackedBars.astro';
+import LineChart from '../components/LineChart.astro';
+import { CATEGORIES, CAT_ZH } from '../data/meta';
+
+const stats = JSON.parse(readFileSync('public/data/stats.json', 'utf-8'));
+const years = stats.years as number[];
+const cats = stats.cats as string[];
+const combined = stats.matrix.combined as Record<string, Record<string, number>>;
+const growth = stats.growth as { year: number; qce: number; tqe: number }[];
+const topCited = stats.topCited as { id: string; title: string; year: number; cited_by: number }[];
+const catTotals: [string, number][] = cats
+  .map((c) => [c, years.reduce((s, y) => s + (combined[String(y)]?.[c] ?? 0), 0)] as [string, number])
+  .filter(([, n]) => n > 0)
+  .sort((a, b) => b[1] - a[1]);
+---
+<BaseLayout title="方向统计">
+  <div class="wrap page-head">
+    <div class="kicker">Statistics · {stats.generated.slice(0, 10)}</div>
+    <h1>方向统计仪表盘</h1>
+    <p class="lede">13 类统一分类法下，QCE 会议与 TQE 期刊的逐年结构、增长与引用影响力。</p>
+  </div>
+  <div class="wrap page-body">
+    <div class="card chart-card">
+      <h3>年 × 研究方向（两源合并）</h3>
+      <p class="hint">每年一根竖条，按 13 类堆叠 · 悬停查看各类别数值</p>
+      <StackedBars years={years} cats={cats} matrix={combined} catZh={CAT_ZH} />
+      <div class="legend">
+        {catTotals.map(([key, n]) => (
+          <span class="lg"><span class="sw" style={`background:var(--c-${key})`}></span>{CAT_ZH[key]} {n}</span>
+        ))}
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h3>两源逐年论文数</h3>
+      <p class="hint">QCE = 会议论文集 2020–2025 + 2026 日程口径 · TQE = 期刊正式论文（不含前置页）</p>
+      <LineChart series={[
+        { name: 'QCE', color: 'var(--c-ALG)', points: growth.map((g) => [g.year, g.qce]) },
+        { name: 'TQE', color: 'var(--c-QEC)', points: growth.map((g) => [g.year, g.tqe]) },
+      ]} />
+      <div class="legend">
+        <span class="lg"><span class="sw" style="background:var(--c-ALG)"></span>QCE</span>
+        <span class="lg"><span class="sw" style="background:var(--c-QEC)"></span>TQE</span>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h3>TQE 被引 Top 20（OpenAlex）</h3>
+      <p class="hint">IEEE TQE 2020–2026 被引量最高的论文，周更时同步刷新</p>
+      <ol class="toplist">
+        {topCited.map((p) => (
+          <li>
+            <a href={`https://doi.org/${p.id.replace('tqe:', '')}`} target="_blank" rel="noopener">{p.title}</a>
+            <span class="cn">({p.year} · 被引 {p.cited_by})</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</BaseLayout>

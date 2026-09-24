@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CATEGORIES } from '../data/meta';
+
+const base = import.meta.env.BASE_URL;
+---
+<BaseLayout title="数据说明">
+  <div class="wrap page-head">
+    <div class="kicker">About · Data & Methodology</div>
+    <h1>数据说明</h1>
+    <p class="lede">数据来源、分类法、更新机制与「中文说明」的补全流程。</p>
+  </div>
+  <div class="wrap page-body prose">
+    <h2>收录范围与来源</h2>
+    <table>
+      <thead><tr><th>来源</th><th>范围</th><th>记录数</th><th>数据出处</th></tr></thead>
+      <tbody>
+        <tr><td>IEEE QCE 会议论文集</td><td>2020–2025</td><td>1674 条（1523 论文 + 151 前置/附录）</td><td>IEEE Xplore / Crossref DOI 元数据，经 OpenAlex 交叉核对</td></tr>
+        <tr><td>QCE 2026 官方日程</td><td>2026（论文集尚未出版）</td><td>372 篇技术论文（9 Track，27 篇 Best Paper）</td><td>IEEE 官方 Technical Papers Schedule PDF，arXiv 按标题匹配 214 篇（含摘要）</td></tr>
+        <tr><td>IEEE TQE 期刊</td><td>2020–2026（Vol. 1–7）</td><td>465 条（443 论文 + 22 前置页）</td><td>Crossref（ISSN 2689-1808）；摘要来自 OpenAlex / Semantic Scholar / arXiv 三源合并</td></tr>
+      </tbody>
+    </table>
+
+    <h2>研究方向分类法（13 类）</h2>
+    <p>沿用 IEEE TQE 主题划分并归一为 13 类。QCE 会议条目按其主题标签映射（硬件与器件类按标题关键词细分为超导/平台/光子/低温/材料）；QCE26 日程按 Track 映射；TQE 条目直接使用其既有分类。分类为构建期自动打分，可能存在个别误判，欢迎在 GitHub 提 issue 指正。</p>
+    <table>
+      <thead><tr><th>类别</th><th>覆盖范围</th></tr></thead>
+      <tbody>
+        {CATEGORIES.map((c) => (
+          <tr><td><span style={`display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c-${c.key});margin-right:6px`}></span><b>{c.zh}</b></td><td>{c.blurb}</td></tr>
+        ))}
+      </tbody>
+    </table>
+
+    <h2>更新机制</h2>
+    <ul>
+      <li><b>每周自动更新</b>：GitHub Actions 每周一 03:17 UTC 运行 <code>scripts/update_data.py</code>——增量抓取 Crossref 新 DOI（TQE 按 ISSN；QCE 按会议论文集探测新年度卷），OpenAlex 补摘要与引用数；有变更才提交并触发重新部署。也可随时在 Actions 页面手动触发。</li>
+      <li><b>抓取失败兜底</b>：任一步失败即保留上次数据，网站不受影响；抓取窗口与上次运行重叠 2 天防边界漏抓。</li>
+      <li><b>QCE 2026 过渡</b>：论文集正式进 IEEE Xplore 后，自动以 DOI 记录替换日程记录（按标题匹配），Track/Session/获奖信息保留。</li>
+    </ul>
+
+    <h2>中文说明的生成与补全</h2>
+    <ul>
+      <li>现有 1522+443 条中文说明由 AI 逐条依据摘要撰写，突出创新点与主要结果。</li>
+      <li>自动更新抓取到的<b>新论文</b>中文说明暂为「待补充」：将 <code>data_src/overrides/zh_new.json</code> 按 <code>{'{"论文id": "中文说明"}'}</code> 格式补充后提交，构建时自动覆盖。</li>
+    </ul>
+
+    <h2>使用提示</h2>
+    <ul>
+      <li>浏览器页按 <code>/</code> 聚焦搜索、空格分多词（AND）、Esc 清空；年份与类别芯片可叠加；筛选状态写入地址栏 hash，复制链接即可分享。</li>
+      <li>各条目链接直达 DOI（IEEE Xplore）；QCE26 条目附 arXiv 预印本链接。</li>
+      <li>封面、版权页、索引等「前置页」默认隐藏，可在工具条开启查看。</li>
+    </ul>
+
+    <h2>相关链接</h2>
+    <p>
+      <a href={`${base}qce/`}>QCE 会议浏览器</a> ·
+      <a href={`${base}tqe/`}>TQE 期刊浏览器</a> ·
+      <a href={`${base}stats/`}>方向统计</a> ·
+      <a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub 仓库</a>
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,47 @@
+---
+// 文献浏览器壳：静态工具条 + 挂载点；交互逻辑全部在 src/scripts/paper-browser.ts
+// 样式全部复用 global.css 现有类（browser-bar / search-box / chip / paper-list / sentinel …）
+interface Props {
+  source: 'qce' | 'tqe';
+}
+const { source } = Astro.props;
+---
+
+<div class="browser-bar">
+  <div class="browser-row">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m20 20-3.6-3.6"></path>
+      </svg>
+      <input
+        id="b-q"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="搜索文献（标题 / 作者 / 中文说明 / 摘要 / DOI / arXiv / 标签 / 会议）"
+        placeholder="搜索标题 / 作者 / 中文说明 / 摘要 / DOI / arXiv / 标签 …（按 / 聚焦，Esc 清空）">
+    </div>
+    <label class="tgl" for="b-fm">
+      <input id="b-fm" type="checkbox" checked>
+      只看论文
+    </label>
+    <button class="btn" id="b-csv" type="button" title="导出当前筛选结果为 CSV">导出 CSV</button>
+  </div>
+  <div class="chip-row" id="b-years" role="group" aria-label="按年份筛选"></div>
+  <div class="chip-row" id="b-cats" role="group" aria-label="按研究方向筛选"></div>
+</div>
+
+<div id="browser" data-source={source}>
+  <div class="browser-meta" aria-live="polite">
+    <span id="b-meta-count">正在加载…</span>
+    <span id="b-meta-kw"></span>
+  </div>
+  <div class="paper-list" id="b-list"></div>
+  <div class="loading-state" id="b-loading">正在加载文献数据…</div>
+  <div class="sentinel" id="b-sentinel" aria-hidden="true"></div>
+</div>
+
+<script>
+  import '../scripts/paper-browser';
+</script>
