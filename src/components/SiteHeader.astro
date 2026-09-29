@@ -9,6 +9,7 @@ const links = [
   { href: `${base}`, zh: '总览', en: 'Overview', match: (p: string) => p === base || p === base.replace(/\/$/, '') + '/' },
   { href: `${base}qce/`, zh: 'QCE 会议', en: 'QCE Conference', match: (p: string) => p.startsWith(`${base}qce/`) },
   { href: `${base}tqe/`, zh: 'TQE 期刊', en: 'TQE Journal', match: (p: string) => p.startsWith(`${base}tqe/`) },
+  { href: `${base}cs4q/`, zh: 'CS4Q 导读', en: 'CS4Q Guide', match: (p: string) => p.startsWith(`${base}cs4q/`) },
   { href: `${base}stats/`, zh: '方向统计', en: 'Statistics', match: (p: string) => p.startsWith(`${base}stats/`) },
   { href: `${base}about/`, zh: '数据说明', en: 'About Data', match: (p: string) => p.startsWith(`${base}about/`) },
 ];

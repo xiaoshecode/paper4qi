@@ -1,0 +1,272 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Timeline from '../../components/Timeline.astro';
+import {
+  CS4Q_ENTRIES, CS4Q_LAYER_ZH, CS4Q_LAYER_EN, CS4Q_PLATFORM_ZH, CS4Q_PLATFORM_EN,
+  CS4Q_GROUP_ZH, CS4Q_GROUP_EN, CS4Q_COUNTS,
+} from '../../data/cs4q';
+
+const base = import.meta.env.BASE_URL;
+
+// 系统图景（分层 × 代表文献）
+const LAYERS = [
+  { key: 'alg', reps: 'P04、P05、R02' },
+  { key: 'lang', reps: 'P10、P14、P08、R03' },
+  { key: 'ctrl', reps: 'P01、P02、P03、P07' },
+  { key: 'readout', reps: 'P17、P12' },
+  { key: 'decode', reps: 'P11、P13、P05、R05' },
+  { key: 'maint', reps: 'P06、R04、R07' },
+] as const;
+const LAYER_IO_ZH: Record<string, string> = {
+  alg: '逻辑程序 → 编码、逻辑操作和资源安排',
+  lang: '分支、循环、时序 → 控制器可执行任务',
+  ctrl: '指令和参数 → 同步的电压、微波或激光操作',
+  readout: '模拟信号 → 0/1、泄漏状态或置信度',
+  decode: '多轮测量记录 → 错误解释、逻辑结果、帧更新',
+  maint: '漂移、损耗、设备状态 → 校准、重置、补充原子',
+};
+const LAYER_IO_EN: Record<string, string> = {
+  alg: 'logical program → encoding, logical ops, resource plan',
+  lang: 'branches, loops, timing → controller-executable tasks',
+  ctrl: 'instructions & parameters → synchronized voltage / microwave / laser ops',
+  readout: 'analog signal → 0/1, leakage state, or confidence',
+  decode: 'multi-round measurement record → error interpretation, logical result, frame update',
+  maint: 'drift, loss, device state → calibration, reset, atom replenishment',
+};
+
+// 发展脉络（六阶段）
+const TRAJECTORY = [
+  { when: '1995 起', title: '建立纠错目标', titleEn: 'Establishing the QEC goal', body: '从延缓单比特退相干，走向用冗余编码保护逻辑信息。', bodyEn: 'From slowing single-qubit decoherence to protecting logical information with redundant encoding.', color: 'var(--c-QEC)', key: 'S01' },
+  { when: '2004–2009', title: '建立高质量物理接口', titleEn: 'Building high-quality physical interfaces', body: '如何用可设计的电路读出量子态、用成形脉冲减少泄漏。', bodyEn: 'Reading out qubit states with engineered circuits and reducing leakage with shaped pulses.', color: 'var(--c-PHOT)', key: 'S02、S03' },
+  { when: '2012–2020', title: '形成反馈和误差跟踪', titleEn: 'Feedback and error tracking', body: '测量参与执行；多轮记录用于推断错误及泄漏。', bodyEn: 'Measurement joins execution; multi-round records are used to infer errors and leakage.', color: 'var(--c-COMM)', key: 'P12、P13' },
+  { when: '2014–2023', title: '控制系统可编程、可扩展', titleEn: 'Programmable, scalable control systems', body: '数字低温控制、可执行 ISA、语言、RFSoC 平台并行发展。', bodyEn: 'Digital cryogenic control, executable ISAs, languages and RFSoC platforms develop in parallel.', color: 'var(--c-CRYO)', key: 'P03、S04、S06、P14、P10、S07、P01' },
+  { when: '2021–2025', title: '从控制原语走向逻辑闭环', titleEn: 'From control primitives to logical closed loops', body: '实时译码、重复纠错和低于阈值的逻辑存储成为可验证对象。', bodyEn: 'Real-time decoding, repeated QEC and below-threshold logical memory become verifiable.', color: 'var(--c-ALG)', key: 'S08、S09、P11' },
+  { when: '2024–2026', title: '追求持续运行与完整软件栈', titleEn: 'Toward sustained operation and a full software stack', body: '降低实验开销，接入高效读出，管理物理资源，编译逻辑程序。', bodyEn: 'Cutting experimental overhead, efficient readout, managing physical resources, compiling logical programs.', color: 'var(--c-ARCH)', key: 'P15–P17、P02、P06–P08、P04–P05、R02–R07' },
+];
+
+// 跨论文比较（容易误读的结果）
+const COMPARE = [
+  { r: 'P03 约 20 ns、>99.9%', re: 'P03 ~20 ns, >99.9%', target: '指定模型中的门控制预测', targetEn: 'Gate-control prediction within a stated model', not: '2014 年已实测达到该值', notEn: 'That it was measured in 2014' },
+  { r: 'P07 <7 mW/通道', re: 'P07 <7 mW per channel', target: '指定 ASIC 控制通道的功耗', targetEn: 'Power of a specific ASIC control channel', not: '整机或每逻辑比特总功耗', notEn: 'Whole-system or per-logical-qubit power' },
+  { r: 'P08 98 比特全连接', re: 'P08 98-qubit all-to-all', target: '可通过搬运实现任意配对的处理器', targetEn: 'A processor where any pair is reachable via shuttling', not: '所有双比特门同时且无搬运成本', notEn: 'That all two-qubit gates run simultaneously, shuttling-free' },
+  { r: 'P15 约 250 倍', re: 'P15 ~250×', target: '指定随机编译实验流程总时间', targetEn: 'Total time of a specific randomized-compiling workflow', not: '物理量子门加速 250 倍', notEn: 'A 250× speedup of physical gates' },
+  { r: 'P17 40 ns', re: 'P17 40 ns', target: '特定 FPGA 分类处理路径', targetEn: 'A specific FPGA classification datapath', not: '完整测量、译码和反馈只需 40 ns', notEn: 'That full measurement, decoding and feedback take 40 ns' },
+  { r: 'P11 <1 μs/轮', re: 'P11 <1 μs per round', target: '所报告译码实现与工作负载', targetEn: 'The reported decoder implementation and workload', not: '整个 QPU 闭环延迟小于 1 μs', notEn: 'That the whole QPU closed loop is under 1 μs' },
+  { r: 'R05 16.32 μs', re: 'R05 16.32 μs', target: '给定接口口径下的数据回放响应', targetEn: 'Data-replay response under a stated interface', not: '已在原 QPU 现场完成同样闭环', notEn: 'That the same loop closed live on the original QPU' },
+  { r: 'P06 90 轮', re: 'P06 90 rounds', target: '已测有限深度持续补充原子的序列', targetEn: 'A measured finite-depth sequence with atom replenishment', not: '无限长逻辑存储已被实验验证', notEn: 'That indefinitely long logical memory is proven' },
+];
+
+// 术语表
+const GLOSSARY = [
+  { t: '物理比特 / 逻辑比特', te: 'Physical / logical qubit', d: '前者是实际量子自由度；后者是通过编码保护的信息单位。交换型比特本身又可能由多个自旋构成。', de: 'The former is a real quantum degree of freedom; the latter is information protected by encoding. An exchange qubit may itself be made of several spins.' },
+  { t: 'Mid-circuit measurement（MCM）', te: 'Mid-circuit measurement (MCM)', d: '在程序尚未结束时测量部分比特，同时保留后续运算需要的其他量子态。', de: 'Measuring some qubits before the program ends, while preserving the other quantum states needed later.' },
+  { t: 'Feed-forward / feedback', te: 'Feed-forward / feedback', d: '根据测量结果执行后续操作；前馈可作用于其他比特或后续计算，反馈常指回到被控制系统的闭环。', de: 'Acting on measurement results; feed-forward can act on other qubits or later computation, feedback usually closes a loop back into the controlled system.' },
+  { t: 'Syndrome / detector', te: 'Syndrome / detector', d: 'syndrome 是校验结果；detector 是无故障条件下具有确定值的测量奇偶关系，用于发现异常。', de: 'A syndrome is a check outcome; a detector is a measurement parity that is deterministic in the fault-free case, used to flag anomalies.' },
+  { t: 'Pauli frame', te: 'Pauli frame', d: '用经典记录追踪待解释的 Pauli 修正，允许部分修正不立即转成物理脉冲。', de: 'A classical record tracking pending Pauli corrections, so some corrections need not become physical pulses immediately.' },
+  { t: 'Leakage（泄漏）', te: 'Leakage', d: '状态离开约定的计算子空间，例如 transmon 占据第二激发态，不能简单当成 0/1 翻转。', de: 'The state leaves the computational subspace (e.g. a transmon reaching the second excited state) and cannot be treated as a simple 0/1 flip.' },
+  { t: '阈值 / 伪阈值', te: 'Threshold / pseudo-threshold', d: '阈值讨论特定模型下随编码扩展的保护趋势；伪阈值常比较某个有限编码实例与未编码性能，具体定义需看原文。', de: 'A threshold concerns protection trends with scaling in a given model; a pseudo-threshold often compares one finite encoded instance to the unencoded baseline — see the source for definitions.' },
+  { t: 'ISA / IR / runtime', te: 'ISA / IR / runtime', d: '硬件执行指令约定 / 编译过程中的程序表示 / 程序运行时负责资源、状态与执行的系统。', de: 'The hardware instruction contract / the program representation during compilation / the system managing resources, state and execution at run time.' },
+];
+
+// 阅读路径
+const PATHS = [
+  { zh: '先建立整体认识', en: 'Build the big picture first', seq: 'S02 → P12 → P01 → P13 → S08 → S09 → P11 → P04', noteZh: '依次回答：信号如何得到、反馈如何发生、控制器如何执行、错误如何跟踪、逻辑态如何保护、编译器如何组织。', noteEn: 'In turn: how the signal is obtained, how feedback happens, how the controller executes, how errors are tracked, how the logical state is protected, how the compiler organizes.' },
+  { zh: '偏 FPGA、电子与测控工程', en: 'FPGA, electronics & control engineering', seq: 'P01 → P17 → P15 → P16 → P11 → R05，再横向读 P07 和 P02', noteZh: '每篇画一张信号或数据路径图，标明位宽、时钟、缓冲、接口及计时边界。', noteEn: 'Draw a signal/data-path diagram for each, marking bit widths, clocks, buffering, interfaces and timing boundaries.' },
+  { zh: '偏编译器与系统软件', en: 'Compilers & systems software', seq: 'S06 → P14 → P10 → P08 → R03 → R02 → P05 → P04', noteZh: '用同一个含中途测量的小程序，逐层追踪其从逻辑含义到硬件动作的变化。', noteEn: 'Trace one small mid-circuit-measurement program from logical meaning down to hardware action, layer by layer.' },
+  { zh: '偏物理与实验应用', en: 'Physics & experimental applications', seq: 'S03 → P12 → P13 → S05 → P09 → S09；再比较 P06、P08 与 P02', noteZh: '重点分析每种平台独有的误差、维护动作和测量代价。', noteEn: 'Focus on each platform\'s unique errors, maintenance actions and measurement costs.' },
+];
+
+const groups: { key: 'P' | 'S' | 'R'; }[] = [{ key: 'P' }, { key: 'S' }, { key: 'R' }];
+---
+<BaseLayout title="CS4Q 量子测控导读" description="CS4Q（Control Systems for Quantum）workshop 量子测控文献导读：33 篇文献的系统图景、发展脉络、跨论文比较与阅读路径。">
+  <div class="wrap page-head">
+    <div class="kicker"><span class="i18n-zh">CS4Q · Control Systems for Quantum</span><span class="i18n-en">CS4Q · Control Systems for Quantum</span></div>
+    <h1><span class="i18n-zh">量子测控文献导读</span><span class="i18n-en">Quantum Control Literature Guide</span></h1>
+    <p class="lede">
+      <span class="i18n-zh">从脉冲控制到容错运行。以 <a href="https://sites.google.com/lbl.gov/cs4q/home" target="_blank" rel="noopener">CS4Q workshop</a>（LBNL）的报告人与组织者为线索，整理 {CS4Q_COUNTS.P} 篇主论文、{CS4Q_COUNTS.S} 篇补充论文与 {CS4Q_COUNTS.R} 项会议/工程资料，按系统层次与发展脉络组织。核查日期 2026-09-21。</span>
+      <span class="i18n-en">From pulse control to fault-tolerant operation. Curated around the speakers and organizers of the <a href="https://sites.google.com/lbl.gov/cs4q/home" target="_blank" rel="noopener">CS4Q workshop</a> (LBNL): {CS4Q_COUNTS.P} main papers, {CS4Q_COUNTS.S} supplementary papers and {CS4Q_COUNTS.R} talks/engineering notes, organized by system layer and research trajectory. Verified 2026-09-21.</span>
+    </p>
+  </div>
+
+  <div class="wrap page-body">
+
+    <!-- 系统图景 -->
+    <div class="card" style="padding:20px 24px;margin-bottom:18px">
+      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">先建立系统图景</span><span class="i18n-en">A System Map First</span></h2>
+      <p style="margin:0 0 14px;font-size:12.5px;color:var(--faint)"><span class="i18n-zh">沿两条方向相反的链路阅读：程序向下变成物理操作，测量向上变成下一步决策。把这些层连接起来，才是闭环。</span><span class="i18n-en">Read along two opposing chains: the program flows down into physical operations, and measurement flows back up into the next decision. Connecting the layers is what closes the loop.</span></p>
+      <div class="cs4q-layers">
+        {LAYERS.map((l) => (
+          <div class="cs4q-layer-row">
+            <span class="cs4q-layer-name"><span class="i18n-zh">{CS4Q_LAYER_ZH[l.key]}</span><span class="i18n-en">{CS4Q_LAYER_EN[l.key]}</span></span>
+            <span class="cs4q-layer-io"><span class="i18n-zh">{LAYER_IO_ZH[l.key]}</span><span class="i18n-en">{LAYER_IO_EN[l.key]}</span></span>
+            <span class="cs4q-layer-reps mono">{l.reps}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- 发展脉络时间线 -->
+    <div class="card" style="padding:20px 24px;margin-bottom:18px">
+      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">发展脉络：六个阶段</span><span class="i18n-en">Research Trajectory: Six Phases</span></h2>
+      <p style="margin:0 0 14px;font-size:12.5px;color:var(--faint)"><span class="i18n-zh">以本组文献为中心的研究史（不代表量子控制全部历史）。阶段有重叠，因为不同平台、不同层次并行推进。</span><span class="i18n-en">A history centered on this set of papers (not the full history of quantum control). Phases overlap because platforms and layers advance in parallel.</span></p>
+      <Timeline items={TRAJECTORY.map((t) => ({ when: t.when, title: `${t.title}（${t.key}）`, titleEn: `${t.titleEn} (${t.key})`, body: t.body, bodyEn: t.bodyEn, color: t.color }))} />
+    </div>
+
+    <!-- 文献卡片（分组 + 客户端筛选） -->
+    <div class="card" style="padding:20px 24px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px">
+        <h2 style="margin:0;font-size:17px;font-weight:700"><span class="i18n-zh">{CS4Q_COUNTS.total} 篇文献</span><span class="i18n-en">{CS4Q_COUNTS.total} Entries</span></h2>
+        <div class="cs4q-filter chip-row" id="cs4q-filter">
+          <button class="chip on" data-f="all"><span class="i18n-zh">全部</span><span class="i18n-en">All</span> <span class="cnt">{CS4Q_COUNTS.total}</span></button>
+          <button class="chip" data-f="P"><span class="i18n-zh">主论文</span><span class="i18n-en">Main</span> <span class="cnt">{CS4Q_COUNTS.P}</span></button>
+          <button class="chip" data-f="S"><span class="i18n-zh">补充论文</span><span class="i18n-en">Suppl.</span> <span class="cnt">{CS4Q_COUNTS.S}</span></button>
+          <button class="chip" data-f="R"><span class="i18n-zh">相关资料</span><span class="i18n-en">Related</span> <span class="cnt">{CS4Q_COUNTS.R}</span></button>
+        </div>
+      </div>
+
+      {groups.map((g) => (
+        <section class="cs4q-group" data-group={g.key} style="margin-top:16px">
+          <h3 class="cs4q-group-title"><span class="i18n-zh">{CS4Q_GROUP_ZH[g.key]}（{CS4Q_COUNTS[g.key]}）</span><span class="i18n-en">{CS4Q_GROUP_EN[g.key]} ({CS4Q_COUNTS[g.key]})</span></h3>
+          <div class="cs4q-list">
+            {CS4Q_ENTRIES.filter((e) => e.group === g.key).map((e) => (
+              <article class="paper-item cs4q-item" data-group={e.group}>
+                <div class="paper-top">
+                  <span class="paper-idx mono">{e.id}</span>
+                  <span class="paper-yr">{e.year}</span>
+                  {e.platforms.map((p) => (
+                    <span class="cs4q-tag plat"><span class="i18n-zh">{CS4Q_PLATFORM_ZH[p]}</span><span class="i18n-en">{CS4Q_PLATFORM_EN[p]}</span></span>
+                  ))}
+                  {e.layers.map((l) => (
+                    <span class="cs4q-tag layer"><span class="i18n-zh">{CS4Q_LAYER_ZH[l]}</span><span class="i18n-en">{CS4Q_LAYER_EN[l]}</span></span>
+                  ))}
+                  <span class="paper-title"><a href={e.link} target="_blank" rel="noopener">{e.title}</a></span>
+                </div>
+                <div class="paper-authors">{e.authors} · {e.venue}{e.speaker ? <span class="cs4q-speaker"> · <span class="i18n-zh">关联</span><span class="i18n-en">linked to</span> {e.speaker}</span> : ''}</div>
+                <div class="paper-zh"><span class="i18n-zh">{e.summary}</span><span class="i18n-en">{e.summaryEn}</span></div>
+                <div class="paper-meta">
+                  <span class="cs4q-fulltitle">{e.fullTitle}</span>
+                  {e.arxiv && <a href={`https://arxiv.org/abs/${e.arxiv}`} target="_blank" rel="noopener">arXiv:{e.arxiv}</a>}
+                </div>
+                {e.note && (
+                  <div class="cs4q-note"><span class="i18n-zh"><b>证据边界</b>：{e.note}</span><span class="i18n-en"><b>Evidence scope</b>: {e.note}</span></div>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- 跨论文比较 -->
+    <div class="card" style="padding:20px 24px;margin-bottom:18px">
+      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">跨论文比较：先统一指标再看数字</span><span class="i18n-en">Cross-paper Comparison: Align the Metrics First</span></h2>
+      <p style="margin:0 0 12px;font-size:12.5px;color:var(--faint)"><span class="i18n-zh">做横向比较时，至少同时记录工作负载、平台、计时起止点、平均或尾部指标、物理或逻辑层次、是否后选择、是否模拟或回放。</span><span class="i18n-en">When comparing, record at least the workload, platform, timing start/stop, mean-vs-tail metric, physical-vs-logical level, post-selection, and simulation-vs-replay.</span></p>
+      <div class="cs4q-compare">
+        <div class="cs4q-compare-head">
+          <span><span class="i18n-zh">容易误读的结果</span><span class="i18n-en">Easily misread result</span></span>
+          <span><span class="i18n-zh">正确的比较对象</span><span class="i18n-en">Correct comparison target</span></span>
+          <span><span class="i18n-zh">不能推出什么</span><span class="i18n-en">What it does NOT imply</span></span>
+        </div>
+        {COMPARE.map((c) => (
+          <div class="cs4q-compare-row">
+            <span class="mono"><span class="i18n-zh">{c.r}</span><span class="i18n-en">{c.re}</span></span>
+            <span><span class="i18n-zh">{c.target}</span><span class="i18n-en">{c.targetEn}</span></span>
+            <span class="cs4q-not"><span class="i18n-zh">{c.not}</span><span class="i18n-en">{c.notEn}</span></span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- 阅读路径 -->
+    <div class="card" style="padding:20px 24px;margin-bottom:18px">
+      <h2 style="margin:0 0 12px;font-size:17px;font-weight:700"><span class="i18n-zh">建议阅读顺序</span><span class="i18n-en">Suggested Reading Orders</span></h2>
+      <div class="cs4q-paths">
+        {PATHS.map((p) => (
+          <div class="cs4q-path">
+            <div class="cs4q-path-name"><span class="i18n-zh">{p.zh}</span><span class="i18n-en">{p.en}</span></div>
+            <div class="cs4q-path-seq mono">{p.seq}</div>
+            <div class="cs4q-path-note"><span class="i18n-zh">{p.noteZh}</span><span class="i18n-en">{p.noteEn}</span></div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- 术语表 -->
+    <div class="card" style="padding:20px 24px">
+      <h2 style="margin:0 0 12px;font-size:17px;font-weight:700"><span class="i18n-zh">最小术语表</span><span class="i18n-en">Minimal Glossary</span></h2>
+      <div class="cs4q-glossary">
+        {GLOSSARY.map((g) => (
+          <div class="cs4q-gloss-row">
+            <span class="cs4q-gloss-term"><span class="i18n-zh">{g.t}</span><span class="i18n-en">{g.te}</span></span>
+            <span class="cs4q-gloss-def"><span class="i18n-zh">{g.d}</span><span class="i18n-en">{g.de}</span></span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* CS4Q 板块局部样式（不动 global.css，全部走 CSS 变量） */
+  .cs4q-layers { display: flex; flex-direction: column; gap: 6px; }
+  .cs4q-layer-row { display: grid; grid-template-columns: 190px 1fr 190px; gap: 12px; align-items: baseline; padding: 7px 12px; border-radius: var(--radius-sm); background: var(--line2); font-size: 13px; }
+  .cs4q-layer-name { font-weight: 650; color: var(--ink); }
+  .cs4q-layer-io { color: var(--muted); }
+  .cs4q-layer-reps { color: var(--accent-ink); font-size: 12px; text-align: right; }
+
+  .cs4q-group-title { margin: 0 0 12px; font-size: 14.5px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+  .cs4q-list { display: flex; flex-direction: column; gap: 10px; }
+  .cs4q-item { }
+  .cs4q-tag { flex: none; font-size: 10px; border-radius: 5px; padding: 1px 6px; font-weight: 600; line-height: 1.5; }
+  .cs4q-tag.plat { color: var(--accent-ink); background: var(--accent-soft); }
+  .cs4q-tag.layer { color: var(--muted); background: var(--line2); }
+  .cs4q-speaker { color: var(--faint); }
+  .cs4q-fulltitle { color: var(--faint); font-style: italic; }
+  .cs4q-note { margin-top: 9px; font-size: 12px; color: var(--muted); background: var(--line2); border-left: 2px solid var(--gold); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 7px 11px; line-height: 1.7; }
+  .cs4q-note b { color: var(--gold); }
+  .cs4q-item.hidden-by-filter { display: none; }
+  .cs4q-group.hidden-by-filter { display: none; }
+
+  .cs4q-compare { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; font-size: 12.5px; }
+  .cs4q-compare-head, .cs4q-compare-row { display: grid; grid-template-columns: 1.1fr 1.3fr 1.1fr; gap: 12px; padding: 8px 14px; align-items: baseline; }
+  .cs4q-compare-head { background: var(--line2); font-weight: 650; color: var(--ink); font-size: 12px; }
+  .cs4q-compare-row + .cs4q-compare-row { border-top: 1px solid var(--line); }
+  .cs4q-compare-row .mono { color: var(--ink); }
+  .cs4q-not { color: var(--muted); }
+
+  .cs4q-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .cs4q-path { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 13px 15px; background: var(--line2); }
+  .cs4q-path-name { font-weight: 680; font-size: 13.5px; margin-bottom: 5px; }
+  .cs4q-path-seq { color: var(--accent-ink); font-size: 12px; margin-bottom: 7px; line-height: 1.7; }
+  .cs4q-path-note { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+  .cs4q-glossary { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; font-size: 12.5px; }
+  .cs4q-gloss-row { display: grid; grid-template-columns: 250px 1fr; gap: 14px; padding: 9px 14px; align-items: baseline; }
+  .cs4q-gloss-row + .cs4q-gloss-row { border-top: 1px solid var(--line); }
+  .cs4q-gloss-term { font-weight: 650; color: var(--ink); }
+  .cs4q-gloss-def { color: var(--muted); line-height: 1.7; }
+
+  @media (max-width: 760px) {
+    .cs4q-layer-row { grid-template-columns: 1fr; gap: 2px; }
+    .cs4q-layer-reps { text-align: left; }
+    .cs4q-compare-head, .cs4q-compare-row { grid-template-columns: 1fr; gap: 3px; }
+    .cs4q-gloss-row { grid-template-columns: 1fr; gap: 3px; }
+  }
+</style>
+
+<script>
+  // CS4Q 板块：分组筛选（纯客户端，与主题/语言系统解耦）
+  const filterBar = document.getElementById('cs4q-filter');
+  if (filterBar) {
+    const chips = Array.from(filterBar.querySelectorAll<HTMLButtonElement>('.chip'));
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.cs4q-item'));
+    const groups = Array.from(document.querySelectorAll<HTMLElement>('.cs4q-group'));
+    chips.forEach((chip) => chip.addEventListener('click', () => {
+      const f = chip.dataset.f || 'all';
+      chips.forEach((c) => c.classList.toggle('on', c === chip));
+      items.forEach((it) => it.classList.toggle('hidden-by-filter', f !== 'all' && it.dataset.group !== f));
+      groups.forEach((g) => g.classList.toggle('hidden-by-filter', f !== 'all' && g.dataset.group !== f));
+    }));
+  }
+</script>
