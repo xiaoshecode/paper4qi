@@ -18,7 +18,8 @@ Astro 5 静态文献站（`base = /paper4qi`，部署 GitHub Pages），数据�
 | 检索/筛选/渲染/CSV/hash 逻辑 | `src/scripts/paper-browser.ts`（+ `highlight.ts`、`types.ts`） |
 | 样式唯一来源（CSS 变量双主题） | `src/styles/global.css` |
 | 站点常量（分类表、来源表、品牌） | `src/data/meta.ts` |
-| 页面 | `src/pages/{index,qce/index,tqe/index,stats,about}.astro` + `src/layouts/BaseLayout.astro` |
+| 手工策展板块（不在周更范围） | `src/data/cs4q.ts`（CS4Q 导读）+ `src/data/venues.ts`（期刊会议投稿指南：49 刊 + 27 会 + CFP 截止日期，2026-10-08 核验） |
+| 页面 | `src/pages/{index,qce/index,tqe/index,cs4q/index,venues/index,stats,about}.astro` + `src/layouts/BaseLayout.astro` |
 
 ## 3. 不可违反的约束
 

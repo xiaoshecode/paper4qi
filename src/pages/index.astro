@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CategoryBar from '../components/CategoryBar.astro';
 import Timeline from '../components/Timeline.astro';
 import { CATEGORIES, CAT_ZH, SITE } from '../data/meta';
+import { VENUE_COUNTS } from '../data/venues';
 
 const base = import.meta.env.BASE_URL;
 const stats = JSON.parse(readFileSync('public/data/stats.json', 'utf-8'));
@@ -88,6 +89,13 @@ const tlItems = [
           <div class="num">33</div>
           <div class="lbl"><span class="i18n-zh">CS4Q 量子测控导读</span><span class="i18n-en">CS4Q Quantum Control Guide</span></div>
           <div class="ext"><span class="i18n-zh">从脉冲控制到容错运行：17 主论文 + 9 补充 + 7 资料 · 系统图景与发展脉络</span><span class="i18n-en">From pulse control to fault-tolerant operation: 17 main + 9 supplementary papers + 7 notes · System map & trajectory</span></div>
+        </a>
+      </div>
+      <div class="stat-card card" style="--sc: var(--c-REV)">
+        <a href={`${base}venues/`}>
+          <div class="num">{VENUE_COUNTS.journals}</div>
+          <div class="lbl"><span class="i18n-zh">期刊会议投稿指南</span><span class="i18n-en">Venue Guide</span></div>
+          <div class="ext"><span class="i18n-zh">{VENUE_COUNTS.journals} 本期刊 × 7 领域 · CCF 2026 · 2025 JCR · 会议 CFP 截止日期</span><span class="i18n-en">{VENUE_COUNTS.journals} journals across 7 fields · CCF 2026 · 2025 JCR · conference CFP deadlines</span></div>
         </a>
       </div>
     </div>

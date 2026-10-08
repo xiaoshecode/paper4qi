@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { CATEGORIES, SITE } from '../data/meta';
+import { VENUE_COUNTS } from '../data/venues';
 
 const base = import.meta.env.BASE_URL;
 
@@ -61,6 +62,12 @@ const CAT_BLURB_EN: Record<string, string> = {
           <td><span class="i18n-zh">33 篇（17 主论文 + 9 补充 + 7 资料）</span><span class="i18n-en">33 entries (17 main + 9 supplementary + 7 notes)</span></td>
           <td><span class="i18n-zh">以 <a href="https://sites.google.com/lbl.gov/cs4q/home" target="_blank" rel="noopener">CS4Q workshop</a>（LBNL）为线索的手工策展导读，非自动抓取；不含在每周自动更新中</span><span class="i18n-en">A hand-curated guide organized around the <a href="https://sites.google.com/lbl.gov/cs4q/home" target="_blank" rel="noopener">CS4Q workshop</a> (LBNL); not auto-fetched and not part of the weekly update</span></td>
         </tr>
+        <tr>
+          <td><span class="i18n-zh">期刊会议名录与影响因子</span><span class="i18n-en">Venue catalogue and impact factors</span></td>
+          <td><span class="i18n-zh">量子/体系结构/EDA/电路测控/软工/网络 7 领域</span><span class="i18n-en">7 fields: quantum / architecture / EDA / circuits &amp; instrumentation / software engineering / networking / general science</span></td>
+          <td><span class="i18n-zh">{VENUE_COUNTS.journals} 本期刊 + {VENUE_COUNTS.confs} 个会议（手工核验 2026-10-08）</span><span class="i18n-en">{VENUE_COUNTS.journals} journals + {VENUE_COUNTS.confs} conferences (hand-verified 2026-10-08)</span></td>
+          <td><span class="i18n-zh">LetPub 批量抓取 + CCF 官网新闻 / atom.im / 社区转录三源交叉验证；手工策展，不在每周自动更新中</span><span class="i18n-en">LetPub bulk fetch plus a three-way cross-check of the CCF news release / atom.im / community transcription; hand-curated and not part of the weekly automated update</span></td>
+        </tr>
       </tbody>
     </table>
 
@@ -106,6 +113,7 @@ const CAT_BLURB_EN: Record<string, string> = {
       <a href={`${base}qce/`}><span class="i18n-zh">QCE 会议浏览器</span><span class="i18n-en">QCE Conference Browser</span></a> ·
       <a href={`${base}tqe/`}><span class="i18n-zh">TQE 期刊浏览器</span><span class="i18n-en">TQE Journal Browser</span></a> ·
       <a href={`${base}stats/`}><span class="i18n-zh">方向统计</span><span class="i18n-en">Statistics</span></a> ·
+      <a href={`${base}venues/`}><span class="i18n-zh">期刊与会议投稿指南</span><span class="i18n-en">Journals &amp; Conferences Guide</span></a> ·
       <a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener"><span class="i18n-zh">GitHub 仓库</span><span class="i18n-en">GitHub repository</span></a>
     </p>
   </div>

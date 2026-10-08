@@ -88,10 +88,14 @@ paper4qi/
 ├─ public/data/            构建产物（gitignored，由 build_data.py 生成）
 ├─ src/
 │  ├─ data/meta.ts         站点常量：SITE、CATEGORIES（13 类）、SOURCES
+│  ├─ data/cs4q.ts         CS4Q 导读数据（33 条，手工策展，不在周更范围）
+│  ├─ data/venues.ts       期刊会议投稿指南数据（49 刊 + 27 会 + CFP 截止日期，
+│  │                       2026-10-08 手工核验，不在周更范围）
 │  ├─ layouts/BaseLayout.astro    HTML 骨架、主题首屏脚本、页脚
 │  ├─ components/          SiteHeader（导航）/ PaperBrowser（浏览器壳）/
 │  │                       CategoryBar / StackedBars / LineChart / Timeline / ThemeToggle
-│  ├─ pages/               index（总览）、qce、tqe、stats、about（数据说明）
+│  ├─ pages/               index（总览）、qce、tqe、cs4q（导读）、venues（投稿指南）、
+│  │                       stats、about（数据说明）
 │  ├─ scripts/             paper-browser.ts（检索/筛选/渲染/CSV/hash）、highlight.ts、types.ts
 │  ├─ styles/global.css    唯一样式来源（CSS 变量双主题）
 │  └─ content/             trajectory-{qce,tqe}.md 叙述素材（供文案参考，未被构建引用）
