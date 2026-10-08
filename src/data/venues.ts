@@ -519,9 +519,9 @@ export const CONFS: ConfVenue[] = [
     noteEn: 'The custom integrated circuits conference (same approximate rate as ESSCIRC).',
   },
   {
-    id: 'esscirc', name: 'ESSCIRC', field: 'cir', ccf: 'none', rate: '~40–50%',
-    note: '欧洲固态电路会议。',
-    noteEn: 'The European solid-state circuits conference.',
+    id: 'esscirc', name: 'ESSCIRC / ESSERC', field: 'cir', ccf: 'none', rate: '~40–50%',
+    note: '欧洲固态电路会议；2024 届起与 ESSDERC 合并为统一的 ESSERC（电路/器件分轨）。',
+    noteEn: 'The European solid-state circuits conference; merged with ESSDERC into the unified ESSERC from 2024, with dedicated circuits and device tracks.',
   },
 
   // ---------- 软件工程 / 编程语言 ----------
@@ -573,6 +573,30 @@ export const CONFS: ConfVenue[] = [
 // ISCAS 2027 为同日从官网 https://2027.ieee-iscas.org/call-for-papers 补充核验）。
 // status 为核验日快照；推断值（官网未公布、按上届周期推算）在 note 中注明。
 export const CONF_DEADLINES: ConfDeadline[] = [
+  // ---------- 量子计算 ----------
+  {
+    confId: 'qce', edition: 'QCE 2027 (8th)', year: 2027,
+    confDate: '2027-10-10~15', location: '美国 罗利', locationEn: 'Raleigh, NC, USA',
+    deadlines: [
+      { phase: '摘要', phaseEn: 'Abstract', date: '2027-04-19' },
+      { phase: '全文', phaseEn: 'Full paper', date: '2027-04-26' },
+      { phase: '录用通知', phaseEn: 'Notification', date: '2027-07-05' },
+    ],
+    status: 'open', link: 'https://qce.quantum.ieee.org/',
+    note: 'IEEE CS 已官宣罗利 2027-10-10~15；CFP 未发布，截稿按 QCE 2026 周期（摘要/全文 4 月下旬、通知 7 月上旬）推断。',
+    noteEn: 'IEEE CS has officially announced Raleigh, Oct 10–15, 2027; the CFP is not out yet, so deadlines are projected from the QCE 2026 cycle (abstract and full paper in late April, notification in early July).',
+  },
+  {
+    confId: 'qcrypt', edition: 'QCrypt 2027', year: 2027,
+    confDate: '2027-08-23~27', location: '奥地利 维也纳', locationEn: 'Vienna, Austria',
+    deadlines: [
+      { phase: '摘要（Talk）', phaseEn: 'Extended abstract', date: '2027-03-12' },
+      { phase: '录用通知', phaseEn: 'Notification', date: '2027-05-14' },
+    ],
+    status: 'open', link: 'https://qcrypt.net/',
+    note: '官网已官宣维也纳 2027-08-23~27；CFP 未发布，截稿按 QCrypt 2026 周期（摘要 3 月中、通知 5 月中）推断；扩展摘要制（≤3 页），无正式论文集。',
+    noteEn: 'The official site has announced Vienna, Aug 23–27, 2027; the CFP is not out yet, so deadlines are projected from the QCrypt 2026 cycle (abstract mid-March, notification mid-May); submissions are extended abstracts (up to 3 pages) with no formal proceedings.',
+  },
   // ---------- 电路与测控 ----------
   {
     confId: 'iscas', edition: 'ISCAS 2027', year: 2027,
@@ -596,6 +620,16 @@ export const CONF_DEADLINES: ConfDeadline[] = [
     status: 'closed', link: 'https://www.isscc.org/',
     note: 'Late-News 通道 intent 截止 2026-10-07（已过）。',
     noteEn: 'The Late-News intent deadline was 2026-10-07 (passed).',
+  },
+  {
+    confId: 'esscirc', edition: 'ESSERC 2027 (53rd)', year: 2027,
+    confDate: '2027-09-06~09', location: '芬兰 赫尔辛基', locationEn: 'Helsinki, Finland',
+    deadlines: [
+      { phase: '全文', phaseEn: 'Full paper', date: '2027-04-02' },
+    ],
+    status: 'open', link: 'https://www.esserc2027.org/info',
+    note: 'ESSCIRC 与 ESSDERC 合并后的 ESSERC 统一会；官网目前仅公布全文截止 04-02。',
+    noteEn: 'The unified ESSERC after the ESSCIRC–ESSDERC merger; the official site currently lists only the full-paper deadline, Apr 2.',
   },
   // ---------- EDA ----------
   {
