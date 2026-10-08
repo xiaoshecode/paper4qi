@@ -459,6 +459,7 @@ mark.cur{background:#ffab40;box-shadow:0 0 0 2px #ffab4066}
     clearMarks();
     cur = -1;
     var term = q.value.trim();
+    applied = term;                     // 记录已应用的查询词
     if (term.length < 1){ info.textContent = '—'; return; }
 
     var needle = term.toLowerCase();
@@ -512,15 +513,26 @@ mark.cur{background:#ffab40;box-shadow:0 0 0 2px #ffab4066}
   }
 
   var timer = null;
+  var applied = null;   // 上次已高亮的查询词，避免防抖未触发时按回车跳到旧结果
+
   q.addEventListener('input', function(){
     clearTimeout(timer);
-    timer = setTimeout(function(){ hl(); if (marks.length) marks[0].scrollIntoView({behavior:'smooth', block:'center'}); }, 220);
+    timer = setTimeout(function(){
+      hl();
+      if (marks.length) marks[0].scrollIntoView({behavior:'smooth', block:'center'});
+    }, 220);
   });
 
   q.addEventListener('keydown', function(e){
     if (e.key !== 'Enter') return;
     e.preventDefault();
-    if (!marks.length) { hl(); return; }
+    if (q.value.trim() !== applied){        // 防抖尚未触发：先按当前输入重算
+      clearTimeout(timer);
+      hl();
+      if (marks.length) setCur(0);
+      return;
+    }
+    if (!marks.length) return;
     setCur(cur + (e.shiftKey ? -1 : 1));
   });
 
