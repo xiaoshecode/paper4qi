@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Content, getHeadings } from '../../content/openqasm-research.md';
+
+const base = import.meta.env.BASE_URL;
+const sections = getHeadings().filter((heading) => heading.depth === 2);
+---
+<BaseLayout
+  title="OpenQASM 标准与应用调研"
+  description="OpenQASM 标准版本、语言能力、工具与硬件支持、代表论文及量子测控研究方向，结合 paper4qi 文献库整理。"
+>
+  <main class="wrap qasm-page">
+    <header class="qasm-hero">
+      <div class="kicker">
+        <span class="i18n-zh">量子基础设施 · 专题调研</span>
+        <span class="i18n-en">Quantum Infrastructure · Research Guide</span>
+      </div>
+      <h1>OpenQASM</h1>
+      <p class="qasm-subtitle">
+        <span class="i18n-zh">标准、应用与论文</span>
+        <span class="i18n-en">Standards, Applications &amp; Papers</span>
+      </p>
+      <p class="qasm-intro" lang="zh-CN">
+        从量子线路交换到实时反馈与时序控制，梳理语言规范、实现边界和研究进展，并连接到已有文献库。
+      </p>
+      <div class="qasm-meta">
+        <span><span class="i18n-zh">调研日期</span><span class="i18n-en">Reviewed</span> <time datetime="2026-10-27">2026-10-27</time></span>
+        <span><span class="i18n-zh">人工策展专题 · 正文为中文</span><span class="i18n-en">Curated guide · Chinese-language report</span></span>
+      </div>
+      <nav class="qasm-library-links" aria-label="相关文献库">
+        <a href={`${base}qce/#q=OpenQASM`}><span class="i18n-zh">检索 QCE 相关论文</span><span class="i18n-en">Search QCE papers</span><span aria-hidden="true"> ↗</span></a>
+        <a href={`${base}tqe/#q=OpenQASM`}><span class="i18n-zh">检索 TQE 相关论文</span><span class="i18n-en">Search TQE papers</span><span aria-hidden="true"> ↗</span></a>
+        <a href={`${base}cs4q/`}><span class="i18n-zh">CS4Q 测控导读</span><span class="i18n-en">CS4Q control guide</span><span aria-hidden="true"> ↗</span></a>
+      </nav>
+    </header>
+
+    <div class="qasm-reading-layout">
+      <aside class="qasm-toc card" aria-labelledby="qasm-toc-title">
+        <h2 id="qasm-toc-title"><span class="i18n-zh">本页目录</span><span class="i18n-en">On this page</span></h2>
+        <nav aria-label="专题目录" lang="zh-CN">
+          <ol>
+            {sections.map((heading) => <li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}
+          </ol>
+        </nav>
+        <p lang="zh-CN">专题按调研日期整理，不随文献库每周自动更新。</p>
+      </aside>
+      <article class="prose qasm-report" lang="zh-CN" aria-label="OpenQASM 调研正文">
+        <Content />
+      </article>
+    </div>
+  </main>
+</BaseLayout>

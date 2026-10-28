@@ -6,28 +6,31 @@ interface Props { active: string; }
 const { active } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const links = [
-  { href: `${base}`, zh: '总览', en: 'Overview', match: (p: string) => p === base || p === base.replace(/\/$/, '') + '/' },
-  { href: `${base}qce/`, zh: 'QCE 会议', en: 'QCE Conference', match: (p: string) => p.startsWith(`${base}qce/`) },
-  { href: `${base}tqe/`, zh: 'TQE 期刊', en: 'TQE Journal', match: (p: string) => p.startsWith(`${base}tqe/`) },
-  { href: `${base}cs4q/`, zh: 'CS4Q 导读', en: 'CS4Q Guide', match: (p: string) => p.startsWith(`${base}cs4q/`) },
-  { href: `${base}venues/`, zh: '期刊会议', en: 'Venues', match: (p: string) => p.startsWith(`${base}venues/`) },
-  { href: `${base}stats/`, zh: '方向统计', en: 'Statistics', match: (p: string) => p.startsWith(`${base}stats/`) },
-  { href: `${base}about/`, zh: '数据说明', en: 'About Data', match: (p: string) => p.startsWith(`${base}about/`) },
+  { path: '', zh: '总览', en: 'Overview' },
+  { path: 'research/', zh: '研究地图', en: 'Research map' },
+  { path: 'qce/', zh: 'QCE 会议', en: 'QCE papers' },
+  { path: 'tqe/', zh: 'TQE 期刊', en: 'TQE papers' },
+  { path: 'cs4q/', zh: 'CS4Q 导读', en: 'CS4Q guide' },
+  { path: 'openqasm/', zh: 'OpenQASM', en: 'OpenQASM' },
+  { path: 'venues/', zh: '期刊会议', en: 'Venues' },
+  { path: 'stats/', zh: '方向统计', en: 'Statistics' },
+  { path: 'agents/', zh: 'Agent 数据', en: 'Agent data' },
+  { path: 'about/', zh: '数据说明', en: 'About data' },
 ];
+const isActive = (path: string) => path ? active.startsWith(`${base}${path}`) : active.replace(/\/$/, '') === base.replace(/\/$/, '');
 ---
 <header class="site-header">
-  <div class="wrap">
-    <a class="brand" href={base}>
-      {SITE.short}<span class="sub">{SITE.name}</span>
-    </a>
-    <nav class="site-nav">
-      {links.map((l) => (
-        <a href={l.href} class={l.match(active) ? 'active' : ''} aria-current={l.match(active) ? 'page' : undefined}>
-          <span class="i18n-zh">{l.zh}</span><span class="i18n-en">{l.en}</span>
-        </a>
-      ))}
-      <LangToggle />
-      <ThemeToggle />
-    </nav>
+  <div class="wrap header-top">
+    <a class="brand" href={base}><span class="brand-mark" aria-hidden="true">q<span>i</span></span><span>{SITE.short}<span class="sub">{SITE.name}</span></span></a>
+    <div class="header-tools"><a class="header-repo" href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a><LangToggle /><ThemeToggle /></div>
   </div>
+  <div class="wrap header-nav-wrap"><nav class="site-nav" aria-label="主导航 / Main navigation">{links.map((l) => <a href={`${base}${l.path}`} class={isActive(l.path) ? 'active' : ''} aria-current={isActive(l.path) ? 'page' : undefined}><span class="i18n-zh">{l.zh}</span><span class="i18n-en">{l.en}</span></a>)}</nav></div>
 </header>
+<script>
+  // Keep the current destination visible in the horizontally scrollable mobile navigation.
+  const nav = document.querySelector<HTMLElement>('.site-nav');
+  const current = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+  if (nav && current && nav.scrollWidth > nav.clientWidth) {
+    nav.scrollLeft = Math.max(0, current.offsetLeft - nav.offsetLeft - (nav.clientWidth - current.clientWidth) / 2);
+  }
+</script>

@@ -1,16 +1,24 @@
 ---
+import { readFileSync } from 'node:fs';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PaperBrowser from '../../components/PaperBrowser.astro';
+import type { DataFile } from '../../scripts/types';
+const data = JSON.parse(readFileSync('public/data/tqe.json', 'utf-8')) as DataFile;
+const papers = data.papers.filter((p) => !p.front_matter);
+const years = [...new Set(data.papers.map((p) => p.year))].sort((a, b) => a - b);
+const range = `${years[0]}–${years[years.length - 1]}`;
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="TQE 期刊论文浏览器">
   <main class="wrap">
     <section class="page-head">
-      <div class="kicker"><span class="i18n-zh">IEEE 量子工程汇刊 · Vol. 1–7</span><span class="i18n-en">IEEE Transactions on Quantum Engineering · Vol. 1–7</span></div>
+      <div class="kicker"><span class="i18n-zh">IEEE 量子工程汇刊 · {range}</span><span class="i18n-en">IEEE Transactions on Quantum Engineering · {range}</span></div>
       <h1><span class="i18n-zh">TQE 期刊论文浏览器</span><span class="i18n-en">TQE Journal Paper Browser</span></h1>
       <p class="lede">
-        <span class="i18n-zh">IEEE TQE 2020–2026 年（Vol. 1–7）出版记录 <b>465</b> 条，其中 <b>443</b> 篇论文附有中文创新点说明与英文摘要，被引数据来自 OpenAlex。支持多关键词检索、年份与 13 个研究方向叠加筛选、命中高亮与 CSV 导出。</span><span class="i18n-en">IEEE TQE (Transactions on Quantum Engineering), 2020–2026 (Vol. 1–7): <b>465</b> publication records, <b>443</b> of them research articles with Chinese key-contribution notes and English abstracts; citation data comes from OpenAlex. Supports multi-keyword search, stacking year and 13 research-area filters, hit highlighting and CSV export.</span>
+        <span class="i18n-zh">IEEE TQE {range} 年出版记录 <b>{data.count}</b> 条，其中 <b>{papers.length}</b> 篇论文、{data.count - papers.length} 条前置页；<b>{papers.filter((p) => p.abstract).length}</b> 篇论文有英文摘要。中文说明用于辅助阅读，被引数据为 OpenAlex 抓取快照，缺失值不等于 0。支持多关键词检索、年份与研究方向叠加筛选、命中高亮与 CSV 导出。</span><span class="i18n-en">IEEE TQE (Transactions on Quantum Engineering), {range}: <b>{data.count}</b> publication records, including <b>{papers.length}</b> papers and {data.count - papers.length} front matter; <b>{papers.filter((p) => p.abstract).length}</b> papers have English abstracts. Chinese notes support reading; citation counts are OpenAlex snapshots, and missing values are not zero. Search multiple terms, combine year and research-area filters, highlight matches and export CSV.</span>
       </p>
+      <p><a href={`${base}agents/`}><span class="i18n-zh">获取结构化数据与调用说明 →</span><span class="i18n-en">Structured data and agent access →</span></a></p>
     </section>
     <section class="page-body">
       <PaperBrowser source="tqe" />

@@ -1,0 +1,44 @@
+---
+import { readFileSync } from 'node:fs';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
+const research = JSON.parse(readFileSync('public/data/research-map.json', 'utf8'));
+const { domains, topics, counts } = research;
+---
+<BaseLayout title="量子基础设施研究地图" description="按技术层级整理量子基础设施的子主题、关键问题、原始资料、研究缺口与关联文献。">
+  <div class="wrap page-head">
+    <div class="kicker">QUANTUM INFRASTRUCTURE · RESEARCH MAP</div>
+    <h1><span class="i18n-zh">先看全貌，再深入一个问题。</span><span class="i18n-en">Map the field. Investigate a question.</span></h1>
+    <p class="lede">沿硬件、互连、控制、纠错和软件栈组织研究。每个子主题串联问题定义、原始论文与工具、值得验证的方向，以及文献库中的检索线索。专题分析以中文撰写，保留英文术语与原文入口。</p>
+    <div class="research-summary"><span><b>{counts.topics}</b> 个子主题</span><span><b>{counts.unique_source_links}</b> 个独立原始资料入口</span><span><b>{counts.associated_records}</b> 条关键词关联记录</span><a href={`${base}data/research-map.json`}>下载研究地图 JSON ↗</a></div>
+  </div>
+  <main class="wrap page-body" lang="zh-CN">
+    <div class="research-orientation card">
+      <h2>从系统约束出发选择研究路径</h2>
+      <div class="research-paths"><div><b>测控与容错系统</b><p>器件噪声 → 读出与标定 → 实时反馈 → 译码与逻辑操作</p></div><div><b>软件与编译系统</b><p>语言与中间表示 → 映射调度 → 运行时 → 验证与资源评估</p></div><div><b>模块化与应用系统</b><p>光子与转换接口 → 纠缠分发 → 分布式计算 → 应用及传感验证</p></div></div>
+      <p class="home-note">跨层比较需统一噪声模型、码距、硬件资源、时间开销和实验条件。“低延迟”“高保真”“可扩展”只有在明确测量口径后才可比较。</p>
+    </div>
+    <div class="research-toolbar"><label for="topic-search">筛选子主题</label><input id="topic-search" type="search" placeholder="例如：FPGA、译码、编译、光子、network…" autocomplete="off"/><span id="topic-count" aria-live="polite">{topics.length} 个子主题</span></div>
+    <nav class="research-domain-nav" aria-label="研究领域">{domains.map((d: any) => <a href={`#${d.key}`}>{d.title_zh}<span>{d.topics.length}</span></a>)}</nav>
+    {domains.map((domain: any, index: number) => <section class="research-domain" id={domain.key}>
+      <div class="home-section-head"><div><div class="kicker">RESEARCH AREA {String(index + 1).padStart(2, '0')}</div><h2>{domain.title_zh}</h2><p class="home-note">{domain.title_en} · 核查 {domain.reviewed}</p></div><p class="research-domain-description">{domain.summary_zh}</p></div>
+      <div class="research-topic-grid">{topics.filter((t: any) => t.domain === domain.key).map((topic: any) => <a class="card research-topic" href={`${base}research/${topic.key}/`} data-topic data-search={[topic.title_zh, topic.title_en, topic.description_zh, ...topic.keywords].join(' ').toLowerCase()}>
+        <span class="research-topic-count">{topic.matched_count} 条关联线索 · {topic.sources.length} 个精选入口</span><h3>{topic.title_zh}</h3><span class="research-topic-en">{topic.title_en}</span><p>{topic.description_zh}</p><span class="research-topic-foot">问题 · 文献 · 研究方向 <span aria-hidden="true">↗</span></span>
+      </a>)}</div>
+    </section>)}
+    <p id="topic-empty" class="card research-empty" hidden>没有匹配的子主题。试试英文术语或更短的关键词，也可直接检索 QCE / TQE 文献库。</p>
+    <section class="research-method card"><h2>如何使用与扩展这张地图</h2><ol><li>先读子主题的关键问题，选择技术层级、系统约束和评价指标。</li><li>从精选原始资料入手，再筛选关键词关联的库内记录；核对版本、作者、发表状态和实验设定。</li><li>把问题拆成“已有证据、可复现实验、尚待验证假设”，再形成比较表或实验计划。</li><li>使用 <a href={`${base}agents/`}>Agent 接口</a>读取主题定义和稳定记录 ID，保留来源与快照日期。</li></ol><p>精选资料经过本次来源核查；库内关联使用公开关键词规则，可能漏检或误匹配，不表示已逐篇审阅。研究缺口是分析线索，需要进一步查新。本图不宣称覆盖全部量子计算文献。</p><p class="home-note">本轮自动关联覆盖 {counts.associated_records} 条研究记录，另有 {counts.unassociated_research_records} 条尚未匹配子主题。主题可交叉归属，数量不可直接相加。</p></section>
+  </main>
+</BaseLayout>
+<script>
+  const input = document.querySelector<HTMLInputElement>('#topic-search');
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-topic]'));
+  input?.addEventListener('input', () => {
+    const words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    let visible = 0;
+    cards.forEach(card => { card.hidden = !words.every(word => card.dataset.search?.includes(word)); if (!card.hidden) visible++; });
+    document.querySelectorAll<HTMLElement>('.research-domain').forEach(section => { section.hidden = !section.querySelector('[data-topic]:not([hidden])'); });
+    document.querySelector('#topic-count')!.textContent = `${visible} 个子主题`;
+    (document.querySelector('#topic-empty') as HTMLElement).hidden = visible > 0;
+  });
+</script>

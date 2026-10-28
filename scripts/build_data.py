@@ -13,7 +13,7 @@ Inputs (read-only, under data_src/):
   tqe/zh_20*.json        Chinese notes, keyed by global index of tqe_merged.json
   overrides/zh_new.json  optional {paper_id: text} overriding zh
 
-Outputs: public/data/{qce,tqe,stats}.json
+Outputs: public/data/{qce,tqe,stats}.json and versioned agent discovery exports
 
 Run:  PYTHONIOENCODING=utf-8 python scripts/build_data.py
 """
@@ -359,6 +359,11 @@ stats = OrderedDict([
     ("qce26Tracks", OrderedDict((track, qce26_tracks[track]) for track in QCE26_TRACK_ORDER)),
 ])
 stats_size = write_json(os.path.join(OUT_DIR, "stats.json"), stats)
+
+# Add a portable discovery layer; existing browser-facing datasets stay intact.
+from build_agent_data import build_agent_exports
+agent_manifest = build_agent_exports(OUT_DIR, SRC, all_papers, generated)
+print(f"Agent exports: manifest.json + {len(agent_manifest['resources'])} resources")
 
 # --------------------------------------------------------------------------
 # 7. drift warnings + human readable report (count changes warn, never fail)

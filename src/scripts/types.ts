@@ -31,8 +31,8 @@ export interface Paper {
   session?: string | null;
   day?: string | null;
   time?: string | null;
-  /** 获奖标注，如 "Best Paper"；仅 qce26 可能非空 */
-  best?: string | null;
+  /** 导入日程中的获奖名次；仅 qce26 可能非空 */
+  best?: number | null;
 }
 
 /** data/{source}.json 顶层结构 */

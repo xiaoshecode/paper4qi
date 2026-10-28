@@ -1,0 +1,101 @@
+---
+import { readFileSync } from 'node:fs';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
+const manifest = JSON.parse(readFileSync('public/data/manifest.json', 'utf-8'));
+const quality = JSON.parse(readFileSync('public/data/quality.json', 'utf-8'));
+const resources = [
+  { file: 'manifest.json', zh: '数据目录', en: 'Dataset manifest', note: '版本、资源路径与内容校验', noteEn: 'Version, resource paths and checksums' },
+  { file: 'papers.json', zh: '完整文献数据', en: 'Complete corpus', note: 'QCE + TQE，包含前置页与日程条目', noteEn: 'QCE + TQE, including front matter and program entries' },
+  { file: 'paper.schema.json', zh: '字段规范', en: 'Record schema', note: '单条 Paper 的 JSON Schema', noteEn: 'JSON Schema for an individual Paper record' },
+  { file: 'quality.json', zh: '覆盖与来源说明', en: 'Coverage and provenance', note: '缺失字段、来源口径与更新时间', noteEn: 'Missing fields, source semantics and freshness' },
+];
+const example = `import json
+from urllib.request import urlopen
+from urllib.parse import urljoin
+
+manifest_url = "https://xiaoshecode.github.io/paper4qi/data/manifest.json"
+def get_json(url):
+    with urlopen(url, timeout=30) as response:
+        return json.load(response)
+
+manifest = get_json(manifest_url)
+resource = next(r for r in manifest["resources"] if r["id"] == "papers")
+data = get_json(urljoin(manifest_url, resource["url"]))
+matches = [p for p in data["papers"]
+    if not p["front_matter"]
+    and p["category"] in {"CRYO", "ARCH"}
+    and p["year"] >= 2024
+    and "control" in " ".join([
+        p["title"], p["abstract"] or "", p["zh"],
+        " ".join(p["tags"])
+    ]).lower()]
+for p in matches[:20]:
+    print(p["id"], p["source"], p["title"], p["doi"] or p["arxiv"])
+print("Snapshot:", data["generated"])`;
+const sourceLabels: Record<string, { zh: string; en: string }> = {
+  qce: { zh: 'QCE 论文集', en: 'QCE proceedings' },
+  qce26: { zh: 'QCE26 日程快照', en: 'QCE26 program snapshot' },
+  tqe: { zh: 'TQE 期刊', en: 'TQE journal' },
+};
+const sourceRows = Object.entries(quality.by_source).map(([key, row]) => ({
+  key, label: sourceLabels[key], ...(row as Record<string, number>),
+}));
+---
+<BaseLayout title="Agent 数据入口" description="paper4qi 的机器可读文献目录、JSON 数据、字段规范与可追溯调研流程。">
+  <div class="wrap page-head">
+    <div class="kicker">RESEARCH DATA · VERSION {manifest.schema_version}</div>
+    <h1><span class="i18n-zh">让调研从可追溯的数据开始</span><span class="i18n-en">Start research with traceable data</span></h1>
+    <p class="lede"><span class="i18n-zh">为研究者和 agent 提供统一的数据入口。先检索文献线索，再回到原文核实结论；每条记录保留来源与稳定 ID。</span><span class="i18n-en">A common entry point for researchers and agents. Discover relevant work, then verify claims against original sources. Each record retains its provenance and stable ID.</span></p>
+  </div>
+  <div class="wrap page-body">
+    <div class="agent-grid">
+      {resources.map((r) => <a class="card agent-card" href={`${base}data/${r.file}`}>
+        <h2><span class="i18n-zh">{r.zh}</span><span class="i18n-en">{r.en}</span> ↗</h2>
+        <p><span class="i18n-zh">{r.note}</span><span class="i18n-en">{r.noteEn}</span></p>
+        <code>{r.file}</code>
+      </a>)}
+    </div>
+    <div class="prose">
+      <p class="agent-meta"><span class="i18n-zh">构建快照：</span><span class="i18n-en">Build snapshot: </span><time datetime={manifest.generated}>{manifest.generated}</time> · <span class="i18n-zh">{quality.overall.research_records.toLocaleString()} 条非前置记录</span><span class="i18n-en">{quality.overall.research_records.toLocaleString()} non-front-matter records</span> · <a href={`${base}llms.txt`}>llms.txt</a></p>
+      <h2><span class="i18n-zh">三步接入</span><span class="i18n-en">Connect in three steps</span></h2>
+      <ol>
+        <li><span class="i18n-zh">读取 <a href={`${base}data/manifest.json`}>manifest.json</a>，检查 <code>schema_version</code>、来源与更新时间。所有资源路径相对于 manifest 的 URL 解析。</span><span class="i18n-en">Read <a href={`${base}data/manifest.json`}>manifest.json</a> and inspect its schema version, sources and freshness. Resolve resource paths relative to the manifest URL.</span></li>
+        <li><span class="i18n-zh">下载一次 <code>papers.json</code>，按年份、方向、来源和关键词在本地筛选；默认排除 <code>front_matter=true</code>。用 SHA-256 缓存校验避免混用不同快照。</span><span class="i18n-en">Download <code>papers.json</code> once and filter locally by year, category, source and keyword. Exclude <code>front_matter=true</code> by default; use the SHA-256 digest to distinguish snapshots.</span></li>
+        <li><span class="i18n-zh">用 DOI / arXiv 访问原文。输出文献表时保留 <code>id</code>、标题、作者、年份、<code>source</code>、原文链接和快照时间，并将结论与待验证线索分开。</span><span class="i18n-en">Follow DOI / arXiv links to the original work. Keep ID, title, authors, year, source, original link and snapshot time in evidence tables; distinguish supported conclusions from leads.</span></li>
+      </ol>
+      <h2><span class="i18n-zh">来源与覆盖</span><span class="i18n-en">Sources and coverage</span></h2>
+      <div class="agent-table-wrap">
+        <table>
+          <thead><tr><th><span class="i18n-zh">来源</span><span class="i18n-en">Source</span></th><th><span class="i18n-zh">非前置记录</span><span class="i18n-en">Research records</span></th><th><span class="i18n-zh">有摘要</span><span class="i18n-en">With abstract</span></th><th><span class="i18n-zh">有 DOI</span><span class="i18n-en">With DOI</span></th><th><span class="i18n-zh">有 arXiv</span><span class="i18n-en">With arXiv</span></th></tr></thead>
+          <tbody>{sourceRows.map((row) => <tr><td><span class="i18n-zh">{row.label.zh}</span><span class="i18n-en">{row.label.en}</span><br/><code>{row.key}</code></td><td>{row.research_records}</td><td>{row.research_with_abstract}</td><td>{row.research_with_doi}</td><td>{row.research_with_arxiv}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <p><span class="i18n-zh">这些数字表示字段覆盖率，不代表正确性评估。<code>qce26</code> 是导入的官方日程记录；匹配的预印本不等于最终论文集版本。数据库不覆盖全部量子计算文献。</span><span class="i18n-en">These counts measure field presence, not accuracy. <code>qce26</code> identifies imported official-program records; a matched preprint may differ from the final proceedings version. This corpus is not an exhaustive quantum-computing bibliography.</span></p>
+      <h2><span class="i18n-zh">最小 Python 检索示例</span><span class="i18n-en">Minimal Python retrieval example</span></h2>
+      <p><span class="i18n-zh">示例筛选 2024 年以来 ARCH / CRYO 分类中包含 control 的记录。仅使用 Python 标准库，可将 manifest 地址替换为有权限访问的镜像。</span><span class="i18n-en">Find records since 2024 in ARCH / CRYO containing “control”. This uses only the Python standard library; change the manifest URL to an accessible mirror if needed.</span></p>
+      <pre class="agent-code"><code>{example}</code></pre>
+      <h2><span class="i18n-zh">调研时保留这些边界</span><span class="i18n-en">Interpret the data carefully</span></h2>
+      <ul>
+        <li><span class="i18n-zh"><strong>时间：</strong><code>generated</code> 是构建时间，不是逐条核验时间。上游更新程序运行日期见 <code>freshness.updater_last_completed_run</code>，策展导读与日程不由该日期代表。</span><span class="i18n-en"><strong>Dates:</strong> <code>generated</code> is build time, not record verification time. Updater run dates appear in <code>freshness.updater_last_completed_run</code> and do not date the curated guides or program snapshot.</span></li>
+        <li><span class="i18n-zh"><strong>中文说明：</strong><code>zh</code> 是编辑 / AI 辅助说明或日程标签，不能替代论文证据。<code>待补充</code> 是占位；<code>null</code> 表示未知，不能按零处理。</span><span class="i18n-en"><strong>Chinese notes:</strong> <code>zh</code> contains editorial / AI-assisted notes or program labels, not primary evidence. <code>待补充</code> is a placeholder and <code>null</code> means unknown, not zero.</span></li>
+        <li><span class="i18n-zh"><strong>引用：</strong>DOI 优先，预印本注明版本；未匹配原文的日程条目只能作为线索。日程 ID 替换记录可查 <a href={`${base}data/id-redirects.json`}>id-redirects.json</a>。</span><span class="i18n-en"><strong>Citations:</strong> Prefer DOI links and identify preprint versions. Program entries without a matched original are research leads. See <a href={`${base}data/id-redirects.json`}>id-redirects.json</a> for superseded program IDs.</span></li>
+        <li><span class="i18n-zh"><strong>接入：</strong>GitHub Pages 提供静态 JSON 下载，支持能发起 HTTP 请求的 agent。启用 MCP 的私有 Sites 版本还可提供工具调用；需要先完成该站点插件的安装与授权。</span><span class="i18n-en"><strong>Access:</strong> GitHub Pages provides static JSON for agents that can make HTTP requests. An MCP-enabled private Sites deployment can also expose callable tools after its plugin is installed and authorized.</span></li>
+      </ul>
+      <h2><span class="i18n-zh">Sites 的只读调研工具</span><span class="i18n-en">Read-only research tools on Sites</span></h2>
+      <p><span class="i18n-zh">在支持 MCP 的 Sites 版本连接成功后，agent 可使用以下工具；未连接时，使用上面的 JSON 方式。工具返回的是站点快照，仍需核对原文。</span><span class="i18n-en">Once connected to an MCP-enabled Sites version, agents can use these tools; use the JSON workflow above otherwise. Tool results are site snapshots and still require original-source verification.</span></p>
+      <ul>
+        <li><code>search_papers</code> · <span class="i18n-zh">按关键词与筛选条件找文献</span><span class="i18n-en">Find papers by keywords and filters</span></li>
+        <li><code>get_paper</code> · <span class="i18n-zh">读取指定记录及来源</span><span class="i18n-en">Read one record and its provenance</span></li>
+        <li><code>get_library_overview</code> · <span class="i18n-zh">检查收录范围、数据版本与更新信息</span><span class="i18n-en">Inspect coverage, data version and freshness</span></li>
+        <li><code>get_research_statistics</code> · <span class="i18n-zh">读取研究方向和年度统计</span><span class="i18n-en">Read category and yearly statistics</span></li>
+        <li><code>get_research_map</code> · <span class="i18n-zh">读取子主题、精选来源与关联 ID；用 <code>search_papers(subtopic=…)</code> 继续筛选</span><span class="i18n-en">Read subtopics, primary sources and associated IDs; filter further with <code>search_papers(subtopic=…)</code></span></li>
+        <li><code>read_research_guide</code> · <span class="i18n-zh">读取专题导读资料</span><span class="i18n-en">Read curated research guides</span></li>
+      </ul>
+      <h2><span class="i18n-zh">从数据到专题</span><span class="i18n-en">Continue with curated guides</span></h2>
+      <p><a href={`${base}research/`}>研究地图 / Research map</a> · <a href={`${base}data/research-map.json`}>research-map.json</a>：主题定义、关键词规则、精选原始资料、研究问题和关联文献 ID。自动关联不等同于人工逐篇审阅。</p>
+      <p><span class="i18n-zh">专题结构化导出：<a href={`${base}data/guides.json`}>guides.json</a>，包含 CS4Q 条目、期刊会议与 CFP 数据，以及 OpenQASM 报告正文；这些内容按各自记录的日期维护。</span><span class="i18n-en">The <a href={`${base}data/guides.json`}>guides.json export</a> includes CS4Q entries, venue and CFP data, and the OpenQASM report. Each guide retains its own recorded review date.</span></p>
+      <p><a href={`${base}cs4q/`}>CS4Q</a> · <a href={`${base}openqasm/`}>OpenQASM</a> · <a href={`${base}venues/`}><span class="i18n-zh">投稿指南</span><span class="i18n-en">Venue guide</span></a> · <a href={`${base}about/`}><span class="i18n-zh">数据方法</span><span class="i18n-en">Methodology</span></a> · <a href={`${base}data/categories.json`}><span class="i18n-zh">分类表</span><span class="i18n-en">Categories</span></a> · <a href="https://github.com/xiaoshecode/paper4qi">GitHub</a></p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,502 @@
+{
+  "key": "control-qec",
+  "title_zh": "量子测控、读出与容错纠错",
+  "title_en": "Quantum Control, Readout and Fault-Tolerant Error Correction",
+  "summary_zh": "沿着脉冲与校准、控制器、低温读出、反馈链路、经典译码到逻辑操作梳理工程约束，并以玻色编码补充硬件与编码协同设计路线。基础论文与本次核验的 2025–2026 年研究并列呈现；实验、仿真和理论结论分别标注。研究空白是基于所列来源提出的待验证综合判断，不表示已完成穷尽检索或证明无人研究。",
+  "reviewed": "2026-10-28",
+  "subtopics": [
+    {
+      "key": "pulse-calibration",
+      "title_zh": "脉冲整形、泄漏抑制与闭环校准",
+      "title_en": "Pulse Shaping, Leakage Suppression and Closed-Loop Calibration",
+      "description_zh": "把门波形从理想哈密顿量优化推进到可执行、可校准的控制流程。关注弱非谐性导致的泄漏、模型误差、控制串扰，以及校准指标能否预测并行电路和重复纠错周期中的实际表现。",
+      "questions_zh": [
+        "在相同门时长和幅度带宽约束下，DRAG、模型优化与实验闭环校准分别降低哪些误差？",
+        "单门随机基准优化得到的参数，放入并行门和重复 syndrome 电路后是否仍有效？",
+        "如何在漂移、测量噪声和有限实验预算下决定重新校准的时机与范围？"
+      ],
+      "keywords": [
+        "pulse shaping",
+        "optimal control",
+        "closed-loop calibration",
+        "closed loop calibration",
+        "randomized benchmarking",
+        "leakage suppression",
+        "derivative removal",
+        "DRAG pulse",
+        "gate calibration",
+        "control crosstalk"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "CRYO",
+        "SUP",
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Simple pulses for elimination of leakage in weakly nonlinear qubits",
+          "url": "https://arxiv.org/abs/0901.0534",
+          "kind": "paper",
+          "year": 2009,
+          "note_zh": "理论基础：通过增加与主脉冲导数相关的正交控制抑制泄漏。效果依赖非谐性和控制模型，不能把模型中的误差降低直接视为任意器件的实测门保真度。"
+        },
+        {
+          "title": "Optimal quantum control using randomized benchmarking",
+          "url": "https://arxiv.org/abs/1403.0035",
+          "kind": "paper",
+          "year": 2014,
+          "note_zh": "实验方法：用随机基准测量构建优化目标，校正单、双比特门参数并识别串扰。适合作为自动校准基线；需要另外检验对长电路及不同噪声环境的迁移。"
+        },
+        {
+          "title": "Adaptive hybrid optimal quantum control for imprecisely characterized systems",
+          "url": "https://arxiv.org/abs/1402.7193",
+          "kind": "paper",
+          "year": 2014,
+          "note_zh": "方法基础：Ad-HOC 先用模型做梯度搜索，再以实验保真度估计驱动无梯度校正。研究重点是模型不准确时的控制优化，不等于已经解决大阵列长期自主维护。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜值得比较的缺口是统一预算下的稳健性：应同时计入校准样本数、漂移速度、泄漏和并行串扰，不能只比较一个平均门误差。",
+        "综合判断｜从单门优化迁移到纠错工作负载仍需要专门验证；可研究以 syndrome 统计或逻辑失败率反馈校准的收益与额外采样成本。"
+      ],
+      "next_steps_zh": [
+        "以同一器件模型和脉冲约束复现 DRAG、模型优化、ORBIT/Ad-HOC 基线，分别记录泄漏、随机基准误差和校准次数。",
+        "引入可控频漂与并行门串扰，比较固定周期、阈值触发和分层局部重校准对长电路的影响。"
+      ]
+    },
+    {
+      "key": "fpga-real-time-control",
+      "title_zh": "FPGA / RFSoC 控制器与实时指令执行",
+      "title_en": "FPGA / RFSoC Controllers and Real-Time Instruction Execution",
+      "description_zh": "以 QICK 和 QubiC 为开放实现入口，研究从高层电路或脉冲描述到控制核、波形存储、读出结果与条件分支的完整路径。重点是多通道同步、反馈数据路径、指令语义与编译器约束的共同设计。",
+      "questions_zh": [
+        "直接数字合成、波形缓存和参数化脉冲分别怎样影响存储、带宽与控制确定性？",
+        "多核控制器怎样同步跨通道操作，并在测量结果到达后安全地执行条件分支？",
+        "如何定义跨控制器可复现的功能与时序测试，而不把主机往返时间混入实时链路？"
+      ],
+      "keywords": [
+        "QICK",
+        "QubiC",
+        "QubiCML",
+        "RFSoC",
+        "FPGA-based control",
+        "FPGA-based qubit control",
+        "superconducting qubit control",
+        "qubit control system",
+        "pulse-level control",
+        "quantum interface controller",
+        "quantum control architecture",
+        "quantum control hardware",
+        "vectorizing quantum control"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "CRYO",
+        "ARCH",
+        "SUP"
+      ],
+      "sources": [
+        {
+          "title": "The QICK (Quantum Instrumentation Control Kit): Readout and control for qubits and detectors",
+          "url": "https://arxiv.org/abs/2110.00557",
+          "kind": "paper",
+          "year": 2021,
+          "note_zh": "系统基线：公开 RFSoC 硬件、固件与软件方案，并评估模拟性能和数字延迟。年份按 arXiv 首次提交；页面另列 2022 年修订。单器件基准不等于大规模纠错系统验证。"
+        },
+        {
+          "title": "QubiC 2.0: An Extensible Open-Source Qubit Control System Capable of Mid-Circuit Measurement and Feed-Forward",
+          "url": "https://arxiv.org/abs/2309.10333",
+          "kind": "paper",
+          "year": 2023,
+          "note_zh": "系统实现：将 RFSoC、分布式控制核、参数化脉冲和 Python 编译栈结合，演示多 FPGA 同步及条件前馈。应区分台架同步、简化条件电路与完整容错执行。"
+        },
+        {
+          "title": "Distributed Architecture for FPGA-based Superconducting Qubit Control",
+          "url": "https://arxiv.org/abs/2404.15260",
+          "kind": "paper",
+          "year": 2024,
+          "note_zh": "架构与编译：轻量控制核执行脉冲和控制流，以中间表示连接门级、脉冲级描述，并用量子态传态实验示范能力。适合研究指令语义与反馈调度；来源为预印本。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜开放控制栈之间可比较的指标仍需统一到同一测量起止点、通道负载与编译选项，单个数字延迟不足以说明系统适用性。",
+        "综合判断｜可进一步研究分支路径和多板同步的形式化时序契约，将溢出、迟到数据和资源争用纳入编译与运行时检查。"
+      ],
+      "next_steps_zh": [
+        "构造主动复位、条件门、循环读出和跨板同步四类基准，记录时钟域、触发定义、尾部延迟与 FPGA 资源使用。",
+        "为一个动态电路保存源程序、中间表示、控制指令和实测时间线，检查编译结果是否满足声明的时序约束。"
+      ]
+    },
+    {
+      "key": "cryo-multiplexed-readout",
+      "title_zh": "低温电子学、复用读出与热预算",
+      "title_en": "Cryogenic Electronics, Multiplexed Readout and Thermal Budgets",
+      "description_zh": "从室温线缆和仪器扩展到低温控制及读出集成，比较硅自旋与超导平台中的频分、时分复用。把每通道功耗、冷却级温度、带宽、测量速度、串扰和量子器件退相干放入同一预算。",
+      "questions_zh": [
+        "将电子学放在不同冷却级时，降低布线复杂度的收益能否抵消功耗和热噪声？",
+        "频分与时分复用在同时测量、选择性测量和纠错重复测量中分别引入什么限制？",
+        "量子点电荷感测、单自旋态判别和超导比特状态读出应如何分别定义性能指标？"
+      ],
+      "keywords": [
+        "cryo-CMOS",
+        "cryogenic control",
+        "cryogenic electronics",
+        "multiplexed readout",
+        "dispersive readout",
+        "frequency-multiplexed qubit",
+        "time-multiplexed qubit",
+        "readout multiplexing",
+        "gate-based readout",
+        "Purcell filter",
+        "time-multiplexed control",
+        "scalable reflectometry"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "CRYO",
+        "SUP",
+        "PLAT"
+      ],
+      "sources": [
+        {
+          "title": "CMOS-based cryogenic control of silicon quantum circuits",
+          "url": "https://www.nature.com/articles/s41586-021-03469-4",
+          "kind": "paper",
+          "year": 2021,
+          "note_zh": "硅平台实验：低温 CMOS 控制器与量子处理器联合演示，涉及复用控制和基准协议。控制器的工作温区与量子比特所在温区不同，不能用芯片通道容量代替已验证比特规模。"
+        },
+        {
+          "title": "A cryo-CMOS chip that integrates silicon quantum dots and multiplexed dispersive readout electronics",
+          "url": "https://www.nature.com/articles/s41928-021-00687-6",
+          "kind": "paper",
+          "year": 2022,
+          "note_zh": "集成实验：在 CMOS 芯片上结合量子点阵列与色散电荷读出，演示时分和频分寻址。2021 年在线发表、2022 年期刊卷；电荷态感测不应等同于高保真自旋比特读出。"
+        },
+        {
+          "title": "Rapid high-fidelity multiplexed readout of superconducting qubits",
+          "url": "https://arxiv.org/abs/1801.07904",
+          "kind": "paper",
+          "year": 2018,
+          "note_zh": "超导平台实验：对多个比特进行快速复用读出，并分析 Purcell 滤波与非目标测量造成的退相干。评价时需分开脉冲长度、谐振器占据时间和最终判别保真度。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜值得补足的是跨温级系统预算：把线缆热负载、冷端芯片功耗、放大器噪声及 ADC 带宽统一到每次有效测量成本。",
+        "综合判断｜复用规模与逻辑可靠性的联系需要工作负载评估；单次平均读出保真度未必揭示 syndrome 流中的相关错误和测量串扰。"
+      ],
+      "next_steps_zh": [
+        "建立平台分开的指标表，记录温区、已实测通道数、同时/顺序读出方式、测量时长、功耗和量子状态判别口径。",
+        "将复用引起的串扰及相关测量错误加入纠错电路噪声模型，比较增加复用度后的逻辑错误与吞吐收益。"
+      ]
+    },
+    {
+      "key": "feedback-latency",
+      "title_zh": "测量反馈、逻辑分支与端到端延迟",
+      "title_en": "Measurement Feedback, Logical Branching and End-to-End Latency",
+      "description_zh": "把积分读出、状态判别、syndrome 传输、译码、Pauli frame 更新及条件控制视作一条数据路径。分别衡量持续吞吐是否避免积压，以及逻辑分支必须等待的响应时间，防止将离线译码速度误报为实时反馈性能。",
+      "questions_zh": [
+        "从最后一个必要测量结果产生，到依赖它的条件脉冲执行，完整延迟由哪些阶段构成？",
+        "平均译码速度快于 syndrome 生成速度时，长尾或批处理等待是否仍会限制逻辑时钟？",
+        "哪些校正可通过 Pauli frame 延迟处理，哪些非 Clifford 操作必须及时获得译码结果？"
+      ],
+      "keywords": [
+        "real-time decoding",
+        "feedback latency",
+        "decoder latency",
+        "decoding-feedback latency",
+        "low-latency quantum error correction",
+        "real-time quantum error correction",
+        "logical branching",
+        "real-time feed-forward",
+        "real-time feedforward",
+        "feed-forward control",
+        "feedforward control",
+        "measurement feedback",
+        "measurement-based feedback",
+        "conditional feedback",
+        "feed-forward experiment",
+        "feed-forward error",
+        "Pauli frame update",
+        "backlog problem"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "QEC",
+        "CRYO",
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Deterministic entanglement of superconducting qubits by parity measurement and feedback",
+          "url": "https://www.nature.com/articles/nature12513",
+          "kind": "paper",
+          "year": 2013,
+          "note_zh": "反馈实验基础：将奇偶测量嵌入闭环，使两比特纠缠制备从后选择转为按需产生。它验证测量与反馈原语，不是任意规模、任意轮数的纠错存储器。"
+        },
+        {
+          "title": "Quantum error correction below the surface code threshold",
+          "url": "https://www.nature.com/articles/s41586-024-08449-y",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "实验：报告不同码距的表面码存储及实时译码，明确给出纠错周期和译码延迟两种时间。2024 年在线发表、2025 年期刊卷；页面列有 2026 年作者勘误，引用精确数值应查看更新版。"
+        },
+        {
+          "title": "Demonstrating real-time and low-latency quantum error correction with superconducting qubits",
+          "url": "https://www.nature.com/articles/s41467-026-73331-6",
+          "kind": "paper",
+          "year": 2026,
+          "note_zh": "2026-06-01 实验论文：在 8 比特系统中集成 FPGA 译码器与控制器，并测量包含通信和控制的反馈响应。9.6 微秒是该文指定 9 轮实验的总响应口径，不能改写成任意码距的单轮时延。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜跨论文比较需要同一端到端边界和延迟分布；仅报告平均单轮译码时间会遗漏排队、窗口关闭和条件执行等待。",
+        "综合判断｜从存储实验迁移到有非 Clifford 逻辑分支的算法，需要联合评估吞吐、响应长尾和逻辑调度，而非独立优化译码核。"
+      ],
+      "next_steps_zh": [
+        "建立时间戳协议，分别标记读出结束、判别完成、译码输入就绪、结果返回和条件操作开始，并报告分位数及最坏观测值。",
+        "对包含不同分支密度的逻辑工作负载做排队仿真，将批处理、流水线和前瞻调度与相同逻辑错误预算比较。"
+      ]
+    },
+    {
+      "key": "surface-code-decoders",
+      "title_zh": "表面码译码：匹配、聚类与硬件实现",
+      "title_en": "Surface-Code Decoding: Matching, Clustering and Hardware",
+      "description_zh": "以最小权完美匹配、Union-Find 和硬件局部聚类为主要路线，比较逻辑错误率、运行时间、内存及并行代价。重点检查测量错误、泄漏和相关噪声是否被模型表达，以及在线窗口如何处理边界和持续 syndrome 流。",
+      "questions_zh": [
+        "在相同 detector error model 上，匹配与聚类算法的准确率和尾部延迟如何变化？",
+        "泄漏、擦除和相关错误的先验信息如何进入边权或聚类规则，代价是什么？",
+        "将批量 CPU 译码迁移到持续流式 FPGA 译码时，哪些内存和通信瓶颈会成为主导？"
+      ],
+      "keywords": [
+        "surface code decoder",
+        "surface code decoding",
+        "decoding surface code",
+        "decoder for surface code",
+        "decoding algorithms for surface code",
+        "neural-network decoder",
+        "clique local decoder",
+        "minimum-weight perfect matching",
+        "union-find",
+        "sparse blossom",
+        "local clustering decoder",
+        "streaming decoder",
+        "PyMatching"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "QEC",
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Almost-linear time decoding algorithm for topological codes",
+          "url": "https://arxiv.org/abs/1709.06218",
+          "kind": "paper",
+          "year": 2021,
+          "note_zh": "理论与数值基线：Union-Find 路线处理 Pauli 错误与擦除，给出复杂度和特定模型下的性能。2017 年预印本、2021 年 Quantum 期刊版本；模型阈值不能直接当作硬件容错门槛。"
+        },
+        {
+          "title": "Sparse Blossom: correcting a million errors per core second with minimum-weight matching",
+          "url": "https://quantum-journal.org/papers/q-2025-01-20-1600/",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "算法与软件：面向译码图直接运行稀疏 blossom，提供 PyMatching 实现及 CPU 测试。速度依赖码距、噪声、处理器和批量方式；其仿真吞吐不含真实设备的完整反馈链路。"
+        },
+        {
+          "title": "Local clustering decoder as a fast and adaptive hardware decoder for the surface code",
+          "url": "https://www.nature.com/articles/s41467-025-66773-x",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "硬件路线：将局部聚类译码映射到 FPGA 并利用并行性，讨论对泄漏等信息的适配。硬件译码评估应与完整量子实验区分，需逐项检查论文中的噪声和规模条件。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜可优先建立包含非均匀噪声、泄漏与相关事件的共享基准，观察准确率优势是否在受限硬件资源和时限下仍存在。",
+        "综合判断｜平均复杂度不足以描述实时可靠性；有必要研究罕见大错误簇、窗口边界和重配置时的尾部延迟及降级策略。"
+      ],
+      "next_steps_zh": [
+        "固定一组 detector error model，比较 MWPM、Union-Find 和可运行的局部聚类实现，记录逻辑失败率、延迟分布、内存及构建版本。",
+        "逐步增加 syndrome 速率与突发错误强度，检查队列是否稳定，并评估超时处理对逻辑结果的影响。"
+      ]
+    },
+    {
+      "key": "qldpc-decoders",
+      "title_zh": "量子 LDPC 码、BP 后处理与并行译码",
+      "title_en": "Quantum LDPC Codes, BP Post-Processing and Parallel Decoding",
+      "description_zh": "从高编码率代码出发，同时考虑 syndrome 电路、非局域连接和经典译码成本。以 BP+OSD、双变量自行车码与局部统计译码为线索，研究少用物理比特是否会转化为更高的连接、访存或反馈开销。",
+      "questions_zh": [
+        "在相同逻辑失败预算下，qLDPC 的物理比特节省需要付出多少连接、测量与译码代价？",
+        "BP 不收敛或输出不满足 syndrome 时，OSD 和局部统计后处理的成本随错误簇如何增长？",
+        "数值上可并行的译码步骤映射到有限 FPGA / GPU 资源后，是否仍满足持续在线处理要求？"
+      ],
+      "keywords": [
+        "quantum LDPC",
+        "quantum low-density parity-check",
+        "qLDPC",
+        "belief propagation decoding",
+        "belief propagation decoder",
+        "ordered statistics decoding",
+        "localized statistics decoding",
+        "bivariate bicycle",
+        "hypergraph product code",
+        "BP-OSD"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "QEC",
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Decoding Across the Quantum LDPC Code Landscape",
+          "url": "https://arxiv.org/abs/2005.07016",
+          "kind": "paper",
+          "year": 2020,
+          "note_zh": "算法基线：将信念传播与有序统计后处理结合，并对多类超图积码做数值比较。阈值和复杂度必须连同噪声模型、OSD 阶数与迭代设置阅读。"
+        },
+        {
+          "title": "High-threshold and low-overhead fault-tolerant quantum memory",
+          "url": "https://www.nature.com/articles/s41586-024-07107-7",
+          "kind": "paper",
+          "year": 2024,
+          "note_zh": "代码与架构方案：构造高编码率 LDPC 存储、低深度 syndrome 电路和指定连接图，并作噪声仿真。物理比特开销优势受连接和噪声假设约束，不是已完成硬件存储实验。"
+        },
+        {
+          "title": "Localized statistics decoding for quantum low-density parity-check codes",
+          "url": "https://www.nature.com/articles/s41467-025-63214-7",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "并行算法：利用可靠度引导的局部聚类与增量消元缩小后处理范围，给出数值性能及并行设计。适合研究矩阵运算局部性；可并行性不等于已实现端到端实时硬件。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜需要把码率优势转为完整系统开销表：包含非局域门、辅助比特、syndrome 带宽、译码内存和逻辑测量代价。",
+        "综合判断｜局部并行译码在低噪声下的优势，应进一步用有限硬件资源、簇合并冲突和噪声漂移测试其持续吞吐与尾部行为。"
+      ],
+      "next_steps_zh": [
+        "选择同一组 qLDPC detector 矩阵，对 BP+OSD 与 BP+LSD 固定译码质量目标，测量迭代数、簇大小、消元工作量和内存访问。",
+        "把代码连接图、syndrome 调度和译码器放到联合模型中，与相同目标逻辑错误率的表面码基线比较。"
+      ]
+    },
+    {
+      "key": "logical-operations-magic-states",
+      "title_zh": "逻辑操作、晶格手术与魔法态工厂",
+      "title_en": "Logical Operations, Lattice Surgery and Magic-State Factories",
+      "description_zh": "从纠错存储推进到可执行算法：研究逻辑测量、码片合并拆分、资源态制备及消费调度。将工厂产率、后选择接受率、连接与反馈成本纳入时空预算，区分理论资源估算、受保护操作与完整通用容错计算。",
+      "questions_zh": [
+        "晶格手术编译中的路由、辅助码片和测量轮数如何决定算法的时空成本？",
+        "魔法态工厂的输入误差、接受率、输出速率和存储等待怎样共同限制 T 门吞吐？",
+        "不同平台的编码操作实验使用了哪些后选择或噪声假设，能否与理论工厂预算直接比较？"
+      ],
+      "keywords": [
+        "lattice surgery",
+        "magic state",
+        "magic-state",
+        "logical gate",
+        "logical operations",
+        "logical measurement",
+        "fault-tolerant compilation",
+        "transversal gate",
+        "state distillation",
+        "Pauli product measurement"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "QEC",
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Surface code quantum computing by lattice surgery",
+          "url": "https://arxiv.org/abs/1111.4022",
+          "kind": "paper",
+          "year": 2012,
+          "note_zh": "理论基础：通过合并与拆分平面码实现逻辑耦合，保留二维近邻结构并讨论资源态注入。arXiv 页面核对到 2012 年期刊版本；文中资源构造不是处理器实验规模。"
+        },
+        {
+          "title": "A Game of Surface Codes: Large-Scale Quantum Computing with Lattice Surgery",
+          "url": "https://quantum-journal.org/papers/q-2019-03-05-128/",
+          "kind": "paper",
+          "year": 2019,
+          "note_zh": "架构资源模型：用码片和逻辑测量组织数据区、魔法态工厂与时空权衡。结果依赖物理错误率、码周期和理想化调度等假设，不宜脱离这些条件引用运行时间。"
+        },
+        {
+          "title": "Experimental demonstration of logical magic state distillation",
+          "url": "https://www.nature.com/articles/s41586-025-09367-3",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "中性原子实验：在编码的逻辑比特上演示魔法态蒸馏，并比较输入与输出逻辑保真度。分析应同时保留后选择接受率和编码方式；这一构件不等于持续运行的通用容错算法。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜可研究把实验中的接受率、测量误差和重新准备成本写入工厂排程，使资源估算反映波动的供给而非固定周期产出。",
+        "综合判断｜逻辑路由、译码反馈和资源态消费常形成共同关键路径，应联合优化并以完整算法成功概率检验收益。"
+      ],
+      "next_steps_zh": [
+        "选择一个给定 Clifford+T 电路，保留逻辑测量依赖与工厂接口，对比少工厂低面积和多工厂低等待两种布局。",
+        "对蒸馏成功率、输出误差和反馈时延做敏感性分析，同时报告物理比特数、运行时间和总失败预算。"
+      ]
+    },
+    {
+      "key": "bosonic-codes",
+      "title_zh": "玻色编码、GKP / 猫态与级联纠错",
+      "title_en": "Bosonic Codes, GKP / Cat Qubits and Concatenated Error Correction",
+      "description_zh": "利用振荡器的大希尔伯特空间实现编码，比较 GKP 位移纠错与猫态噪声偏置，再考察外层代码如何连接多个模式。关注有限能量、辅助比特反作用、稳定化资源，以及存储寿命优势能否延续到逻辑门和扩展系统。",
+      "questions_zh": [
+        "有限压缩、光子损失和辅助比特错误分别怎样影响 GKP 与猫态编码？",
+        "超过 break-even 的基准选择是什么，是否同时比较了全部参与纠错的物理组件？",
+        "将受保护模式与外层代码级联时，门操作和 syndrome 提取能否维持所依赖的噪声偏置？"
+      ],
+      "keywords": [
+        "bosonic code",
+        "bosonic qubit",
+        "Gottesman-Kitaev-Preskill",
+        "GKP code",
+        "GKP qubit",
+        "cat qubit",
+        "cat code",
+        "binomial code",
+        "grid state",
+        "concatenated bosonic"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "QEC",
+        "SUP",
+        "PHOT"
+      ],
+      "sources": [
+        {
+          "title": "Encoding a qubit in an oscillator",
+          "url": "https://journals.aps.org/pra/abstract/10.1103/PhysRevA.64.012310",
+          "kind": "paper",
+          "year": 2001,
+          "note_zh": "理论基础：GKP 将离散逻辑信息嵌入连续变量振荡器以抵御相空间位移。理想编码结构与实验中的有限能量近似需要区分，状态制备并非只靠任意线性操作即可完成。"
+        },
+        {
+          "title": "Real-time quantum error correction beyond break-even",
+          "url": "https://arxiv.org/abs/2211.09116",
+          "kind": "paper",
+          "year": 2023,
+          "note_zh": "GKP 存储实验：结合超导电路和控制优化，实现纠错逻辑比特超过参与组件的相干基准。arXiv 为 2022 年预印本，相关 Nature 期刊为 2023 年；存储增益不能直接外推为逻辑门增益。"
+        },
+        {
+          "title": "Hardware-efficient quantum error correction via concatenated bosonic qubits",
+          "url": "https://www.nature.com/articles/s41586-025-08642-7",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "级联实验：猫态模式被动抑制比特翻转，再用外层重复码处理相位翻转，研究到距离 5 的存储。需分别查看两类逻辑错误，不能把相位通道低于阈值的表现当作任意通用操作结论。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断｜不同玻色方案的资源比较应同时计入振荡器、辅助比特、泵浦与控制复杂度，仅以物理比特或模式数计价可能失真。",
+        "综合判断｜从长寿命存储到可扩展计算仍需逐项验证编码门、跨模式耦合及泄漏处理，特别是操作期间能否保持保护机制和噪声偏置。"
+      ],
+      "next_steps_zh": [
+        "建立 GKP、猫态和外层级联方案的噪声通道与基准口径表，将状态寿命、完整量子过程保真度和逻辑门性能分开。",
+        "在含辅助比特错误和有限控制带宽的模型中比较存储、纠缠门及 syndrome 周期，寻找破坏噪声偏置的主导过程。"
+      ]
+    }
+  ]
+}

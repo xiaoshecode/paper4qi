@@ -1,0 +1,468 @@
+{
+  "key": "software",
+  "title_zh": "软件、编译与系统架构",
+  "title_en": "Software, Compilation & Systems",
+  "summary_zh": "沿着语言与中间表示、硬件感知编译、动态运行时、正确性验证、经典仿真、性能评价、分布式调度和容错资源估算八条线索组织量子软件基础设施。重点比较接口契约、优化目标、实验边界与可复现性，而不以单一门数或单次速度作为系统优劣结论。主题描述与研究空白是基于所列一手资料的编辑综合；覆盖代表性工作，未声称穷尽文献。",
+  "reviewed": "2026-10-28",
+  "subtopics": [
+    {
+      "key": "languages-ir",
+      "title_zh": "语言规范与多层中间表示",
+      "title_en": "Languages & Intermediate Representations",
+      "description_zh": "研究 OpenQASM 的逻辑、控制流和时序表达，以及 QIR 如何在 LLVM IR 中承载量子程序。分别核查规范可以表达什么、转换工具保留什么、目标后端接受什么；相同文件格式不自动保证跨平台语义一致。",
+      "questions_zh": [
+        "测量结果、经典控制、外部函数、量子位生命周期和定时约束在不同 IR 间能否无损表达？",
+        "编译器应如何声明目标能力，并在不支持某项特性时给出可追溯的降级或拒绝？",
+        "同一程序经过 OpenQASM、QIR 与硬件指令的多级转换后，应使用什么语义和测试检查一致性？"
+      ],
+      "keywords": [
+        "OpenQASM",
+        "quantum intermediate representation",
+        "QIR",
+        "quantum assembly",
+        "LLVM IR",
+        "quantum programming language",
+        "multi-level intermediate representation"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "OpenQASM 3: A broader and deeper quantum assembly language",
+          "url": "https://arxiv.org/abs/2104.14722",
+          "kind": "paper",
+          "year": 2021,
+          "note_zh": "2021 年预印本；阐明实时与近实时经典交互，以及控制流、时序和多层表示的设计动机。期刊版本 DOI 为 10.1145/3505636，不能把预印本年份直接写成期刊出版年。"
+        },
+        {
+          "title": "Introduction — OpenQASM 3.1 Specification",
+          "url": "https://openqasm.com/versions/3.1/intro.html",
+          "kind": "standard",
+          "note_zh": "核对官方版本化规范入口和基于测量结果的经典前馈语义；具体语法与变更应继续检查对应章节及版本记录。规范存在某特性并不证明设备已支持。"
+        },
+        {
+          "title": "QIR specification defining how to represent quantum programs within the LLVM IR",
+          "url": "https://github.com/qir-alliance/qir-spec",
+          "kind": "standard",
+          "note_zh": "QIR Alliance 官方规范仓库；用于追踪 LLVM 表示、profile 与能力约束。该入口持续变化，未在本次固定规范发布日期或宣称所有实现兼容。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：跨 IR 的控制流、内存和时序语义需要一套版本化的往返转换测试；应先检查既有测试集覆盖，不能把发现兼容性差异直接表述为普遍缺陷。",
+        "综合判断／待验证：面向后端能力的机器可读声明与错误诊断值得系统比较，尤其要区分编译期可展开逻辑与必须在相干时间内执行的逻辑。"
+      ],
+      "next_steps_zh": [
+        "建立包含分支、重复测量、reset、外部函数和定时约束的最小程序集，逐项记录规范版本、解析器、目标 profile 与运行结果。",
+        "为每次转换保存输入输出、工具版本和语义检查结果，将不支持与错误实现分开标记。"
+      ]
+    },
+    {
+      "key": "synthesis-routing",
+      "title_zh": "线路综合、布局与硬件感知路由",
+      "title_en": "Synthesis, Placement & Hardware-Aware Routing",
+      "description_zh": "把门分解、线路分块、逻辑到物理量子位映射、SWAP 插入及设备约束放在同一编译问题中研究。SABRE 提供经典启发式起点，置换感知综合探索综合与路由协同，生成式映射框架进一步把设备约束显式建模。",
+      "questions_zh": [
+        "最少双量子位门、最短持续时间、最高预测保真度与最短编译时间何时产生冲突？",
+        "原生门集、连接拓扑或搬运能力改变后，原有路由启发式和代价模型还能否成立？",
+        "如何在相同输入、优化预算和目标校准快照下比较综合与路由的组合效果？"
+      ],
+      "keywords": [
+        "qubit mapping",
+        "qubit routing",
+        "quantum circuit synthesis",
+        "permutation-aware",
+        "hardware-aware compilation",
+        "SWAP insertion",
+        "device state machine"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Tackling the Qubit Mapping Problem for NISQ-Era Quantum Devices",
+          "url": "https://arxiv.org/abs/1809.02573",
+          "kind": "paper",
+          "year": 2018,
+          "note_zh": "2018 年预印本，ASPLOS 2019 发表；提出 SABRE 的双向搜索、初始映射与深度／门数权衡。原文实验结果只适用于其基准和对照条件。"
+        },
+        {
+          "title": "Tackling the Qubit Mapping Problem with Permutation-Aware Synthesis",
+          "url": "https://arxiv.org/abs/2305.02939",
+          "kind": "paper",
+          "year": 2023,
+          "note_zh": "核对 PAS/PAM 的分块、输入输出置换和路由协同方法；IEEE QCE 2023 DOI 为 10.1109/QCE57702.2023.00090。"
+        },
+        {
+          "title": "Generating Compilers for Qubit Mapping and Routing",
+          "url": "https://arxiv.org/abs/2508.10781",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "预印本首发 2025-08-14，所读版本修订于 2026-01-21；用设备状态机和领域专用描述生成映射路由算法。竞争力是论文案例中的结果，不代表任意硬件上的最优性。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：以统一编译预算评价跨硬件代价模型的迁移能力，比只比较 SWAP 数更能检验实用价值；还需纳入校准漂移和本地门集差异。",
+        "综合判断／待验证：综合、路由、调度和近似误差之间的联合优化可能产生收益，但搜索成本、正确性与收益来源需要通过消融实验分别确认。"
+      ],
+      "next_steps_zh": [
+        "选定同一批线路，对多种拓扑与原生门集固定随机种子、运行时间上限和校准数据，报告门数、深度、持续时间与编译耗时。",
+        "比较独立综合后路由与置换感知联合策略，保留未完成或超时实例，避免只统计成功样本。"
+      ]
+    },
+    {
+      "key": "dynamic-runtime",
+      "title_zh": "动态线路、前馈与实时运行时",
+      "title_en": "Dynamic Circuits, Feedforward & Runtime",
+      "description_zh": "关注中途测量、条件执行和经典计算如何穿过 SDK、编译器、控制器与量子器件。用 QubiC 2.0 的开放控制栈和 IBM 的执行文档区分语言表达能力、编译支持和控制硬件资源限制。",
+      "questions_zh": [
+        "测量、判别、数据广播、经典计算和脉冲触发分别消耗多少延迟，如何记录抖动？",
+        "动态分支节省的量子门是否足以抵消测量、reset 与前馈等待成本？",
+        "控制流嵌套、寄存器、波形与广播资源的上限如何影响可部署算法？"
+      ],
+      "keywords": [
+        "dynamic circuit",
+        "mid-circuit measurement",
+        "classical feedforward",
+        "classical feed-forward",
+        "real-time feedback",
+        "quantum runtime",
+        "conditional circuit",
+        "control flow"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH",
+        "CRYO"
+      ],
+      "sources": [
+        {
+          "title": "QubiC 2.0: An Extensible Open-Source Qubit Control System Capable of Mid-Circuit Measurement and Feed-Forward",
+          "url": "https://arxiv.org/abs/2309.10333",
+          "kind": "paper",
+          "year": 2023,
+          "note_zh": "核对 FPGA／RFSoC 控制架构、多核分布设计、Python 编译栈与条件线路演示。论文报告的是具体平台实验，不能推广成任意设备的延迟保证。"
+        },
+        {
+          "title": "Classical feedforward and control flow (dynamic circuits)",
+          "url": "https://quantum.cloud.ibm.com/docs/en/guides/classical-feedforward-and-control-flow",
+          "kind": "software",
+          "note_zh": "IBM 官方指南，说明中途测量、经典逻辑和控制流编程；示例依赖页面标示的软件版本。未将 SDK 构造能力等同于全部硬件支持。"
+        },
+        {
+          "title": "Execute dynamic circuits",
+          "url": "https://quantum.cloud.ibm.com/docs/en/guides/execute-dynamic-circuits",
+          "kind": "software",
+          "note_zh": "核对执行侧约束，包括控制电子学内存、条件广播和 OpenQASM 输入支持范围；这些限制会变化，实际实验前应重新读取并查询目标后端。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：可复现的端到端前馈延迟分解与尾延迟测量，有助于判断动态线路收益来自算法、编译还是控制硬件；现有平台公开指标是否足够需逐项核查。",
+        "综合判断／待验证：动态控制流的资源可行性检查和调度应与硬件约束共同建模，不能仅用静态门深度预测执行成本。"
+      ],
+      "next_steps_zh": [
+        "用同一逻辑任务实现静态与动态版本，记录编译耗时、分支概率、测量与前馈延迟、成功率及控制资源用量。",
+        "建立后端能力清单，并用最小线路验证每项特性，记录 SDK、固件、后端与校准日期。"
+      ]
+    },
+    {
+      "key": "verification",
+      "title_zh": "形式化验证与编译等价性",
+      "title_en": "Formal Verification & Compilation Equivalence",
+      "description_zh": "将编译优化的证明与具体编译结果的等价检查分开。VOQC 代表经证明的优化器，参数化线路检查处理符号参数，Irene 将关注点扩展到含测量和经典控制的有界混合程序；不同方法的语义、完备性和适用范围不可直接混同。",
+      "questions_zh": [
+        "需要保持的是完整酉变换、给定输入的输出分布，还是包含经典输出的量子信道语义？",
+        "参数、辅助量子位、测量、reset 和有限循环分别如何改变等价定义与验证复杂度？",
+        "验证失败究竟意味着不等价、超时、不支持，还是数值容差不足？"
+      ],
+      "keywords": [
+        "quantum circuit equivalence",
+        "equivalence checking",
+        "verified optimizer",
+        "formal verification",
+        "quantum program verification",
+        "verified quantum compiler",
+        "symbolic quantum",
+        "hybrid quantum program"
+      ],
+      "exclude_keywords": [
+        "equivalence checking of classical circuits"
+      ],
+      "categories": [
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "A Verified Optimizer for Quantum Circuits",
+          "url": "https://arxiv.org/abs/1912.02250",
+          "kind": "paper",
+          "year": 2019,
+          "note_zh": "2019 年预印本；VOQC 以 Coq 与 SQIR 为基础证明优化保持语义。该证明范围应按论文语言和变换定义理解，不能自动扩展到任意 SDK 的执行栈。"
+        },
+        {
+          "title": "Equivalence Checking of Parameterized Quantum Circuits: Verifying the Compilation of Variational Quantum Algorithms",
+          "url": "https://arxiv.org/abs/2210.12166",
+          "kind": "paper",
+          "year": 2022,
+          "note_zh": "2022 年预印本，页面标注 ASP-DAC 2023；采用 ZX-calculus 处理参数化等价关系，并链接 QCEC 实现。"
+        },
+        {
+          "title": "MQT QCEC — A tool for Quantum Circuit Equivalence Checking",
+          "url": "https://mqt.readthedocs.io/projects/qcec/en/stable/",
+          "kind": "software",
+          "note_zh": "官方工具文档，用于查验检查器、接口和适用限制。实际复现需固定稳定版本，不把随版本变化的支持矩阵写成永久事实。"
+        },
+        {
+          "title": "Irene: Equivalence Checking of Hybrid Quantum Programs via Structure-Preserving Symbolic Reduction",
+          "url": "https://arxiv.org/abs/2609.36065",
+          "kind": "paper",
+          "year": 2026,
+          "note_zh": "2026-09-28 预印本；处理有界混合量子程序，使用结构保持的符号化简、混合路径和与密度核推理。仅核对公开论文陈述，未复现其基准或漏洞结果。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：静态酉线路与测量依赖程序之间的验证衔接值得系统研究，需要先定义输入、可观测输出及允许忽略的信息。",
+        "综合判断／待验证：验证器嵌入真实编译流水线时，应保留不支持、未知、超时与不等价四类结果，并评估证明／检查开销和错误定位能力。"
+      ],
+      "next_steps_zh": [
+        "构造涵盖参数、辅助位和测量分支的转换样本，为每一类明确等价关系及预期结果。",
+        "对编译 pass 逐步保存中间结果并执行差分检查；将疑似反例缩减为可复现最小程序，再人工核验。"
+      ]
+    },
+    {
+      "key": "simulation-hpc",
+      "title_zh": "经典仿真、张量网络与 HPC",
+      "title_en": "Classical Simulation, Tensor Networks & HPC",
+      "description_zh": "按输出需求与线路结构选择状态向量、密度矩阵、稳定子或张量网络方法，再分析 GPU、MPI、门融合和数据分块的收益。区分精确模拟、近似截断与抽样误差，避免只用量子位数描述仿真规模。",
+      "questions_zh": [
+        "任务需要全部振幅、可观测量还是测量样本，哪种表示最匹配？",
+        "纠缠结构、非 Clifford 门、噪声和中途测量如何改变时间与内存开销？",
+        "多 GPU 或多节点的通信、精度、截断误差和吞吐之间如何权衡？"
+      ],
+      "keywords": [
+        "state-vector simulation",
+        "state vector simulation",
+        "quantum circuit simulation",
+        "tensor network simulation",
+        "matrix product state",
+        "GPU-accelerated",
+        "distributed simulation",
+        "Schrodinger-Feynman"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "cuQuantum SDK: A High-Performance Library for Accelerating Quantum Science",
+          "url": "https://arxiv.org/abs/2308.01999",
+          "kind": "paper",
+          "year": 2023,
+          "note_zh": "核对面向状态向量和张量网络的 GPU 原语及分布式扩展定位；论文页面标注 QCE 2023 接收。加速结果依赖具体线路、精度与硬件配置。"
+        },
+        {
+          "title": "qsim — High-performance quantum circuit simulator for C++ and Python",
+          "url": "https://github.com/quantumlib/qsim",
+          "kind": "software",
+          "note_zh": "官方仓库说明状态向量表示、门融合、向量指令、多线程和 Cirq 接口，并要求引用所用版本。未在本次执行工具性能测试。"
+        },
+        {
+          "title": "AerSimulator — Qiskit Aer",
+          "url": "https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html",
+          "kind": "software",
+          "note_zh": "官方 API 文档列出多种模拟方法、GPU 支持条件、精度、分块与动态线路抽样选项；方法和安装环境决定功能可用性。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：根据线路结构与目标观测量自动选择表示及分布策略，需要同时报告选择开销、失败案例和误差预算，不能只比较最优配置。",
+        "综合判断／待验证：含噪声与动态分支的仿真容易产生不同的抽样和截断语义，需要统一记录误差、随机种子、存储精度和输出定义。"
+      ],
+      "next_steps_zh": [
+        "制作跨纠缠结构、非 Clifford 比例、噪声和动态分支的基准集，分别测量峰值内存、运行时间与结果误差。",
+        "固定 CPU/GPU 型号、节点与网络配置、软件版本、并行参数和精度，报告端到端时间及强／弱扩展曲线。"
+      ]
+    },
+    {
+      "key": "benchmarks-reproducibility",
+      "title_zh": "基准体系与可复现评价",
+      "title_en": "Benchmarking & Reproducibility",
+      "description_zh": "把应用输出质量、硬件执行能力、编译器处理成本及端到端时间分层评价。QED-C 应用导向基准、SupermarQ 的特征覆盖和 Benchpress 的软件测试各自回答不同问题，应组合使用而非互相替代。",
+      "questions_zh": [
+        "指标针对编译器、模拟器、量子处理器还是完整工作流，比较对象是否一致？",
+        "任务集覆盖哪些结构、规模和控制流，是否偏向特定门集、拓扑或工具链？",
+        "如何公开版本、种子、编译预算、校准数据、失败率和置信区间以支持复现？"
+      ],
+      "keywords": [
+        "quantum benchmark",
+        "application-oriented benchmark",
+        "volumetric benchmark",
+        "benchmark suite",
+        "performance benchmark",
+        "reproducibility",
+        "reproducible quantum",
+        "Benchpress",
+        "SupermarQ"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH"
+      ],
+      "sources": [
+        {
+          "title": "Application-Oriented Performance Benchmarks for Quantum Computing",
+          "url": "https://arxiv.org/abs/2110.03137",
+          "kind": "paper",
+          "year": 2021,
+          "note_zh": "预印本首发 2021，所读版本修订于 2023；讨论应用质量、宽深规模和求解时间。页面的 journal-reference 年份与 TQE.2023 DOI 存在不一致，本条 year 明确取预印本首发年。"
+        },
+        {
+          "title": "SupermarQ: A Scalable Quantum Benchmark Suite",
+          "url": "https://arxiv.org/abs/2202.11045",
+          "kind": "paper",
+          "year": 2022,
+          "note_zh": "核对应用级、硬件无关基准与特征向量覆盖设计；原文不同平台结果应保留对应实验配置，不能视为持续更新的硬件排行榜。"
+        },
+        {
+          "title": "Benchmarking the performance of quantum computing software",
+          "url": "https://arxiv.org/abs/2409.08844",
+          "kind": "paper",
+          "year": 2024,
+          "note_zh": "Benchpress 的原始论文，评估软件开发工具的功能和处理性能。软件操作耗时不能替代量子硬件质量或算法实用收益。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：端到端评价需要把排队、编译、上传、执行与经典后处理分开，单次总时长难以解释性能差异。",
+        "综合判断／待验证：跨版本基准的可比性需要固定输入与预算，并保留超时和不支持实例；统计口径变化可能比算法变化更影响表面排名。"
+      ],
+      "next_steps_zh": [
+        "为每个实验建立机器可读运行清单，包含软件锁定版本、硬件／校准标识、输入哈希、种子、shots、预算及测量区间。",
+        "分别发布软件性能、输出质量和端到端成本三张结果表，保留原始日志及异常样本，报告重复测量不确定性。"
+      ]
+    },
+    {
+      "key": "distributed-scheduling",
+      "title_zh": "分布式编译、网络运行时与调度",
+      "title_en": "Distributed Compilation, Network Runtime & Scheduling",
+      "description_zh": "研究跨 QPU 程序的划分、远程操作、纠缠资源和经典通信如何共同执行。NetQASM 描述网络应用接口，AutoComm 优化跨节点通信结构，QNodeOS 展示实际节点上的操作系统与多任务执行；这与单机线路路由具有不同成本模型。",
+      "questions_zh": [
+        "应移动数据量子位、传送门还是重划分程序，如何计入 Bell 对、通信量子位和存储寿命？",
+        "随机纠缠生成与经典通信延迟如何进入本地操作调度及超时处理？",
+        "提高利用率的多任务策略会不会损害单任务保真度、尾延迟或公平性？"
+      ],
+      "keywords": [
+        "distributed quantum computing",
+        "distributed quantum compilation",
+        "quantum network operating system",
+        "NetQASM",
+        "QNodeOS",
+        "quantum communication scheduling",
+        "non-local gate",
+        "remote gate"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH",
+        "COMM"
+      ],
+      "sources": [
+        {
+          "title": "NetQASM -- A low-level instruction set architecture for hybrid quantum-classical programs in a quantum internet",
+          "url": "https://arxiv.org/abs/2111.09823",
+          "kind": "paper",
+          "year": 2021,
+          "note_zh": "核对网络指令集对本地门、经典逻辑与远程纠缠生成的表达，以及高层 SDK 的定位。协议／ISA 的通用性仍受实现系统模型约束。"
+        },
+        {
+          "title": "AutoComm: A Framework for Enabling Efficient Communication in Distributed Quantum Programs",
+          "url": "https://arxiv.org/abs/2207.11674",
+          "kind": "paper",
+          "year": 2022,
+          "note_zh": "MICRO 2022 工作；利用 burst communication 结构优化通信资源与程序延迟。报告的收益绑定论文基准与假设，并非跨 QPU 系统的普遍保证。"
+        },
+        {
+          "title": "An operating system for executing applications on quantum network nodes",
+          "url": "https://www.nature.com/articles/s41586-025-08704-w",
+          "kind": "paper",
+          "year": 2025,
+          "note_zh": "核对 Nature 2025-03-12 发表信息与 QNodeOS 演示：两节点 NV 平台执行应用和多任务，另展示单离子节点驱动；未把该实验描述成任意规模异构网络的实证。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：编译时通信优化应与运行时随机纠缠、有限存储寿命和错误重试衔接；理想固定延迟模型的结论需要在更真实模型下重测。",
+        "综合判断／待验证：多租户调度可比较吞吐、尾延迟、保真度与公平性的冲突，需区分节点硬件争用和经典调度开销。"
+      ],
+      "next_steps_zh": [
+        "为同一分布式任务分别建立确定与随机链路模型，记录纠缠消耗、等待时间、失败重试、内存占用与输出质量。",
+        "对单任务和混合任务负载保存事件轨迹，比较不同调度策略；仿真结果与硬件实测分栏呈现。"
+      ]
+    },
+    {
+      "key": "fault-tolerant-compilation",
+      "title_zh": "容错编译与跨层资源估算",
+      "title_en": "Fault-Tolerant Compilation & Resource Estimation",
+      "description_zh": "从逻辑算法资源计数走向表面码布局、晶格手术、魔态供给与物理时间空间成本。区分与体系结构无关的门计数、依赖错误模型的成本估算以及可执行的编译调度；估算依赖假设，不是已实现机器规模。",
+      "questions_zh": [
+        "T／Toffoli 数量、逻辑深度与并行性如何转换为工厂数量、码距、物理量子位和总运行时间？",
+        "布局、路由、魔态供给与经典控制延迟如何改变理论资源估算？",
+        "如何公开错误预算、综合误差、器件参数与成本模型，使跨论文比较可复算？"
+      ],
+      "keywords": [
+        "fault-tolerant compilation",
+        "fault tolerant compilation",
+        "resource estimation",
+        "lattice surgery",
+        "surface code compilation",
+        "magic state factory",
+        "space-time trade-off",
+        "logical resource"
+      ],
+      "exclude_keywords": [],
+      "categories": [
+        "ARCH",
+        "QEC"
+      ],
+      "sources": [
+        {
+          "title": "A Game of Surface Codes: Large-Scale Quantum Computing with Lattice Surgery",
+          "url": "https://quantum-journal.org/papers/q-2019-03-05-128/",
+          "kind": "paper",
+          "year": 2019,
+          "note_zh": "核对 Quantum 3, 128，2019-03-05；通过表面码 patch 与晶格手术描述时空权衡、数据块和魔态供给。"
+        },
+        {
+          "title": "Assessing requirements to scale to practical quantum advantage",
+          "url": "https://arxiv.org/abs/2211.07629",
+          "kind": "paper",
+          "year": 2022,
+          "note_zh": "2022 年预印本提出跨栈资源估算框架与应用案例；所需物理资源取决于器件、编码、算法与错误预算假设。"
+        },
+        {
+          "title": "Expressing and Analyzing Quantum Algorithms with Qualtran",
+          "url": "https://arxiv.org/abs/2409.04643",
+          "kind": "paper",
+          "year": 2024,
+          "note_zh": "核对算法表示、可复用构件、资源计数及向表面码物理成本模型传递的流程；逻辑资源计数与物理成本应保留边界。"
+        },
+        {
+          "title": "A High Performance Compiler for Very Large Scale Surface Code Computations",
+          "url": "https://quantum-journal.org/papers/q-2024-05-22-1354/",
+          "kind": "paper",
+          "year": 2024,
+          "note_zh": "核对 Quantum 8, 1354，2024-05-22；面向大规模表面码计算的流式编译。编译吞吐演示不等于对应规模的容错硬件执行演示。"
+        }
+      ],
+      "research_gaps_zh": [
+        "综合判断／待验证：逻辑资源估算与具体布局、魔态拥塞及控制链路之间的差距需要通过可执行调度来量化，而不能仅将门数乘以固定常数。",
+        "综合判断／待验证：估算结论对物理错误率、周期时间、工厂协议与总失败概率敏感，应报告参数区间和敏感性，而不是单一预测数字。"
+      ],
+      "next_steps_zh": [
+        "选择可公开复算的算法实例，串联逻辑资源计数、码距选择、工厂配置与布局调度，并保存每层假设。",
+        "对错误率、周期时间、工厂数量及控制延迟进行敏感性分析，输出时间／量子位 Pareto 比较和估算适用范围。"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "key": "platforms-networks",
+  "title_zh": "硬件平台、互连网络与应用验证",
+  "title_en": "Hardware Platforms, Quantum Networks and Application Validation",
+  "summary_zh": "从材料与封装、原子和自旋平台到光子互连、量子网络、分布式计算和传感，再追踪算法与机器学习的真实资源需求。九个子主题以原始论文、作者代码和正式技术文档建立研究入口；这是有范围的策展，不能视为完整文献综述或所有结果的独立复现。",
+  "reviewed": "2026-10-28",
+  "subtopics": [
+    {
+      "key": "superconducting-materials-packaging",
+      "title_zh": "超导材料、三维封装与跨芯片耦合",
+      "title_en": "Superconducting Materials, 3D Packaging and Chip-to-Chip Coupling",
+      "description_zh": "沿材料损耗—界面与加工—垂直布线—跨芯片门四个层级组织证据。相干时间、单个互连性能与完整处理器的可扩展性是不同指标，比较时需要保持器件、测试条件与统计口径一致。",
+      "questions_zh": [
+        "表面、界面、残留污染和封装寄生模式各自贡献多少退相干与串扰？",
+        "TSV、凸点键合和多芯粒集成如何改变布线密度、良率、热循环可靠性与同时门误差？",
+        "最佳器件的相干时间或跨芯片门保真度，能否转化为批次分布和系统级收益？"
+      ],
+      "keywords": ["superconducting qubit", "superconducting transmon", "through-silicon via", "flip-chip", "bump bond", "inter-chip", "chip-to-chip", "dielectric loss", "tantalum"],
+      "exclude_keywords": [],
+      "categories": ["SUP", "MAT"],
+      "sources": [
+        {"title": "New material platform for superconducting transmon qubits with coherence times exceeding 0.3 milliseconds", "url": "https://arxiv.org/abs/2003.00024", "kind": "paper", "year": 2020, "note_zh": "作者预印本入口，年份取首次提交年。以钽材料和工艺改进研究 transmon 相干性；该指标不能直接替代多比特门、封装良率或容错性能。"},
+        {"title": "Solid-state qubits integrated with superconducting through-silicon vias", "url": "https://www.nature.com/articles/s41534-020-00289-8", "kind": "paper", "year": 2020, "note_zh": "原始实验将超导 TSV 与量子比特、两芯片凸点键合和控制读出结合，适合作为垂直互连研究起点；并非完整大规模处理器验证。"},
+        {"title": "Entanglement across separate silicon dies in a modular superconducting qubit device", "url": "https://www.nature.com/articles/s41534-021-00484-1", "kind": "paper", "year": 2021, "note_zh": "在四块分立芯片之间演示确定性耦合与纠缠门；比较时应保留门型、误差条和各器件分布，不能只用最佳保真度概括全部互连。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：本组文献分别验证材料与互连构件，尚不足以推断在同一制造批次中同时实现高相干、低串扰、高良率与可维护封装。",
+        "研究判断（综合）：值得把封装引入的相关误差、热循环漂移和故障替换成本接入逻辑错误率或任务完成率评估，而非只比较单器件峰值。"
+      ],
+      "next_steps_zh": [
+        "建立材料、工艺、封装形式、T1/T2、同时 RB、热循环次数与样本量的证据表，标记缺失项。",
+        "选择一种 TSV 或芯粒互连架构，扫描寄生模式与串扰参数，对比平面基线的系统错误预算。"
+      ]
+    },
+    {
+      "key": "ion-neutral-atom-platforms",
+      "title_zh": "离子阱与中性原子的动态连接和持续运行",
+      "title_en": "Dynamic Connectivity and Sustained Operation in Ion and Neutral-Atom Platforms",
+      "description_zh": "把离子 QCCD 的搬运与冷却、中性原子的重排与损失恢复，统一放在可执行时序和纠错循环中考察。区分物理比特数、编码比特数、纠错轮次与可持续通用运行。",
+      "questions_zh": [
+        "搬运、合并分离、激光寻址和冷却的时延及误差怎样限制并行性？",
+        "中途测量、原子损失探测、再装载与复位能否在保持数据量子态时执行？",
+        "编码电路的性能改善采用后选择、误差探测还是重复纠错，比较基线是否一致？"
+      ],
+      "keywords": ["trapped ion", "trapped-ion", "ion shuttling", "quantum charge-coupled", "neutral atom", "neutral-atom", "optical tweezer", "Rydberg atom", "atom loss"],
+      "exclude_keywords": [],
+      "categories": ["PLAT", "QEC"],
+      "sources": [
+        {"title": "A Race-Track Trapped-Ion Quantum Processor", "url": "https://journals.aps.org/prx/abstract/10.1103/PhysRevX.13.041052", "kind": "paper", "year": 2023, "note_zh": "QCCD 原始系统论文，同时报告基本操作、系统级基准和应用实验；适合追踪搬运架构到实际程序的性能损失。"},
+        {"title": "Logical quantum processor based on reconfigurable atom arrays", "url": "https://www.nature.com/articles/s41586-023-06927-3", "kind": "paper", "year": 2024, "note_zh": "Nature 卷期年为 2024，在线发表于 2023。分区原子阵列支持编码操作与中途读出；部分结果采用误差探测，不能统称为长期容错运行。"},
+        {"title": "A fault-tolerant neutral-atom architecture for universal quantum computation", "url": "https://www.nature.com/articles/s41586-025-09848-5", "kind": "paper", "year": 2026, "note_zh": "Nature 卷期年为 2026，在线发表于 2025。研究重复纠错、逻辑门、通用性与中途复用等构件；应逐项核对轮次、编码与错误移除条件。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：动态连接的优势需要与搬运、冷却、读出及损失恢复开销共同计量，本组器件实验不能直接给出所有工作负载的最优调度。",
+        "研究判断（综合）：持续运行值得补充包含再装载、校准暂停和相关噪声的长时工作负载，避免把短序列的编码增益外推为任意深度优势。"
+      ],
+      "next_steps_zh": [
+        "把两个平台的操作抽象成带资源占用、耗时、失败模式的调度图，比较固定连接与动态连接方案。",
+        "构造带损失注入、测量反馈与复位的重复任务，报告墙钟时间、有效逻辑吞吐及未完成比例。"
+      ]
+    },
+    {
+      "key": "spin-qubit-interfaces",
+      "title_zh": "半导体自旋接口、搬运总线与多体校验",
+      "title_en": "Semiconductor Spin Interfaces, Shuttling Buses and Parity Checks",
+      "description_zh": "从高保真本地门出发，考察移动自旋带来的连接、相位补偿、读出寻址和校验测量。每跳误差、累计移动距离和单次远距离传输不可混用。",
+      "questions_zh": [
+        "电荷噪声、磁场梯度与谷态效应怎样影响搬运过程中保留的量子相位？",
+        "bucket-brigade 与 conveyor 模式在速度、波形复杂度和无序容忍度上如何权衡？",
+        "从权重四校验演示到重复纠错，还需测量哪些泄漏、读出、反馈和并行串扰代价？"
+      ],
+      "keywords": ["spin qubit", "spin-qubit", "silicon quantum dot", "germanium quantum dot", "spin shuttling", "spin-shuttling", "electron shuttling", "exchange-only", "conveyor mode"],
+      "exclude_keywords": [],
+      "categories": ["PLAT", "ARCH"],
+      "sources": [
+        {"title": "Quantum logic with spin qubits crossing the surface code threshold", "url": "https://www.nature.com/articles/s41586-021-04273-w", "kind": "paper", "year": 2022, "note_zh": "以门集层析评估硅自旋通用门，并考察邻比特串扰和闲置误差；标题中的阈值比较依赖噪声与编码假设，并非完整纠错处理器证明。"},
+        {"title": "High-fidelity single-spin shuttling in silicon", "url": "https://www.nature.com/articles/s41565-025-01920-5", "kind": "paper", "year": 2025, "note_zh": "对比两类搬运模式，报告往返累计距离下的相干传输。累计 10 微米不是两端相距 10 微米的独立一次链路；保留其 RB 与相位补偿条件。"},
+        {"title": "Weight-four parity checks in a spin-shuttling architecture", "url": "https://www.nature.com/articles/s41586-026-10766-3", "kind": "paper", "year": 2026, "note_zh": "2026 年原始实验用搬运总线连接有效五比特系统，演示最高权重四的 X/Z 校验与多体纠缠；校验构件不等于长期逻辑纠错收益。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：连接图应同时携带搬运相位、等待退相干和共享电极约束；仅把搬运当作无误差 SWAP 会高估系统性能。",
+        "研究判断（综合）：本组来源支持从局部门到校验构件的演进，但不能据此认定跨芯片搬运、批量校准和长时重复纠错已整体解决。"
+      ],
+      "next_steps_zh": [
+        "区分单跳、往返累计与端到端链路三类数据，建立误差—距离—时间曲线并保留置信区间。",
+        "以一个校验单元为目标，联合编排搬运、局部门和读出，模拟随机漂移与相位补偿失配。"
+      ]
+    },
+    {
+      "key": "photonic-transduction-links",
+      "title_zh": "集成光子、微波光学转换与量子链路",
+      "title_en": "Integrated Photonics, Microwave–Optical Transduction and Quantum Links",
+      "description_zh": "连接单光子源、干涉、融合测量、探测器与微波光学转换。区分条件保真度、无条件成功率、转换效率、附加噪声、带宽和泵浦热负载。",
+      "questions_zh": [
+        "器件插入损耗、光子不可区分性和探测效率如何共同决定可用纠缠速率？",
+        "转换器在低噪声工作点的效率、带宽和光泵浦热负载是否满足相邻超导电路约束？",
+        "光子对纠缠、量子态转换和远程物质量子比特纠缠分别证明了哪一步？"
+      ],
+      "keywords": ["integrated photonic", "photonic integrated", "photonic interconnect", "photon source", "photon detector", "single-photon source", "single photon source", "microwave-to-optical", "microwave optical", "quantum transduction", "quantum transducer", "electro-optomechanical", "fusion measurement", "photon indistinguishability"],
+      "exclude_keywords": [],
+      "categories": ["PHOT", "COMM"],
+      "sources": [
+        {"title": "A manufacturable platform for photonic quantum computing", "url": "https://www.nature.com/articles/s41586-025-08820-7", "kind": "paper", "year": 2025, "note_zh": "集成生成、操控、探测与芯片间光子接口的制造平台。若干保真度以成功探测为条件，必须与光子损耗和成功概率一起解读。"},
+        {"title": "Quantum-enabled microwave-to-optical transduction via silicon nanomechanics", "url": "https://www.nature.com/articles/s41565-025-01874-8", "kind": "paper", "year": 2025, "note_zh": "原始实验研究集成硅电光机械转换器的量子工作区间；低附加噪声和转换效率是链路构件指标，不直接等于远程计算门性能。"},
+        {"title": "Quantum Entanglement between Optical and Microwave Photonic Qubits", "url": "https://journals.aps.org/prx/abstract/10.1103/PhysRevX.14.031055", "kind": "paper", "year": 2024, "note_zh": "芯片级微波与光学光子纠缠源，采用双轨编码并估计纠缠保真度下界；并非两个独立超导处理器间完整通信栈演示。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：本组构件结果需要在同一噪声与损耗预算下组合，单独最优效率或条件保真度不能确定端到端可用速率。",
+        "研究判断（综合）：值得量化泵浦引入的热、准粒子与校准漂移对邻近计算比特的影响，将转换器性能与处理器可用率一起优化。"
+      ],
+      "next_steps_zh": [
+        "建立包含源、耦合、频率转换、光纤和探测的链路预算，输出成功率、保真度与等待时间分布。",
+        "比较条件成功与全部尝试口径，并扫描泵浦占空比和冷却功率，确定可持续工作点。"
+      ]
+    },
+    {
+      "key": "quantum-repeaters-routing",
+      "title_zh": "量子中继、纠缠路由与网络控制",
+      "title_en": "Quantum Repeaters, Entanglement Routing and Network Control",
+      "description_zh": "围绕有寿命的纠缠资源组织链路生成、缓存、交换、纯化和经典确认。区分光纤盘、部署光纤、多节点中继与 QKD 演示，避免把两点纠缠直接称为可运营量子互联网。",
+      "questions_zh": [
+        "存储寿命与纠缠建立时间的关系如何决定等待、丢弃与纯化策略？",
+        "路由应该优化平均速率、尾部完成时延、目标保真度还是多用户公平性？",
+        "经典确认延迟、时钟同步和节点有限通信比特如何改变交换成功率？"
+      ],
+      "keywords": ["quantum repeater", "entanglement routing", "entanglement swapping", "entanglement distribution", "quantum network", "quantum internet", "quantum memory", "entanglement purification"],
+      "exclude_keywords": [],
+      "categories": ["COMM"],
+      "sources": [
+        {"title": "RFC 9340: Architectural Principles for a Quantum Internet", "url": "https://www.rfc-editor.org/rfc/rfc9340.html", "kind": "standard", "year": 2023, "note_zh": "IRTF/QIRG 的 Informational 架构文档，不是 Internet Standards Track 标准。提供纠缠、临时状态和经典控制协同的术语与设计原则。"},
+        {"title": "Entanglement of nanophotonic quantum memory nodes in a telecom network", "url": "https://www.nature.com/articles/s41586-024-07252-z", "kind": "paper", "year": 2024, "note_zh": "钻石 SiV 纳米光子存储节点接入电信光纤，分别演示光纤盘与城市部署光纤链路；两节点实验不能替代多跳中继吞吐验证。"},
+        {"title": "Long-lived remote ion–ion entanglement for scalable quantum repeaters", "url": "https://www.nature.com/articles/s41586-026-10177-4", "kind": "paper", "year": 2026, "note_zh": "远程离子存储纠缠寿命超过平均建立时间，是中继所需构件。论文的有限尺寸密钥分析与渐近距离结果采用不同口径，应分开引用。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：由两节点器件结果推到多跳网络需要加入存储竞争、确认消息和调度策略，本组来源不能直接支持全网吞吐量结论。",
+        "研究判断（综合）：适合研究以截止时间和目标保真度为契约的路由接口，明确纠缠过期、重试和经典控制故障的行为。"
+      ],
+      "next_steps_zh": [
+        "用论文链路参数建立事件驱动模型，先复现单链路等待时间，再比较交换顺序和存储淘汰策略。",
+        "保存拓扑、随机种子、光纤类别、存储噪声及消息时延，报告平均值、分位数和失败率。"
+      ]
+    },
+    {
+      "key": "distributed-modular-computing",
+      "title_zh": "分布式量子计算与模块化执行",
+      "title_en": "Distributed Quantum Computing and Modular Execution",
+      "description_zh": "以远程门为系统接口，连接纠缠生成、局部门、测量、经典前馈与编译分区。把已有纠缠后的确定性门，与包含概率性建链和超时的整个服务分开评价。",
+      "questions_zh": [
+        "划分电路时，如何在远程门数量、纠缠预取、内存等待和本地并行之间权衡？",
+        "远程门的无后选择，是否意味着建链、超时处理和全部尝试也都确定完成？",
+        "网络比特与数据比特隔离后，生成纠缠是否仍会扰动计算状态或拖慢纠错循环？"
+      ],
+      "keywords": ["distributed quantum computing", "distributed quantum computation", "modular quantum", "quantum gate teleportation", "teleported quantum gate", "non-local gate", "nonlocal gate", "remote gate", "circuit partitioning"],
+      "exclude_keywords": [],
+      "categories": ["ARCH", "COMM"],
+      "sources": [
+        {"title": "Deterministic teleportation of a quantum gate between two logical qubits", "url": "https://www.nature.com/articles/s41586-018-0470-y", "kind": "paper", "year": 2018, "note_zh": "利用实时自适应控制在超导腔编码比特之间实现门传态。它是模块化执行构件，不能当作远距离光纤网络或完整容错系统性能。"},
+        {"title": "Distributed quantum computing across an optical network link", "url": "https://www.nature.com/articles/s41586-024-08404-x", "kind": "paper", "year": 2025, "note_zh": "两个光学互连离子模块通过远程纠缠执行传态门及分布式小型算法；应同时记录远程门保真度、建链开销与算法成功率。"},
+        {"title": "Unconditionally teleported quantum gates between remote solid-state qubit registers", "url": "https://www.nature.com/articles/s41467-026-72818-6", "kind": "paper", "year": 2026, "note_zh": "远程 NV 电子自旋与碳核数据比特协同实现无后选择门。文中仍讨论纠缠生成超时，不能把 unconditional 解释为整个建链过程始终成功。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：远程门构件已能支撑小型分布式执行，但本组证据尚不能确定大规模任务在不同链路速率与错误模型下的收益边界。",
+        "研究判断（综合）：编译与运行时可共同研究纠缠预取、过期、重试和状态保留语义，并用真实控制时延检验模拟中的调度增益。"
+      ],
+      "next_steps_zh": [
+        "实现包含远程门服务时延分布的电路分区基线，与只最小化跨模块门数的方法比较。",
+        "选择同一算法分别在单模块、理想网络与测量参数网络上运行，计入全部建链尝试和超时。"
+      ]
+    },
+    {
+      "key": "sensing-metrology-validation",
+      "title_zh": "量子传感、精密计量与真实测量增益",
+      "title_en": "Quantum Sensing, Metrology and Operational Measurement Gain",
+      "description_zh": "以任务精度、带宽、动态范围和单位时间资源为共同口径，连接自旋传感与光学原子钟。明确标准量子极限使用的资源计数，并把状态制备、读出和死区时间纳入评估。",
+      "questions_zh": [
+        "报告的量子增益对应相同粒子数、相同总测量时间还是相同实验次数？",
+        "在环境噪声、有限脉冲宽度与传感器漂移下，灵敏度和带宽如何权衡？",
+        "状态制备、纠缠生成、复位和估计算法开销是否抵消了理想读出的增益？"
+      ],
+      "keywords": ["quantum sensing", "quantum metrology", "atomic clock", "spin squeezing", "spin-squeezed", "quantum magnetometry", "nitrogen-vacancy", "standard quantum limit", "waveform sensing"],
+      "exclude_keywords": [],
+      "categories": ["SENS"],
+      "sources": [
+        {"title": "Quantum sensing", "url": "https://journals.aps.org/rmp/abstract/10.1103/RevModPhys.89.035002", "kind": "review", "year": 2017, "note_zh": "作者综述提供信号耦合、控制、估计与灵敏度的系统框架。用于统一指标与术语，不能用其历史例子代表当前性能纪录。"},
+        {"title": "Entanglement-Enhanced Optical Atomic Clock", "url": "https://arxiv.org/abs/2006.07501", "kind": "paper", "year": 2020, "note_zh": "作者页明确关联 Nature 588, 414–418（2020）。演示光学钟纠缠增强与 Allan 偏差改善；优势比较以文中相同系统的 SQL 基线为准。"},
+        {"title": "Reconstruction-Free Quantum Sensing of Arbitrary Waveforms", "url": "https://journals.aps.org/prapplied/abstract/10.1103/PhysRevApplied.12.054028", "kind": "paper", "year": 2019, "note_zh": "用 NV 自旋和差分回波直接测时变磁场，连接控制序列与传感带宽；脉冲持续时间及实验条件限制其可外推范围。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：跨平台比较应先固定待估参数、带宽、总时间与资源预算，本组来源的不同灵敏度数字不宜直接排列优劣。",
+        "研究判断（综合）：可研究带漂移和中断的在线估计流程，验证量子态制备优势是否在包含死区时间的长期任务中保留。"
+      ],
+      "next_steps_zh": [
+        "建立噪声谱、脉冲约束、读出模型和总时长一致的模拟，对比经典基线与量子增强策略。",
+        "同时报告灵敏度、动态范围、带宽、Allan 偏差和资源开销，附原始测量与估计脚本。"
+      ]
+    },
+    {
+      "key": "algorithm-resource-validation",
+      "title_zh": "算法资源估算与应用可行性验证",
+      "title_en": "Algorithm Resource Estimation and Application Feasibility",
+      "description_zh": "将算法精度、逻辑门、魔态工厂、纠错码、物理时钟和反馈延迟连成可重现的成本模型。资源估算是带假设的预测，不是已经运行相应规模任务的证据。",
+      "questions_zh": [
+        "相同任务精度下，逻辑门数、逻辑比特数和物理运行时间怎样相互转换；化学任务的活性空间和初态误差是否另行计入？",
+        "数据准备、非 Clifford 资源、解码反馈与通信等待是否进入成本模型？",
+        "改变物理误差率、周期长度或经典基线，应用优势边界会移动多少？"
+      ],
+      "keywords": ["resource estimation", "resource estimate", "fault-tolerant algorithm", "fault tolerant algorithm", "logical resource", "physical qubit", "magic state factory", "quantum advantage", "time to solution", "quantum chemistry", "electronic structure", "computational catalysis"],
+      "exclude_keywords": [],
+      "categories": ["ALG", "ARCH", "QEC"],
+      "sources": [
+        {"title": "Assessing requirements to scale to practical quantum advantage", "url": "https://arxiv.org/abs/2211.07629", "kind": "paper", "year": 2022, "note_zh": "作者预印本把应用到物理比特的层级联系起来，比较规模、速度与可控性；结果依赖其任务、误差预算和体系结构假设。"},
+        {"title": "How to factor 2048 bit RSA integers with less than a million noisy qubits", "url": "https://arxiv.org/abs/2505.15917", "kind": "paper", "year": 2025, "note_zh": "作者预印本给出特定误差率、纠错周期与反馈时延下的空间时间折中估算。论文不是实际分解 RSA-2048 的实验报告，也不表示硬件已满足这些假设。"},
+        {"title": "Quantum computing enhanced computational catalysis", "url": "https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.3.033055", "kind": "paper", "year": 2021, "note_zh": "从催化化学流程连接电子结构、量子算法与资源估算，补充材料提供不同活性空间成本。其化学模型、初态准备与所需精度须连同门数一起审查。"},
+        {"title": "Qualtran: quantum algorithms representation and resource analysis", "url": "https://github.com/quantumlib/Qualtran", "kind": "software", "note_zh": "官方研究软件仓库，用可组合算法构件支持资源分析。软件仍在演化，复现时固定提交或版本，并独立检查分解规则、精度与成本参数。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：同一逻辑门数可以对应不同物理成本，应把工厂数、解码响应、路由和并行度显式化，避免单个比特数掩盖执行时间。",
+        "研究判断（综合）：值得把论文点估计改造成不确定性区间与敏感性分析，并在同一任务误差和总时间预算下更新经典算法基线。"
+      ],
+      "next_steps_zh": [
+        "固定一个有明确输入、精度和成功概率的算法实例，导出逻辑资源清单和机器可读假设表。",
+        "扫描物理误差、周期、反馈和工厂并行度，输出物理比特—墙钟时间—失败预算的 Pareto 曲线。"
+      ]
+    },
+    {
+      "key": "qml-benchmark-validity",
+      "title_zh": "量子机器学习的基线、可训练性与优势边界",
+      "title_en": "Quantum Machine Learning Baselines, Trainability and Advantage Boundaries",
+      "description_zh": "将数据分布、编码成本、模型容量、优化预算、测量开销和经典对照纳入同一个实验。区分特定构造数据上的理论分离、小规模模拟结果与面向实际数据的端到端优势。",
+      "questions_zh": [
+        "数据是否被用于设计特征图、调参或选择任务，训练测试划分是否独立？",
+        "经典模型是否获得相同调参预算，是否包含强核方法、树模型及去纠缠消融？",
+        "梯度估计所需 shots、噪声、数据装载与推理成本是否随问题规模增长到不可承受？"
+      ],
+      "keywords": ["quantum machine learning", "quantum neural network", "quantum kernel", "variational classifier", "barren plateau", "quantum classifier", "quantum learning", "data encoding"],
+      "exclude_keywords": [],
+      "categories": ["QML", "ALG"],
+      "sources": [
+        {"title": "Power of data in quantum machine learning", "url": "https://www.nature.com/articles/s41467-021-22539-9", "kind": "paper", "year": 2021, "note_zh": "分析训练数据如何增强经典预测能力，并提出判断学习优势的方法。构造任务的分离或数值优势不能直接推广到一般真实数据。"},
+        {"title": "Barren plateaus in quantum neural network training landscapes", "url": "https://www.nature.com/articles/s41467-018-07090-4", "kind": "paper", "year": 2018, "note_zh": "给出一类随机参数化电路中梯度集中和训练困难的理论分析；结论依赖线路分布、深度等条件，并非断言所有量子模型都不可训练。"},
+        {"title": "Better than classical? The subtle art of benchmarking quantum machine learning models", "url": "https://arxiv.org/abs/2403.07059", "kind": "paper", "year": 2024, "note_zh": "作者预印本系统比较多种量子分类器与经典基线，展示实验设计与消融的重要性；其有限规模任务结果不能作为所有 QML 不可能有优势的证明。"}
+      ],
+      "research_gaps_zh": [
+        "研究判断（综合）：适合优先研究在预注册数据划分和强经典基线下仍稳定存在的收益，而非不断选择更有利的小数据集。",
+        "研究判断（综合）：可训练性、泛化与运行成本需要联合报告；单次准确率提升不足以说明增大比特数后仍有可实现的量子优势。"
+      ],
+      "next_steps_zh": [
+        "固定数据与调参预算，运行多随机种子、无纠缠模型、经典核与树模型对照，并保存失败实验。",
+        "随样本量、比特数和 shots 扫描准确率、梯度信噪比、训练墙钟时间及推理成本。"
+      ]
+    }
+  ]
+}

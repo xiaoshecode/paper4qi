@@ -1,9 +1,24 @@
 ---
+import { existsSync, readFileSync } from 'node:fs';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { CATEGORIES, SITE } from '../data/meta';
 import { VENUE_COUNTS } from '../data/venues';
+import { CS4Q_COUNTS } from '../data/cs4q';
+import type { DataFile, Paper } from '../scripts/types';
 
 const base = import.meta.env.BASE_URL;
+const qce = JSON.parse(readFileSync('public/data/qce.json', 'utf-8')) as DataFile;
+const tqe = JSON.parse(readFileSync('public/data/tqe.json', 'utf-8')) as DataFile;
+const proceedings = qce.papers.filter((p) => p.source === 'qce');
+const program = qce.papers.filter((p) => p.source === 'qce26');
+const countFront = (records: Paper[]) => records.filter((p) => p.front_matter).length;
+const yearRange = (records: Paper[]) => {
+  const years = [...new Set(records.map((p) => p.year))].sort((a, b) => a - b);
+  return years.length ? `${years[0]}–${years[years.length - 1]}` : '—';
+};
+const sourceState = existsSync('data_src/.update_state.json')
+  ? JSON.parse(readFileSync('data_src/.update_state.json', 'utf-8')) as Record<string, string>
+  : {};
 
 // meta.ts 的 CATEGORIES 只有中文 blurb，英文覆盖范围在本页内补齐（key 与 CATEGORIES 一一对应）
 const CAT_BLURB_EN: Record<string, string> = {
@@ -40,26 +55,26 @@ const CAT_BLURB_EN: Record<string, string> = {
       <tbody>
         <tr>
           <td><span class="i18n-zh">IEEE QCE 会议论文集</span><span class="i18n-en">IEEE QCE proceedings</span></td>
-          <td>2020–2025</td>
-          <td><span class="i18n-zh">1674 条（1523 论文 + 151 前置/附录）</span><span class="i18n-en">1674 entries (1523 papers + 151 front matter/appendix)</span></td>
+          <td>{yearRange(proceedings)}</td>
+          <td><span class="i18n-zh">{proceedings.length} 条（{proceedings.length - countFront(proceedings)} 论文 + {countFront(proceedings)} 前置页）</span><span class="i18n-en">{proceedings.length} records ({proceedings.length - countFront(proceedings)} papers + {countFront(proceedings)} front matter)</span></td>
           <td><span class="i18n-zh">IEEE Xplore / Crossref DOI 元数据，经 OpenAlex 交叉核对</span><span class="i18n-en">IEEE Xplore / Crossref DOI metadata, cross-checked against OpenAlex</span></td>
         </tr>
         <tr>
           <td><span class="i18n-zh">QCE 2026 官方日程</span><span class="i18n-en">QCE 2026 official program</span></td>
-          <td><span class="i18n-zh">2026（论文集尚未出版）</span><span class="i18n-en">2026 (proceedings not yet published)</span></td>
-          <td><span class="i18n-zh">372 篇技术论文（9 Track，27 篇 Best Paper）</span><span class="i18n-en">372 technical papers (9 tracks, 27 Best Papers)</span></td>
-          <td><span class="i18n-zh">IEEE 官方 Technical Papers Schedule PDF，arXiv 按标题匹配 214 篇（含摘要）</span><span class="i18n-en">IEEE official Technical Papers Schedule PDF; 214 records matched to arXiv by title (abstracts included)</span></td>
+          <td><span class="i18n-zh">2026（库内尚未匹配到 DOI 的日程记录）</span><span class="i18n-en">2026 (program records not yet reconciled to DOIs in this library)</span></td>
+          <td><span class="i18n-zh">{program.length} 条日程记录；{new Set(program.map((p) => p.track)).size} 个 Track</span><span class="i18n-en">{program.length} program records across {new Set(program.map((p) => p.track)).size} tracks</span></td>
+          <td><span class="i18n-zh">仓库记录来源为 QCE26 Technical Papers Schedule 与 Best Papers PDF；{program.filter((p) => p.arxiv).length} 条带 arXiv 标题匹配。日程、匹配与获奖标注均应回查官方原始材料，不代表本次构建已重新核验。</span><span class="i18n-en">The repository attributes these records to QCE26 Technical Papers Schedule and Best Papers PDFs; {program.filter((p) => p.arxiv).length} include title-matched arXiv links. Verify schedules, matches and award labels against the original sources; rebuilding does not reverify them.</span></td>
         </tr>
         <tr>
           <td><span class="i18n-zh">IEEE TQE 期刊</span><span class="i18n-en">IEEE TQE journal</span></td>
-          <td><span class="i18n-zh">2020–2026（Vol. 1–7）</span><span class="i18n-en">2020–2026 (Vol. 1–7)</span></td>
-          <td><span class="i18n-zh">465 条（443 论文 + 22 前置页）</span><span class="i18n-en">465 entries (443 papers + 22 front matter)</span></td>
+          <td>{yearRange(tqe.papers)}</td>
+          <td><span class="i18n-zh">{tqe.count} 条（{tqe.count - countFront(tqe.papers)} 论文 + {countFront(tqe.papers)} 前置页）</span><span class="i18n-en">{tqe.count} records ({tqe.count - countFront(tqe.papers)} papers + {countFront(tqe.papers)} front matter)</span></td>
           <td><span class="i18n-zh">Crossref（ISSN 2689-1808）；摘要来自 OpenAlex / Semantic Scholar / arXiv 三源合并</span><span class="i18n-en">Crossref (ISSN 2689-1808); abstracts merged from OpenAlex / Semantic Scholar / arXiv</span></td>
         </tr>
         <tr>
           <td><span class="i18n-zh">CS4Q 量子测控导读</span><span class="i18n-en">CS4Q quantum control guide</span></td>
-          <td><span class="i18n-zh">策展分析（2026-09 核查）</span><span class="i18n-en">Curated analysis (verified 2026-09)</span></td>
-          <td><span class="i18n-zh">33 篇（17 主论文 + 9 补充 + 7 资料）</span><span class="i18n-en">33 entries (17 main + 9 supplementary + 7 notes)</span></td>
+          <td><span class="i18n-zh">手工策展，按条目注明发表状态</span><span class="i18n-en">Hand-curated; publication status is described per entry</span></td>
+          <td><span class="i18n-zh">{CS4Q_COUNTS.total} 条（{CS4Q_COUNTS.P} 主论文 + {CS4Q_COUNTS.S} 补充 + {CS4Q_COUNTS.R} 资料）</span><span class="i18n-en">{CS4Q_COUNTS.total} entries ({CS4Q_COUNTS.P} main + {CS4Q_COUNTS.S} supplementary + {CS4Q_COUNTS.R} resources)</span></td>
           <td><span class="i18n-zh">以 <a href="https://sites.google.com/lbl.gov/cs4q/home" target="_blank" rel="noopener">CS4Q workshop</a>（LBNL）为线索的手工策展导读，非自动抓取；不含在每周自动更新中</span><span class="i18n-en">A hand-curated guide organized around the <a href="https://sites.google.com/lbl.gov/cs4q/home" target="_blank" rel="noopener">CS4Q workshop</a> (LBNL); not auto-fetched and not part of the weekly update</span></td>
         </tr>
         <tr>
@@ -90,26 +105,33 @@ const CAT_BLURB_EN: Record<string, string> = {
 
     <h2><span class="i18n-zh">更新机制</span><span class="i18n-en">Update Pipeline</span></h2>
     <ul>
-      <li><span class="i18n-zh"><b>每周自动更新</b>：GitHub Actions 每周一 03:17 UTC 运行 <code>scripts/update_data.py</code>——增量抓取 Crossref 新 DOI（TQE 按 ISSN；QCE 按会议论文集探测新年度卷），OpenAlex 补摘要与引用数；有变更才提交并触发重新部署。也可随时在 Actions 页面手动触发。</span><span class="i18n-en"><b>Weekly automated updates</b>: GitHub Actions runs <code>scripts/update_data.py</code> every Monday at 03:17 UTC — incrementally fetching new DOIs from Crossref (TQE by ISSN; QCE by probing the proceedings for new annual volumes) and filling in abstracts and citation counts from OpenAlex. A commit and redeploy happen only when something changed. You can also trigger a run manually from the Actions page.</span></li>
+      <li><span class="i18n-zh"><b>每周自动更新</b>：GitHub Actions 计划于每周一 03:14 UTC（北京时间 11:14）运行 <code>scripts/update_data.py</code>；实际启动可能延迟。增量抓取 Crossref 新 DOI，OpenAlex 补摘要与引用数；有变更才提交，并显式触发 GitHub Pages 部署。资料空间站点是另行发布的版本，其数据以自身构建快照为准。</span><span class="i18n-en"><b>Weekly automated updates</b>: GitHub Actions is scheduled for Monday 03:14 UTC (11:14 Beijing time), though runs can be delayed. It fetches new Crossref DOIs and fills in OpenAlex abstracts and citation counts. Changed data is committed and explicitly triggers GitHub Pages deployment. The Space site is published separately and reflects its own build snapshot.</span></li>
       <li><span class="i18n-zh"><b>抓取失败兜底</b>：任一步失败即保留上次数据，网站不受影响；抓取窗口与上次运行重叠 2 天防边界漏抓。</span><span class="i18n-en"><b>Failure fallback</b>: if any step fails, the previous data is kept and the site is unaffected; each fetch window overlaps the previous run by 2 days so nothing is missed at the boundary.</span></li>
-      <li><span class="i18n-zh"><b>QCE 2026 过渡</b>：论文集正式进 IEEE Xplore 后，自动以 DOI 记录替换日程记录（按标题匹配），Track/Session/获奖信息保留。</span><span class="i18n-en"><b>QCE 2026 transition</b>: once the proceedings are published in IEEE Xplore, program entries are replaced automatically by DOI-based records (matched by title), while track, session and award information is retained.</span></li>
+      <li><span class="i18n-zh"><b>QCE 2026 过渡</b>：抓取到论文集 DOI 后，按标题精确匹配或相似度匹配生成替换映射，构建时跳过已匹配的日程行。新的 DOI 条目使用论文集元数据；当前实现不保证继承原日程的 Track、Session、时间和获奖标注。匹配结果仍需人工抽查。</span><span class="i18n-en"><b>QCE 2026 transition</b>: after proceedings DOIs are ingested, exact or fuzzy title matching creates a replacement map, and matched program rows are omitted from the build. DOI records use proceedings metadata; the current implementation does not guarantee transfer of track, session, time or award labels. Matches still need manual spot checks.</span></li>
     </ul>
+
+    <p><span class="i18n-zh">本页数据构建时间：<time datetime={qce.generated}>{qce.generated}</time>。仓库记录的最近成功抓取日期：QCE {sourceState.last_qce_run ?? '未记录'}，TQE {sourceState.last_tqe_run ?? '未记录'}。构建时间仅表示文件生成时间，不代表所有条目的来源、中文说明或投稿信息已重新核查；抓取成功也不保证上游索引完整。</span><span class="i18n-en">Dataset build timestamp: <time datetime={qce.generated}>{qce.generated}</time>. Latest successful fetch dates recorded in the repository: QCE {sourceState.last_qce_run ?? 'not recorded'}, TQE {sourceState.last_tqe_run ?? 'not recorded'}. Rebuilding does not reverify every source, annotation or venue detail; a successful fetch also does not imply complete upstream indexing.</span></p>
 
     <h2><span class="i18n-zh">中文说明的生成与补全</span><span class="i18n-en">Generating and Completing the Chinese Summaries</span></h2>
     <ul>
-      <li><span class="i18n-zh">现有 1522+443 条中文说明由 AI 逐条依据摘要撰写，突出创新点与主要结果。</span><span class="i18n-en">The existing 1522 + 443 Chinese summaries were written one by one by AI from the abstracts, highlighting the key contributions and main results.</span></li>
+      <li><span class="i18n-zh">论文的中文创新点说明包含依据摘要撰写的 AI 辅助解读；日程条目的中文说明主要由 Track 与 Session 拼接，不能视为论文内容总结。调研结论应引用 DOI、预印本或官方原文，不能将本站说明当作独立证据。</span><span class="i18n-en">Chinese contribution notes include AI-assisted interpretations of abstracts. Program notes are mainly assembled from track and session labels and are not paper summaries. Research conclusions should cite the DOI, preprint or official original, rather than treating site annotations as independent evidence.</span></li>
       <li><span class="i18n-zh">自动更新抓取到的<b>新论文</b>中文说明暂为「待补充」：将 <code>data_src/overrides/zh_new.json</code> 按 <code>{'{"论文id": "中文说明"}'}</code> 格式补充后提交，构建时自动覆盖。</span><span class="i18n-en">Newly fetched <b>papers</b> keep a placeholder Chinese summary (“pending”) until you add an entry to <code>data_src/overrides/zh_new.json</code> in the form <code>{'{"paper id": "Chinese summary"}'}</code> and commit it; the build then applies the override automatically.</span></li>
     </ul>
+
+    <h2><span class="i18n-zh">Agent 调研与复用</span><span class="i18n-en">Agent Research and Reuse</span></h2>
+    <p><span class="i18n-zh">从 <a href={`${base}agents/`}>数据与 Agent 接入</a> 获取数据目录、字段定义和调用示例。保留记录的 <code>id</code>、<code>source</code>、<code>doi</code> / <code>arxiv</code>，并记录所用快照时间，便于复核。合并统计时默认排除 <code>front_matter</code>，将 <code>qce26</code> 日程记录与有 DOI 的论文记录分开计数。</span><span class="i18n-en">Start at <a href={`${base}agents/`}>Data &amp; Agent Access</a> for the catalog, field definitions and examples. Preserve <code>id</code>, <code>source</code>, <code>doi</code> / <code>arxiv</code> and the snapshot timestamp. Exclude <code>front_matter</code> by default, and count <code>qce26</code> program records separately from DOI-based papers.</span></p>
+    <p><span class="i18n-zh">引用数是 OpenAlex 的抓取快照，缺失值不等于 0；年份采用库内规范化口径，不能直接当作在线发表日期。摘要缺失、分类误判、标题匹配偏差与上游收录延迟都可能影响结果。本站并非完整全文数据库；第三方摘要与原文的权利仍属于各自权利人。</span><span class="i18n-en">Citation counts are OpenAlex snapshots; missing values are not zero. Normalized years are not necessarily online publication dates. Missing abstracts, classification errors, title-match errors and indexing delays can affect results. This is not a complete full-text database; third-party abstracts and original works retain their respective rights.</span></p>
 
     <h2><span class="i18n-zh">使用提示</span><span class="i18n-en">Usage Tips</span></h2>
     <ul>
       <li><span class="i18n-zh">浏览器页按 <code>/</code> 聚焦搜索、空格分多词（AND）、Esc 清空；年份与类别芯片可叠加；筛选状态写入地址栏 hash，复制链接即可分享。</span><span class="i18n-en">In the browser pages, press <code>/</code> to focus the search box, separate terms with spaces (AND), and press Esc to clear; year and category chips stack; the filter state is written to the URL hash, so copying the link shares your view.</span></li>
-      <li><span class="i18n-zh">各条目链接直达 DOI（IEEE Xplore）；QCE26 条目附 arXiv 预印本链接。</span><span class="i18n-en">Every entry links straight to its DOI (IEEE Xplore); QCE26 entries also link to their arXiv preprint.</span></li>
+      <li><span class="i18n-zh">论文集与期刊条目优先链接到 DOI；日程条目在成功匹配时提供 arXiv 链接，并非每条都有摘要或预印本。</span><span class="i18n-en">Proceedings and journal entries link to their DOIs; program entries include arXiv links when matched. Abstracts and preprints are not available for every record.</span></li>
       <li><span class="i18n-zh">封面、版权页、索引等「前置页」默认隐藏，可在工具条开启查看。</span><span class="i18n-en">Front matter such as covers, copyright pages and indexes is hidden by default and can be shown from the toolbar.</span></li>
     </ul>
 
     <h2><span class="i18n-zh">相关链接</span><span class="i18n-en">Related Links</span></h2>
     <p>
+      <a href={`${base}agents/`}><span class="i18n-zh">数据与 Agent 接入</span><span class="i18n-en">Data &amp; Agent Access</span></a> ·
       <a href={`${base}qce/`}><span class="i18n-zh">QCE 会议浏览器</span><span class="i18n-en">QCE Conference Browser</span></a> ·
       <a href={`${base}tqe/`}><span class="i18n-zh">TQE 期刊浏览器</span><span class="i18n-en">TQE Journal Browser</span></a> ·
       <a href={`${base}stats/`}><span class="i18n-zh">方向统计</span><span class="i18n-en">Statistics</span></a> ·

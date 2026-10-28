@@ -7,7 +7,7 @@ interface Props {
   title: string;
   description?: string;
 }
-const { title, description = `${SITE.tagline}。汇总 IEEE QCE（2020–2026）与 IEEE TQE（Vol. 1–7）出版记录，可搜索、按年份与研究方向分类、附中文创新点说明。` } = Astro.props;
+const { title, description = `${SITE.tagline}。检索 IEEE QCE 与 TQE 文献及会议日程记录，按年份与研究方向筛选，阅读专题导读，获取可追溯的结构化研究数据。` } = Astro.props;
 const base = import.meta.env.BASE_URL;
 ---
 <!doctype html>
@@ -18,6 +18,7 @@ const base = import.meta.env.BASE_URL;
 <meta name="description" content={description}>
 <title>{title} · {SITE.short} · {SITE.name}</title>
 <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml">
+<link rel="alternate" type="application/json" title="paper4qi data manifest" href={`${base}data/manifest.json`}>
 <script is:inline>
   (() => {
     const KEY = 'p4q-theme';
@@ -34,10 +35,13 @@ const base = import.meta.env.BASE_URL;
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main-content"><span class="i18n-zh">跳至主要内容</span><span class="i18n-en">Skip to content</span></a>
 <SiteHeader active={Astro.url.pathname} />
-<slot />
+<div id="main-content" tabindex="-1"><slot /></div>
 <footer class="site-footer"><div class="wrap">
-  <span class="i18n-zh">数据：IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 官方日程 ｜ 每周自动更新 · </span><span class="i18n-en">Data: IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 program ｜ Updated weekly · </span><a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub</a>
+  <div class="footer-brand">{SITE.short}<span><span class="i18n-zh">量子基础设施文献库</span><span class="i18n-en">Quantum infrastructure research library</span></span></div>
+  <div class="footer-links"><a href={`${base}about/`}><span class="i18n-zh">数据与来源</span><span class="i18n-en">Data & sources</span></a><a href={`${base}agents/`}><span class="i18n-zh">Agent 接入</span><span class="i18n-en">Agent access</span></a><a href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub ↗</a></div>
+  <p><span class="i18n-zh">IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 日程。文献数据计划每周更新；人工策展内容以各页标注日期为准。</span><span class="i18n-en">IEEE Xplore / Crossref · OpenAlex · arXiv · QCE26 program. Literature updates are scheduled weekly; curated guides carry their own review dates.</span></p>
 </div></footer>
 </body>
 </html>

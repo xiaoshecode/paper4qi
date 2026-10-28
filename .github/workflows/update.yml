@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: data-update
@@ -16,6 +17,7 @@ concurrency:
 
 jobs:
   update:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -34,6 +36,7 @@ jobs:
         run: python scripts/update_data.py
 
       - name: Commit if changed
+        id: commit
         run: |
           if [ -z "$(git status --porcelain -- data_src)" ]; then
             echo "no data changes"
@@ -44,3 +47,12 @@ jobs:
           git add data_src
           git commit -m "data: weekly update $(date -u +%F)"
           git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # A push made with GITHUB_TOKEN does not trigger another push workflow.
+      # workflow_dispatch is an explicit supported exception.
+      - name: Deploy updated data
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main

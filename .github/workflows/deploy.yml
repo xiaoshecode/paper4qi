@@ -31,6 +31,11 @@ jobs:
       - name: Build data files
         run: python scripts/build_data.py
 
+      - name: Validate agent data contract
+        run: |
+          python scripts/test_research_data.py
+          python scripts/validate_agent_data.py
+
       - name: Validate data outputs
         run: |
           python - <<'PY'
@@ -73,6 +78,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate read-only Sites tools
+        run: node scripts/test-site-worker.mjs
+
       - name: Download data artifact
         uses: actions/download-artifact@v4
         with:
@@ -82,10 +90,18 @@ jobs:
       - name: Build site
         run: pnpm build
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Validate published data and curated guides
+        run: python scripts/validate_agent_data.py --site-dir dist
+
       - name: Verify built output
         run: |
           test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
           test -f dist/data/qce.json || { echo "dist/data/qce.json missing"; exit 1; }
+          test -f dist/agents/index.html || { echo "dist/agents/index.html missing"; exit 1; }
           echo "dist pages:" && find dist -name "*.html" | sort
           echo "data size:" && du -sh dist/data
 

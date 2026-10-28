@@ -1,16 +1,26 @@
 ---
+import { readFileSync } from 'node:fs';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PaperBrowser from '../../components/PaperBrowser.astro';
+import type { DataFile } from '../../scripts/types';
+const data = JSON.parse(readFileSync('public/data/qce.json', 'utf-8')) as DataFile;
+const proceedings = data.papers.filter((p) => p.source === 'qce');
+const program = data.papers.filter((p) => p.source === 'qce26');
+const front = proceedings.filter((p) => p.front_matter).length;
+const years = [...new Set(data.papers.map((p) => p.year))].sort((a, b) => a - b);
+const range = `${years[0]}–${years[years.length - 1]}`;
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="QCE 会议论文浏览器">
   <main class="wrap">
     <section class="page-head">
-      <div class="kicker"><span class="i18n-zh">IEEE 量子周 · 2020–2026</span><span class="i18n-en">IEEE Quantum Week · 2020–2026</span></div>
+      <div class="kicker"><span class="i18n-zh">IEEE 量子周 · {range}</span><span class="i18n-en">IEEE Quantum Week · {range}</span></div>
       <h1><span class="i18n-zh">QCE 会议论文浏览器</span><span class="i18n-en">QCE Conference Paper Browser</span></h1>
       <p class="lede">
-        <span class="i18n-zh">IEEE QCE（International Conference on Quantum Computing and Engineering）2020–2026 年文献汇总：2020–2025 年论文集 <b>1674</b> 条，2026 年官方日程 <b>372</b> 篇（日程条目带 Track / Session / 具体时间），其中 <b>214</b> 篇已匹配到 arXiv 预印本。支持多关键词检索、年份与 13 个研究方向叠加筛选、命中高亮与 CSV 导出。</span><span class="i18n-en">IEEE QCE (International Conference on Quantum Computing and Engineering), 2020–2026: <b>1674</b> entries from the 2020–2025 proceedings plus <b>372</b> technical papers from the 2026 official program (program entries carry track, session and scheduled time), <b>214</b> of which have been matched to arXiv preprints. Supports multi-keyword search, stacking year and 13 research-area filters, hit highlighting and CSV export.</span>
+        <span class="i18n-zh">IEEE QCE（International Conference on Quantum Computing and Engineering）{range} 年文献汇总：论文集 <b>{proceedings.length}</b> 条（{proceedings.length - front} 篇论文、{front} 条前置页），另有 <b>{program.length}</b> 条 2026 日程记录，其中 <b>{program.filter((p) => p.arxiv).length}</b> 条匹配到 arXiv。日程记录不等同于正式出版论文，匹配需回查原文。支持多关键词检索、年份与研究方向叠加筛选、命中高亮与 CSV 导出。</span><span class="i18n-en">IEEE QCE (International Conference on Quantum Computing and Engineering), {range}: <b>{proceedings.length}</b> proceedings records ({proceedings.length - front} papers and {front} front matter), plus <b>{program.length}</b> program records from 2026, including <b>{program.filter((p) => p.arxiv).length}</b> arXiv matches. Program records are not proof of publication; verify matches against the originals. Search multiple terms, combine year and research-area filters, highlight matches and export CSV.</span>
       </p>
+      <p><a href={`${base}agents/`}><span class="i18n-zh">获取结构化数据与调用说明 →</span><span class="i18n-en">Structured data and agent access →</span></a></p>
     </section>
     <section class="page-body">
       <PaperBrowser source="qce" />

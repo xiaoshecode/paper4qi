@@ -2,123 +2,81 @@
 import { readFileSync } from 'node:fs';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CategoryBar from '../components/CategoryBar.astro';
-import Timeline from '../components/Timeline.astro';
-import { CATEGORIES, CAT_ZH, SITE } from '../data/meta';
+import { CATEGORIES, CAT_ZH } from '../data/meta';
 import { VENUE_COUNTS } from '../data/venues';
-
+import { CS4Q_ENTRIES } from '../data/cs4q';
 const base = import.meta.env.BASE_URL;
 const stats = JSON.parse(readFileSync('public/data/stats.json', 'utf-8'));
 const t = stats.totals as Record<string, number>;
 const matrix = stats.matrix.combined as Record<string, Record<string, number>>;
 const years = stats.years as number[];
-
-const catTotals: [string, number][] = stats.cats
-  .map((c: string) => [c, years.reduce((s, y) => s + (matrix[String(y)]?.[c] ?? 0), 0)] as [string, number])
-  .filter(([, n]) => n > 0)
-  .sort((a, b) => b[1] - a[1]);
-
-const catEn: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => [c.key, c.en]));
-
-const tlItems = [
-  {
-    when: '2020–2021',
-    title: '奠基期：算法与量子互联网愿景',
-    titleEn: 'Foundations: Algorithms and the Quantum-Internet Vision',
-    body: 'QCE 创办，算法与理论、量子机器学习双主导；TQE 创刊，量子算法与量子通信网络（中继、纠缠分发、QKD）为两大支柱。领域关键词：NISQ 时代能做什么。',
-    bodyEn: 'QCE is founded, led jointly by algorithms &amp; theory and quantum machine learning; TQE launches with quantum algorithms and quantum communication networks (repeaters, entanglement distribution, QKD) as its two pillars. The field\'s defining question: what can be done in the NISQ era.',
-    color: 'var(--c-ALG)',
-  },
-  {
-    when: '2022–2023',
-    title: '工程化工具链崛起',
-    titleEn: 'The Rise of Engineering Toolchains',
-    body: 'QCE 体量翻倍（156→334 篇），软件与工具、编译与电路优化标签放量；TQE 体系结构/编译/基准类跃升，硬件平台论文增多——从"证明可行"转向"如何高效实现与评估"。',
-    bodyEn: 'QCE doubles in volume (156 → 334 papers), with software &amp; tools and compilation &amp; circuit optimization growing fast; TQE sees a jump in architecture / compilation / benchmarking and more hardware-platform papers — the emphasis shifts from proving feasibility to implementing and evaluating efficiently.',
-    color: 'var(--c-ARCH)',
-  },
-  {
-    when: '2023–2024',
-    title: '硬件多样化与机器学习热潮',
-    titleEn: 'Hardware Diversification and the Machine-Learning Wave',
-    body: 'TQE 量子机器学习达峰（9 篇），超导/离子阱/自旋/中性原子/光子多平台并进，材料工艺论文出现；QCE 硬件与器件标签升至 52→77 次。',
-    bodyEn: 'Quantum machine learning peaks at TQE (9 papers), superconducting, trapped-ion, spin, neutral-atom and photonic platforms advance in parallel, and materials &amp; fabrication papers appear; QCE hardware &amp; device tags climb from 52 to 77.',
-    color: 'var(--c-PLAT)',
-  },
-  {
-    when: '2024–2026',
-    title: '容错与规模化',
-    titleEn: 'Fault Tolerance and Scaling',
-    body: '纠错论文回升（TQE 2026 年 15 篇；QCE 纠错标签累计 94 次）；低温测控成为 TQE 显著类别；QCE26 日程中 QSYS+QAPP 占 39%、27 篇 Best Paper 集中在解码/网络/系统——量子互联网工程化与容错架构成为共同主线。',
-    bodyEn: 'Error-correction papers rebound (15 in TQE 2026; 94 error-correction tags at QCE in total); cryogenic control becomes a prominent TQE category; QSYS + QAPP make up 39% of the QCE26 program, with 27 Best Papers concentrated in decoding, networking and systems — engineering the quantum internet and fault-tolerant architectures become the shared thread.',
-    color: 'var(--c-QEC)',
-  },
+const yearRange = `${Math.min(...years)}–${Math.max(...years)}`;
+const generated = stats.generated.slice(0, 10);
+const research = JSON.parse(readFileSync('public/data/research-map.json', 'utf-8'));
+const catTotals: [string, number][] = stats.cats.map((c: string) => [c, years.reduce((s, y) => s + (matrix[String(y)]?.[c] ?? 0), 0)] as [string, number]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+const catEn = Object.fromEntries(CATEGORIES.map((c) => [c.key, c.en]));
+const paths = [{ key: 'ARCH', zh: '编译与体系结构', en: 'Compilation' }, { key: 'CRYO', zh: '量子测控', en: 'Quantum control' }, { key: 'QEC', zh: '纠错与容错', en: 'Error correction' }, { key: 'COMM', zh: '量子网络', en: 'Networks' }];
+const guides = [
+  { path: 'cs4q/', tag: '01 / CONTROL SYSTEMS', title: '量子测控 · CS4Q', titleEn: 'Quantum control · CS4Q', text: '沿着脉冲控制、读出、实时反馈与译码，理解量子控制系统的完整链路。', textEn: 'Follow the chain from pulse control and readout to real-time feedback and decoding.', foot: `${CS4Q_ENTRIES.length} 条策展资料`, footEn: `${CS4Q_ENTRIES.length} curated entries`, color: 'CRYO' },
+  { path: 'openqasm/', tag: '02 / LANGUAGE & RUNTIME', title: 'OpenQASM 标准与应用', titleEn: 'OpenQASM in practice', text: '梳理语言版本、动态线路、时序控制和工具支持，分清标准能力与实现边界。', textEn: 'Explore language versions, dynamic circuits, timing and tool support, with clear implementation boundaries.', foot: '标准 · 工具 · 代表论文', footEn: 'Standards · Tools · Papers', color: 'ARCH' },
+  { path: 'venues/', tag: '03 / PUBLICATION', title: '期刊会议投稿指南', titleEn: 'Find a publication venue', text: '按研究领域与成果类型了解投稿去向，查看会议征稿线索，截止日期以官方页面为准。', textEn: 'Match research topics and paper types to venues. Confirm submission deadlines on official pages.', foot: `${VENUE_COUNTS.journals} 本期刊与会议资料`, footEn: `${VENUE_COUNTS.journals} journals & conference resources`, color: 'COMM' },
 ];
 ---
-<BaseLayout title="总览">
-  <div class="wrap page-head">
-    <div class="kicker"><span class="i18n-zh">{SITE.name}</span><span class="i18n-en">Paper for Quantum Infrastructure</span></div>
-    <h1><span class="i18n-zh">{SITE.nameZh}</span><span class="i18n-en">Quantum Infrastructure Paper Library</span></h1>
-    <p class="lede"><span class="i18n-zh">{SITE.short}（Paper for Quantum Infrastructure）汇总 IEEE QCE 会议（2020–2026）与 IEEE TQE 期刊（2020–2026，Vol. 1–7）共 <b>{t.all.toLocaleString()}</b> 条出版记录，按研究方向分类、附中文创新点说明与英文摘要，每周自动更新。</span><span class="i18n-en">{SITE.short} (Paper for Quantum Infrastructure) aggregates <b>{t.all.toLocaleString()}</b> publication records from the IEEE QCE conference (2020–2026) and the IEEE TQE journal (2020–2026, Vol. 1–7), classified by research area, with Chinese key-contribution notes and English abstracts. Updated weekly.</span></p>
-  </div>
-
-  <div class="wrap page-body">
-    <div class="stat-grid">
-      <div class="stat-card card" style="--sc: var(--c-ALG)">
-        <a href={`${base}qce/`}>
-          <div class="num">{(t.qce + t.qce26).toLocaleString()}</div>
-          <div class="lbl"><span class="i18n-zh">IEEE QCE 会议论文（2020–2026）</span><span class="i18n-en">IEEE QCE Conference Papers (2020–2026)</span></div>
-          <div class="ext"><span class="i18n-zh">2020–2025 论文集 {t.qce.toLocaleString()} 篇 + 2026 官方日程 {t.qce26} 篇 · 27 篇 Best Paper</span><span class="i18n-en">{t.qce.toLocaleString()} papers from 2020–2025 proceedings + {t.qce26} from the 2026 official program · 27 Best Papers</span></div>
-        </a>
+<BaseLayout title="量子基础设施文献库" description="检索 IEEE QCE 与 TQE 文献，阅读量子测控和 OpenQASM 专题，通过结构化数据开展可追溯的 agent 调研。">
+  <main class="wrap home-page">
+    <section class="home-hero" aria-labelledby="home-title">
+      <div class="home-intro">
+        <div class="kicker">PAPER FOR QUANTUM INFRASTRUCTURE</div>
+        <h1 id="home-title"><span class="i18n-zh">连接文献，<br /><em>理解量子基础设施。</em></span><span class="i18n-en">Explore the research.<br /><em>Understand the infrastructure.</em></span></h1>
+        <p class="home-lede"><span class="i18n-zh">从量子硬件、编译到测控与容错，把分散的论文、专题和研究数据，整理成可以检索、阅读与复用的知识入口。</span><span class="i18n-en">A research starting point for quantum hardware, compilation, control and fault tolerance. Search papers, follow curated guides and reuse the underlying data.</span></p>
+        <form class="home-search" id="home-search" action={`${base}qce/`} role="search" data-base={base}>
+          <label class="sr-only" for="home-query"><span class="i18n-zh">检索关键词</span><span class="i18n-en">Search terms</span></label>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+          <input id="home-query" name="q" type="search" placeholder="OpenQASM, decoder, cryo-CMOS…" autocomplete="off" />
+          <label class="sr-only" for="home-source"><span class="i18n-zh">文献来源</span><span class="i18n-en">Source</span></label>
+          <select id="home-source" name="source"><option value="qce">QCE</option><option value="tqe">TQE</option></select>
+          <button type="submit"><span class="i18n-zh">检索</span><span class="i18n-en">Search</span><span aria-hidden="true"> →</span></button>
+        </form>
+        <div class="home-topics"><span class="i18n-zh">按方向开始</span><span class="i18n-en">Explore</span>{paths.map((p) => <a href={`${base}qce/#c=${p.key}`}><span class="i18n-zh">{p.zh}</span><span class="i18n-en">{p.en}</span></a>)}</div>
+        <noscript><p class="home-note">关键词检索需要 JavaScript；可从 Agent 数据页下载 JSON。 Keyword search requires JavaScript; JSON downloads are available on the Agent data page.</p></noscript>
       </div>
-      <div class="stat-card card" style="--sc: var(--c-QEC)">
-        <a href={`${base}tqe/`}>
-          <div class="num">{t.tqe.toLocaleString()}</div>
-          <div class="lbl"><span class="i18n-zh">IEEE TQE 期刊论文（Vol. 1–7）</span><span class="i18n-en">IEEE TQE Journal Articles (Vol. 1–7)</span></div>
-          <div class="ext"><span class="i18n-zh">443 篇研究论文，含中文创新点与英文摘要 · 被引数据 OpenAlex</span><span class="i18n-en">443 research articles with Chinese key-contribution notes and English abstracts · Citations from OpenAlex</span></div>
-        </a>
-      </div>
-      <div class="stat-card card" style="--sc: var(--c-COMM)">
-        <a href={`${base}stats/`}>
-          <div class="num">{catTotals.length}</div>
-          <div class="lbl"><span class="i18n-zh">研究方向分类</span><span class="i18n-en">Research Areas</span></div>
-          <div class="ext"><span class="i18n-zh">13 类统一分类法覆盖两个 venue · 年×类统计见仪表盘</span><span class="i18n-en">A unified 13-category taxonomy across both venues · Year × category figures on the dashboard</span></div>
-        </a>
-      </div>
-      <div class="stat-card card" style="--sc: var(--c-CRYO)">
-        <a href={`${base}cs4q/`}>
-          <div class="num">33</div>
-          <div class="lbl"><span class="i18n-zh">CS4Q 量子测控导读</span><span class="i18n-en">CS4Q Quantum Control Guide</span></div>
-          <div class="ext"><span class="i18n-zh">从脉冲控制到容错运行：17 主论文 + 9 补充 + 7 资料 · 系统图景与发展脉络</span><span class="i18n-en">From pulse control to fault-tolerant operation: 17 main + 9 supplementary papers + 7 notes · System map & trajectory</span></div>
-        </a>
-      </div>
-      <div class="stat-card card" style="--sc: var(--c-REV)">
-        <a href={`${base}venues/`}>
-          <div class="num">{VENUE_COUNTS.journals}</div>
-          <div class="lbl"><span class="i18n-zh">期刊会议投稿指南</span><span class="i18n-en">Venue Guide</span></div>
-          <div class="ext"><span class="i18n-zh">{VENUE_COUNTS.journals} 本期刊 × 7 领域 · CCF 2026 · 2025 JCR · 会议 CFP 截止日期</span><span class="i18n-en">{VENUE_COUNTS.journals} journals across 7 fields · CCF 2026 · 2025 JCR · conference CFP deadlines</span></div>
-        </a>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:22px;padding:20px 24px">
-      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">研究方向分布（两源合并，{t.all.toLocaleString()} 条）</span><span class="i18n-en">Research Area Distribution (both sources combined, {t.all.toLocaleString()} records)</span></h2>
-      <p style="margin:0 0 14px;font-size:12px;color:var(--faint)"><span class="i18n-zh">13 类统一分类 · 不含封面/索引等前置页 · 点击图例可在 <a href={`${base}stats/`}>统计页</a> 看逐年演变</span><span class="i18n-en">Unified 13-category taxonomy · Excludes front matter such as covers and indexes · Click the legend to see year-by-year trends on the <a href={`${base}stats/`}>statistics page</a></span></p>
-      <CategoryBar rows={catTotals.map(([key, n]) => ({ key, label: CAT_ZH[key] ?? key, labelEn: catEn[key] ?? key, value: n }))} />
-    </div>
-
-    <div class="card" style="margin-top:18px;padding:20px 24px">
-      <h2 style="margin:0 0 4px;font-size:17px;font-weight:700"><span class="i18n-zh">研究脉络 2020–2026</span><span class="i18n-en">Research Trajectory, 2020–2026</span></h2>
-      <p style="margin:0 0 16px;font-size:12px;color:var(--faint)"><span class="i18n-zh">会议快照（QCE，反映投稿热度）× 期刊档案（TQE，反映工程沉淀）双轨视角 · 分源叙述见下</span><span class="i18n-en">Two lenses: conference snapshots (QCE, reflecting submission activity) × journal records (TQE, reflecting engineering depth) · Per-source narratives below</span></p>
-      <Timeline items={tlItems} />
-      <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
-        <span class="i18n-zh">
-        分源详细脉络：〈<a href={`${base}qce/`}>QCE 会议六年演变</a>〉与〈<a href={`${base}tqe/`}>TQE 期刊四阶段</a>〉；
-        逐年分类数据见〈<a href={`${base}stats/`}>方向统计</a>〉。
-        </span><span class="i18n-en">
-        Detailed per-source narratives: “<a href={`${base}qce/`}>Six Years of QCE</a>” and “<a href={`${base}tqe/`}>Four Phases of TQE</a>”;
-        year-by-year category figures under “<a href={`${base}stats/`}>Statistics</a>”.
-        </span>
-      </p>
-    </div>
-  </div>
+      <aside class="home-research card" aria-labelledby="research-title">
+        <div class="home-research-top"><span class="mono">RESEARCH WORKFLOW</span><span class="home-status"><span aria-hidden="true"></span><span class="i18n-zh">可追溯调研</span><span class="i18n-en">Traceable research</span></span></div>
+        <h2 id="research-title"><span class="i18n-zh">从问题走向证据</span><span class="i18n-en">From questions to evidence</span></h2>
+        <ol class="home-steps">
+          <li><span class="step-num">01</span><div><a href={`${base}qce/`}><span class="i18n-zh">发现文献</span><span class="i18n-en">Find the literature</span></a><p><span class="i18n-zh">按关键词、年份和方向筛选</span><span class="i18n-en">Filter by keyword, year and topic</span></p></div></li>
+          <li><span class="step-num">02</span><div><a href={`${base}openqasm/`}><span class="i18n-zh">建立研究图景</span><span class="i18n-en">Build your understanding</span></a><p><span class="i18n-zh">专题导读串联标准、工具与论文</span><span class="i18n-en">Connect standards, tools and papers</span></p></div></li>
+          <li><span class="step-num">03</span><div><a href={`${base}agents/`}><span class="i18n-zh">交给 agent 继续调研</span><span class="i18n-en">Continue with an agent</span></a><p><span class="i18n-zh">读取结构化数据，回溯原始来源</span><span class="i18n-en">Read structured data; verify sources</span></p></div></li>
+        </ol>
+        <a class="home-research-link" href={`${base}agents/`}><span class="i18n-zh">查看数据接口与使用说明</span><span class="i18n-en">Data access & research guide</span><span aria-hidden="true"> ↗</span></a>
+      </aside>
+    </section>
+    <section class="home-numbers" aria-label="文献库规模 / Collection coverage">
+      <a href={`${base}qce/`}><strong>{t.qce.toLocaleString()}</strong><span><span class="i18n-zh">QCE 论文集记录</span><span class="i18n-en">QCE proceedings papers</span></span></a>
+      <a href={`${base}qce/#y=2026`}><strong>{t.qce26.toLocaleString()}</strong><span><span class="i18n-zh">QCE 2026 日程条目</span><span class="i18n-en">QCE 2026 program entries</span></span></a>
+      <a href={`${base}tqe/`}><strong>{t.tqe.toLocaleString()}</strong><span><span class="i18n-zh">TQE 期刊论文</span><span class="i18n-en">TQE journal articles</span></span></a>
+      <a href={`${base}stats/`}><strong>{CATEGORIES.length}<small> / {yearRange}</small></strong><span><span class="i18n-zh">统一研究分类 / 覆盖年份</span><span class="i18n-en">Research categories / Coverage</span></span></a>
+    </section>
+    <p class="home-data-note"><span class="i18n-zh">共 {t.all.toLocaleString()} 条研究记录，不含 {t.front} 条前置页；日程条目不等同于已发表论文。数据构建于 </span><span class="i18n-en">{t.all.toLocaleString()} research records, excluding {t.front} front-matter entries. Program entries are not published papers. Built </span><time datetime={generated}>{generated}</time><span class="i18n-zh">，构建日期不代表来源核验日期。</span><span class="i18n-en">; the build date is not a source verification date.</span><a href={`${base}about/`}><span class="i18n-zh">统计口径 ↗</span><span class="i18n-en">Methodology ↗</span></a></p>
+    <section class="home-section" aria-labelledby="guides-title">
+      <div class="home-agent" style="margin:0 0 32px"><div><div class="kicker">RESEARCH MAP</div><h2><span class="i18n-zh">按子主题组织，沿证据深入。</span><span class="i18n-en">Explore the field, one question at a time.</span></h2><p><span class="i18n-zh">{research.counts.topics} 个子主题、{research.counts.unique_source_links} 个原始资料入口，覆盖软件、测控、纠错、硬件与网络；每个主题连接关键问题、代表工作和文献线索。</span><span class="i18n-en">{research.counts.topics} subtopics and {research.counts.unique_source_links} primary-source links connect software, control, error correction, hardware and networks.</span></p></div><a class="home-primary" href={`${base}research/`}><span class="i18n-zh">打开研究地图 ↗</span><span class="i18n-en">Explore the map ↗</span></a></div>
+      <div class="home-section-head"><div><div class="kicker"><span class="i18n-zh">带着问题阅读</span><span class="i18n-en">READ WITH A QUESTION</span></div><h2 id="guides-title"><span class="i18n-zh">专题与研究工具</span><span class="i18n-en">Guides & research tools</span></h2></div><span class="home-section-note"><span class="i18n-zh">人工策展 · 与原始文献交叉核验</span><span class="i18n-en">Curated · Verify against primary sources</span></span></div>
+      <div class="home-guides">{guides.map((g) => <a class="home-guide card" href={`${base}${g.path}`} style={`--guide-color:var(--c-${g.color})`}><span class="home-guide-index">{g.tag}</span><h3><span class="i18n-zh">{g.title}</span><span class="i18n-en">{g.titleEn}</span></h3><p><span class="i18n-zh">{g.text}</span><span class="i18n-en">{g.textEn}</span></p><span class="home-guide-foot"><span><span class="i18n-zh">{g.foot}</span><span class="i18n-en">{g.footEn}</span></span><span aria-hidden="true">↗</span></span></a>)}</div>
+    </section>
+    <section class="home-section home-analysis" aria-labelledby="distribution-title">
+      <div class="card home-distribution"><div class="home-section-head"><div><div class="kicker"><span class="i18n-zh">文献库快照</span><span class="i18n-en">COLLECTION SNAPSHOT</span></div><h2 id="distribution-title"><span class="i18n-zh">研究方向分布</span><span class="i18n-en">Research areas</span></h2></div><a href={`${base}stats/`}><span class="i18n-zh">逐年统计 ↗</span><span class="i18n-en">Yearly trends ↗</span></a></div><p class="home-note"><span class="i18n-zh">QCE 与 TQE 合并，含日程条目；分类用于检索，不代表领域全部产出。</span><span class="i18n-en">QCE and TQE combined, including program entries. Categories aid discovery; this collection is not the whole field.</span></p><CategoryBar rows={catTotals.map(([key, n]) => ({ key, label: CAT_ZH[key] ?? key, labelEn: catEn[key] ?? key, value: n }))} /></div>
+      <div class="home-reading card"><div class="kicker"><span class="i18n-zh">研究脉络</span><span class="i18n-en">RESEARCH THREADS</span></div><h2><span class="i18n-zh">把单篇论文放回系统中</span><span class="i18n-en">Place each paper in context</span></h2><p><span class="i18n-zh">用会议记录发现新问题，用期刊论文理解工程积累，再把专题中的技术链路与原文逐一对应。</span><span class="i18n-en">Use conference records to discover questions, journal articles to explore engineering work, and guides to connect the technical pieces.</span></p><div class="home-reading-links"><a href={`${base}qce/`}><span><b>QCE</b><span class="i18n-zh">会议发展与论文检索</span><span class="i18n-en">Conference history & papers</span></span><span aria-hidden="true">→</span></a><a href={`${base}tqe/`}><span><b>TQE</b><span class="i18n-zh">期刊研究与工程实践</span><span class="i18n-en">Journal research & engineering</span></span><span aria-hidden="true">→</span></a><a href={`${base}stats/`}><span><b>{yearRange}</b><span class="i18n-zh">逐年分类与来源比较</span><span class="i18n-en">Yearly categories & sources</span></span><span aria-hidden="true">→</span></a></div><p class="home-note"><span class="i18n-zh">中文说明与专题分析是辅助导读。引用研究结论时，请回到 DOI、论文原文或官方标准。</span><span class="i18n-en">Annotations and guides are reading aids. Cite the original paper, DOI or official standard for research claims.</span></p></div>
+    </section>
+    <section class="home-agent" aria-labelledby="agent-title"><div><div class="kicker">BUILT FOR REUSE</div><h2 id="agent-title"><span class="i18n-zh">让下一次调研，从已有证据开始。</span><span class="i18n-en">Start the next investigation with evidence.</span></h2><p><span class="i18n-zh">为 agent 提供数据清单、字段定义与来源说明，用稳定的记录 ID 串联检索、筛选和引用。</span><span class="i18n-en">A data manifest, field definitions and provenance notes help agents connect discovery, filtering and citation using stable record IDs.</span></p></div><div class="home-agent-actions"><a class="home-primary" href={`${base}agents/`}><span class="i18n-zh">Agent 数据入口</span><span class="i18n-en">Agent data access</span> ↗</a><a href={`${base}data/manifest.json`}>manifest.json <span aria-hidden="true">↓</span></a></div></section>
+  </main>
 </BaseLayout>
+<script>
+  const form = document.querySelector<HTMLFormElement>('#home-search');
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const query = form.querySelector<HTMLInputElement>('#home-query')!.value.trim();
+    const source = form.querySelector<HTMLSelectElement>('#home-source')!.value;
+    const target = `${form.dataset.base}${source === 'tqe' ? 'tqe' : 'qce'}/`;
+    window.location.assign(query ? `${target}#${new URLSearchParams({ q: query })}` : target);
+  });
+</script>

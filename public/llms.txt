@@ -1,0 +1,32 @@
+# paper4qi — Quantum Infrastructure Literature
+
+> Research discovery data for IEEE QCE and IEEE TQE, plus curated CS4Q, OpenQASM and venue guides. This index is not a claim that a record or summary has been independently verified.
+
+## Machine-readable entry points
+
+- [Dataset manifest](data/manifest.json): Start here. Version 1.x contract, resource URLs, SHA-256 hashes, coverage and freshness metadata.
+- [Combined corpus](data/papers.json): All records in papers[]. Exclude front_matter=true for paper counts. source=qce26 is an imported conference-program entry.
+- [Paper JSON Schema](data/paper.schema.json): Schema for one Paper record, not its containing JSON envelope.
+- [Data quality](data/quality.json): Field completeness by source and the distinction between build time and source update runs.
+- [Categories](data/categories.json): 13 category keys.
+- [Superseded IDs](data/id-redirects.json): Program IDs reconciled to proceedings DOI records.
+- [Research map](data/research-map.json): Curated domains/subtopics, primary-source links, research questions, editorial hypotheses and reproducible keyword associations to corpus IDs. Associations are unreviewed leads, not established relevance or novelty.
+
+## Research guides
+
+- [Curated guide export](data/guides.json): CS4Q entries, journals, conferences, deadlines and OpenQASM Markdown, with source-declared review dates and caveats. Generated from the same sources as the pages during the site build.
+- [Agent access guide](agents/): Retrieval example and citation workflow.
+- [Research map website](research/): Navigate domain overviews and individual subtopic pages.
+- [Data methodology](about/): Data sources and editorial methods.
+- [QCE browser](qce/): Conference proceedings and program records.
+- [TQE browser](tqe/): Journal records.
+- [CS4Q guide](cs4q/): Curated control-system research.
+- [OpenQASM guide](openqasm/): Curated language and tooling research.
+- [Venue guide](venues/): Curated journal/conference information; verify deadlines and rankings with official sources.
+- [Source repository](https://github.com/xiaoshecode/paper4qi): Build pipeline and source snapshots.
+
+## Interpretation
+
+Resolve links in this file relative to its URL. Resolve manifest resource URLs relative to the manifest URL. This makes the dataset portable between /paper4qi/ and root-hosted mirrors.
+
+Chinese notes and categories are editorial/AI-assisted discovery aids, not primary evidence. Read the original DOI/arXiv source before stating scientific results. Missing values are unknown rather than zero. QCE26 title-matched preprints need verification. Record the dataset build timestamp and record ID with citations. A build timestamp is not the source's last update or verification date. On GitHub Pages, fetch the static corpus and filter locally. An MCP-enabled private Sites deployment can additionally expose six read-only tools: search_papers, get_paper, get_library_overview, get_research_statistics, get_research_map and read_research_guide after its connector is installed and authorized; these tools are not provided by the GitHub Pages origin.

@@ -1,0 +1,34 @@
+---
+import { readFileSync } from 'node:fs';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+export function getStaticPaths() {
+  const research = JSON.parse(readFileSync('public/data/research-map.json', 'utf8'));
+  return research.topics.map((topic: any) => ({ params: { topic: topic.key }, props: { topic, domain: research.domains.find((d: any) => d.key === topic.domain) } }));
+}
+const { topic, domain } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const papers = JSON.parse(readFileSync('public/data/papers.json', 'utf8')).papers;
+const byId = new Map(papers.map((p: any) => [p.id, p]));
+const matches = topic.matched_papers.map((m: any) => ({ ...byId.get(m.id) as object, ...m }));
+const sourceNames: Record<string, string> = { qce: 'QCE 论文集', tqe: 'TQE 期刊', qce26: 'QCE26 日程线索' };
+const kinds: Record<string, string> = { paper: '原始论文', standard: '标准 / 规范', software: '软件 / 官方项目', review: '综述 / 路线图' };
+---
+<BaseLayout title={topic.title_zh} description={topic.description_zh}>
+  <div class="wrap page-head" lang="zh-CN">
+    <a class="research-back" href={`${base}research/#${domain.key}`}>← 研究地图 · {domain.title_zh}</a>
+    <div class="kicker">{topic.title_en}</div><h1>{topic.title_zh}</h1><p class="lede">{topic.description_zh}</p>
+    <p class="agent-meta">精选来源核查：{topic.reviewed} · {topic.sources.length} 个原始资料入口 · {topic.matched_count} 条自动关联线索</p>
+  </div>
+  <main class="wrap page-body research-detail" lang="zh-CN">
+    <nav class="research-section-nav" aria-label="专题目录"><a href="#questions">关键问题</a><a href="#sources">精选资料</a><a href="#directions">研究方向</a><a href="#corpus">库内文献</a></nav>
+    <section id="questions" class="research-question card"><h2>先明确这些问题</h2><ol>{topic.questions_zh.map((q: string) => <li>{q}</li>)}</ol><div class="research-keywords">{topic.keywords.map((k: string) => <span>{k}</span>)}</div></section>
+    <section id="sources" class="research-detail-section"><div class="home-section-head"><h2>精选原始资料</h2><span class="home-note">按问题阅读，回到原文比较条件与结论</span></div><div class="research-source-grid">{topic.sources.map((source: any, i: number) => <article class="card research-source"><span class="kicker">{String(i + 1).padStart(2, '0')} · {kinds[source.kind] ?? source.kind}{source.year ? ` · ${source.year}` : ''}</span><h3><a href={source.url} target="_blank" rel="noopener noreferrer">{source.title} ↗</a></h3><p>{source.note_zh}</p></article>)}</div></section>
+    <section id="directions" class="research-detail-section research-direction-grid"><div class="card"><h2>值得验证的研究方向</h2><p class="home-note">以下为基于资料的分析与假设，不等同于已证实的文献空白或创新性结论。</p><ul>{topic.research_gaps_zh.map((gap: string) => <li>{gap}</li>)}</ul></div><div class="card"><h2>下一步怎么做</h2><ol>{topic.next_steps_zh.map((step: string) => <li>{step}</li>)}</ol><p>整理证据时保留任务、数据集或电路、硬件平台、噪声模型、资源预算、基线、误差与运行时间；不要直接比较条件不同的性能数字。</p></div></section>
+    <section id="corpus" class="research-detail-section"><div class="home-section-head"><div><h2>文献库中的关联线索</h2><p class="home-note">{topic.matched_count} 条 · 标题 / 摘要 / 标签关键词自动匹配，按匹配分数排序；需要人工筛选，摘要缺失会影响召回。</p></div><a href={`${base}data/research-map.json`}>全部关联 ID ↗</a></div>
+      <div class="research-paper-list">{matches.slice(0, 12).map((p: any) => <article class="card research-paper"><div class="research-paper-meta">{p.year} · {sourceNames[p.source]} · {p.category}</div><h3><a href={`${base}${p.source === 'tqe' ? 'tqe' : 'qce'}/#q=${encodeURIComponent(p.title)}`}>{p.title}</a></h3><p>{p.authors.join(', ')}</p><div class="research-paper-meta">匹配：{p.matched_terms.join(' · ')}{p.doi && <> · <a href={`https://doi.org/${p.doi}`} target="_blank" rel="noopener noreferrer">DOI ↗</a></>}{p.arxiv && <> · <a href={`https://arxiv.org/abs/${p.arxiv}`} target="_blank" rel="noopener noreferrer">arXiv ↗</a></>}</div></article>)}</div>
+      {matches.length > 12 && <details class="research-more"><summary>展开其余 {matches.length - 12} 条文献线索</summary><ul>{matches.slice(12).map((p: any) => <li><span>{p.year} · {sourceNames[p.source]}</span><a href={`${base}${p.source === 'tqe' ? 'tqe' : 'qce'}/#q=${encodeURIComponent(p.title)}`}>{p.title}</a></li>)}</ul></details>}
+      {matches.length === 0 && <p class="card research-empty">当前 QCE / TQE 数据没有命中这些关键词。请沿上方精选资料的引用链扩展检索；这不表示该领域没有相关工作。</p>}
+      <p class="home-note">QCE26 日程条目不是正式发表证明，预印本需核对版本。关联规则可在 <code>data/research-map.json</code> 的 <code>method</code> 与 <code>keywords</code> 中复现。</p>
+    </section>
+  </main>
+</BaseLayout>

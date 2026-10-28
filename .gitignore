@@ -4,3 +4,5 @@ dist/
 public/data/
 __pycache__/
 *.pyc
+.sites-work/
+.qa/
