@@ -1,5 +1,7 @@
 # paper4qi · Paper for Quantum Infra
 
+[在线维护文档](https://xiaoshecode.github.io/xiaoshecode/repos/paper4qi/) · [2026-10-30 检查记录](docs/maintenance-2026-10-30.md)
+
 [![在线访问](https://img.shields.io/badge/online-xiaoshecode.github.io%2Fpaper4qi-4f46e5?style=flat-square)](https://xiaoshecode.github.io/paper4qi/)
 
 量子计算与工程文献库：当前仓库快照汇总 **IEEE QCE 会议（2020–2026）** 与 **IEEE TQE 期刊（2020–2026, Vol. 1–7）** 的 **2338 条**研究条目（另有 173 条封面/索引等前置页），统一为 13 类研究方向，提供已有的中文说明与英文摘要，支持检索/筛选/CSV 导出，亮暗双主题，每周自动增量更新。条目包含会议日程记录，部分字段缺失；该库是选定来源集合，不是完整量子领域文献检索。
@@ -76,7 +78,7 @@ GitHub 部署前依次运行 `python scripts/build_data.py`、`python scripts/te
 ```bash
 git clone https://github.com/xiaoshecode/paper4qi.git
 cd paper4qi
-pnpm install
+pnpm install --frozen-lockfile
 
 # 1) 生成数据（public/data/*.json，已被 .gitignore 忽略）
 PYTHONIOENCODING=utf-8 python scripts/build_data.py   # 等价于 pnpm data
