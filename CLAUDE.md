@@ -29,7 +29,7 @@ Astro 5 静态文献站（`base = /paper4qi`，部署 GitHub Pages），数据�
 4. **`build_data.py` 中的数量断言只 warn 不 raise，是刻意设计**：周更持续追加论文，硬失败会卡死部署。不要改回 `raise`；只保留数据一致性校验（DOI 缺失/重复、记录数与中文说明数不匹配、Track 集合变化）为硬失败。
 5. **`paper-browser.ts` 的 hash 格式 `#q=..&y=..&c=..&fm=..` 已被分享链接依赖**：只能向后兼容地扩展（新增键、缺省即默认），不要重命名或改变语义。
 6. **`public/data/` 是 gitignored 构建产物**：改数据必须改 `data_src/` 并用 `build_data.py` 重新生成；任何直接手改 `public/data/*.json` 的改动都会被下次构建覆盖。
-7. **`src/content/*.md` 未被任何页面 import**，仅是文案素材；要靠它上线需先在页面里引用。
+7. **`src/content/openqasm-research.md` 由 `src/pages/openqasm/index.astro` 直接 import**，修改会影响专题页；`trajectory-*.md` 仍是文案参考。新增 Markdown 内容需检查实际引用关系。
 
 ## 4. 常用命令
 
@@ -41,15 +41,15 @@ pnpm preview                        # 预览构建产物
 PYTHONIOENCODING=utf-8 python scripts/build_data.py     # 或 pnpm data
 PYTHONIOENCODING=utf-8 python scripts/update_data.py    # 周更（会写 data_src/）
 python scripts/reconcile_qce26.py --dry-run             # 预览日程→DOI 匹配
-python -m py_compile scripts/*.py                       # 脚本语法自检
+python -m compileall -q scripts                       # 脚本语法自检
 ```
 
 Windows 下所有 Python 命令都要带 `PYTHONIOENCODING=utf-8`（控制台默认 GBK 会 `UnicodeEncodeError`）。
 
 ## 5. 改动后验证清单
 
-1. `python -m py_compile scripts/*.py` 与 `PYTHONIOENCODING=utf-8 python scripts/build_data.py` 无异常，数量漂移警告可接受。
-2. `pnpm build` 通过（TypeScript strict 无报错）。
+1. `python -m compileall -q scripts` 与 `PYTHONIOENCODING=utf-8 python scripts/build_data.py` 无异常，数量漂移警告可接受。
+2. `pnpm build` 通过（Astro 静态构建；不等同完整 TypeScript 类型检查），再执行 `python scripts/validate_agent_data.py --site-dir dist`。
 3. `/paper4qi/`、`/paper4qi/qce/`、`/paper4qi/tqe/`、`/paper4qi/stats/`、`/paper4qi/about/` 均无 404；搜一个关键词确认高亮与筛选 chip 生效。
 4. 亮 / 暗两主题各目视一次（`ThemeToggle` 或 `localStorage['p4q-theme']`）。
 5. 改动数据 schema 时，同步 `src/scripts/types.ts`、`paper-browser.ts` 的 CSV 表头、`about.astro` 的口径说明。
