@@ -32,6 +32,11 @@ if (root) {
     el<HTMLFormElement>('connect').querySelector('button')!.disabled = busy || !local;
     field('token').disabled = busy || !local;
     root!.querySelectorAll<HTMLButtonElement>('[data-venue-toggle], [data-venue-edit], [data-restore]').forEach(b => b.disabled = !connected || busy);
+    root!.dataset.connected = String(connected);
+    el('connect').hidden = !local;
+    el('setup-link').hidden = local;
+    el('readonly-note').hidden = connected;
+    el('mode-badge').textContent = connected ? '本地已连接' : local ? '本地待连接' : '公开只读';
     el('dirty').textContent = dirty ? '有未保存修改' : '未修改';
     el('mode').textContent = connected ? '本地可编辑 · 会话令牌仅保存在本页内存' : local ? '本地服务已就绪 · 输入会话令牌解锁编辑' : '公开只读模式 · 浏览已发布的历史快照；保存与抓取需本地服务';
   }
@@ -51,15 +56,21 @@ if (root) {
   function renderPapers() {
     sortPapers();
     const q = field('search').value.trim().toLowerCase();
-    const found = papers.filter(p => [p.title, p.abstract, p.zh, p.doi, p.venue, ...(p.tags || [])].join(' ').toLowerCase().includes(q));
-    el('paper-count').textContent = String(found.length); el('paper-list').replaceChildren();
+    const category = field('filter-category').value;
+    const found = papers.filter(p => (!category || (p.category || 'OTHER') === category) && [p.title, p.abstract, p.zh, p.doi, p.venue, ...(p.tags || [])].join(' ').toLowerCase().includes(q));
+    if (field('sort').value === 'title') found.sort((a, b) => a.title.localeCompare(b.title));
+    el('paper-count').textContent = String(found.length);
+    el('results-label').textContent = `${found.length.toLocaleString()} 篇${q || category ? '匹配' : '论文'} · 已显示 ${Math.min(limit, found.length)}`;
+    el('clear').hidden = !q && !category;
+    el('paper-list').setAttribute('aria-busy', 'false');
+    el('paper-list').replaceChildren();
     for (const p of found.slice(0, limit)) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'rw-paper'; button.setAttribute('aria-pressed', String(selected?.id === p.id));
       button.append(node('span', `${p.id.startsWith('discovery:') ? '新发现 · ' : ''}${p.year || '年份待补'} · ${p.venue || '来源待补'}`, 'rw-paper-meta'), node('strong', p.title), node('span', p.zh || (p.tags || []).slice(0, 3).join(' · ') || '选择论文，开始阅读与整理', 'rw-paper-summary'));
-      button.addEventListener('click', () => { if (!busy && (!dirty || window.confirm('当前论文有未保存的修改，确定切换吗？'))) void run('正在读取论文…', async () => { await selectPaper(p); notice(connected ? '论文已载入，可以编辑。' : '正在查看公开只读快照。'); }); });
+      button.addEventListener('click', () => { if (!busy && (!dirty || window.confirm('当前论文有未保存的修改，确定切换吗？'))) void run('正在读取论文…', async () => { await selectPaper(p); el('editor-title').focus({ preventScroll: true }); if (window.matchMedia?.('(max-width: 800px)').matches) el('editor').scrollIntoView({ block: 'start' }); notice(connected ? '论文已载入，可以编辑。' : '正在查看公开只读快照。'); }); });
       el('paper-list').append(button);
     }
-    if (!found.length) el('paper-list').append(node('p', '没有匹配的论文，试试其他关键词。', 'rw-empty'));
+    if (!found.length) el('paper-list').append(node('p', '没有找到匹配论文。试试更短的关键词，或清除方向筛选。', 'rw-empty'));
     el('more').hidden = found.length <= limit;
   }
   function renderVenues() {
@@ -69,7 +80,7 @@ if (root) {
       const row = node('div', '', 'rw-venue'); const description = node('div', ''); description.append(node('strong', v.name), node('small', `${v.kind === 'journal' ? '期刊' : '会议'} · ${v.issn || v.container_title || ''} · ${v.keywords.join(', ') || '所有关键词'}`));
       const toggle = document.createElement('button'); toggle.type = 'button'; toggle.dataset.venueToggle = v.id; toggle.setAttribute('aria-pressed', String(v.enabled)); toggle.textContent = v.enabled ? '已关注 ✓' : '关注';
       toggle.addEventListener('click', () => void run('保存来源…', async () => { if (venueDirty && !window.confirm('JSON 中有未保存修改，继续将放弃这些修改，确定吗？')) return; await saveVenues(venues.map(x => x.id === v.id ? { ...x, enabled: !x.enabled } : x)); }));
-      const edit = document.createElement('button'); edit.type = 'button'; edit.dataset.venueEdit = v.id; edit.textContent = '填入编辑表'; edit.addEventListener('click', () => { if (venueFormDirty && !window.confirm('来源编辑表中有未保存修改，确定替换吗？')) return; venueFormDirty = false; const form = el<HTMLFormElement>('venue-form'); for (const [key, value] of Object.entries({ id: v.id, name: v.name, kind: v.kind, identifier: v.issn || v.container_title || '', keywords: v.keywords.join(', ') })) (form.elements.namedItem(key) as HTMLInputElement).value = value; });
+      const edit = document.createElement('button'); edit.type = 'button'; edit.dataset.venueEdit = v.id; edit.textContent = '填入编辑表'; edit.addEventListener('click', () => { if (venueFormDirty && !window.confirm('来源编辑表中有未保存修改，确定替换吗？')) return; venueFormDirty = false; el<HTMLDetailsElement>('source-editor').open = true; const form = el<HTMLFormElement>('venue-form'); for (const [key, value] of Object.entries({ id: v.id, name: v.name, kind: v.kind, identifier: v.issn || v.container_title || '', keywords: v.keywords.join(', ') })) (form.elements.namedItem(key) as HTMLInputElement).value = value; });
       row.append(description, toggle, edit); el('venue-list').append(row);
     }
     field('venues-json').value = JSON.stringify(venues, null, 2); venueDirty = false; controls();
@@ -97,9 +108,26 @@ if (root) {
     papers = papers.map(p => p.id === selected!.id ? selected! : p); renderPapers();
   }
   function fill(content: Content) {
+    el('selected-title').textContent = content.title;
     field('title').value = content.title; field('zh').value = content.zh; field('category').value = CATEGORIES.some(c => c.key === content.category) ? content.category : 'OTHER'; field('tags').value = content.tags.join(', '); field('body').value = content.body; field('edit-summary').value = ''; el('preview').textContent = content.body || '暂无正文。'; el('revision').textContent = `v${article?.revision || 0}`;
   }
-  function renderAnalysis() { el('analysis-text').textContent = analysis ? JSON.stringify(analysis, null, 2) : '暂无分析草稿。'; controls(); }
+  function renderAnalysis() {
+    el('analysis-text').textContent = analysis ? JSON.stringify(analysis, null, 2) : '暂无分析草稿。';
+    const readable = el('analysis-readable'); readable.replaceChildren();
+    if (!analysis) readable.append(node('p', '尚无分析草稿。可先阅读原文，记录自己的理解。', 'rw-hint'));
+    else {
+      if (typeof analysis.summary === 'string') readable.append(node('p', analysis.summary));
+      for (const [title, items] of [['主要贡献', analysis.contributions], ['局限与待核验', analysis.limitations]] as const) {
+        if (!Array.isArray(items) || !items.length) continue;
+        const list = document.createElement('ul');
+        for (const item of items) if (typeof item === 'string') list.append(node('li', item));
+        readable.append(node('h4', title), list);
+      }
+      const basis = analysis.evidence_basis === 'title_only' ? '仅依据标题，结论需重点核验' : analysis.evidence_basis === 'title_and_abstract' ? '依据标题与摘要，不包含全文' : '请核对分析依据与原文';
+      readable.append(node('p', `${basis}${analysis.model ? ` · ${analysis.model}` : ''}`, 'rw-analysis-basis'));
+    }
+    controls();
+  }
   function renderHistory() {
     el('history').replaceChildren();
     for (const h of [...(article?.history || [])].reverse()) {
@@ -115,7 +143,7 @@ if (root) {
     papers = [...new Map([...p.papers, ...(p.discoveries || [])].map(x => [x.id, x])).values()]; venues = v.venues; venueRevision = v.revision; connected = true; renderPapers(); renderVenues();
   }
   el('connect').addEventListener('submit', event => { event.preventDefault(); if (!discard()) return; void run('正在连接本地工作空间…', async () => { token = field('token').value.trim(); field('token').value = ''; if (!token) throw new Error('请输入终端显示的本地会话令牌。'); await loadPrivate(); dirty = false; if (selected) await selectPaper(papers.find(p => p.id === selected!.id) || selected); notice('本地工作空间已连接。'); }); });
-  el('disconnect').addEventListener('click', () => { if (!discard()) return; token = ''; connected = false; dirty = false; venueDirty = false; venueFormDirty = false; selected = null; article = null; analysis = null; el('detail').hidden = true; el('empty').hidden = false; void run('正在切换公开快照…', loadSnapshot); });
+  el('disconnect').addEventListener('click', () => { if (!discard()) return; token = ''; connected = false; dirty = false; venueDirty = false; venueFormDirty = false; selected = null; article = null; analysis = null; el('detail').hidden = true; el('empty').hidden = false; el('revision').textContent = '未选择'; void run('正在切换公开快照…', loadSnapshot); });
   el('venue-form').addEventListener('input', () => { venueFormDirty = true; });
   el('venue-form').addEventListener('submit', event => { event.preventDefault(); if (!connected || busy) return; const data = new FormData(el<HTMLFormElement>('venue-form')); void run('正在保存来源…', async () => { if (venueDirty && !window.confirm('JSON 中有未保存修改，继续将放弃这些修改，确定吗？')) return; const kind = String(data.get('kind')) as Venue['kind']; const item: Venue = { id: String(data.get('id')).trim(), name: String(data.get('name')).trim(), kind, enabled: true, keywords: split(String(data.get('keywords'))), ...(kind === 'journal' ? { issn: String(data.get('identifier')).trim() } : { container_title: String(data.get('identifier')).trim() }) }; await saveVenues([...venues.filter(v => v.id !== item.id), item]); venueFormDirty = false; }); });
   field('venues-json').addEventListener('input', () => { venueDirty = true; });
@@ -136,7 +164,19 @@ if (root) {
       }
     }
     renderPapers(); notice(`检索完成：新增 ${result.added} 篇，更新 ${result.updated} 篇。请检查各来源状态，部分来源可能未完整抓取。`); }));
-  field('search').addEventListener('input', () => { limit = 60; renderPapers(); }); el('more').addEventListener('click', () => { limit += 60; renderPapers(); });
+  const resetResults = () => { limit = 60; renderPapers(); el('paper-list').scrollTop = 0; };
+  field('search').addEventListener('input', resetResults);
+  field('filter-category').addEventListener('change', resetResults);
+  field('sort').addEventListener('change', resetResults);
+  el('clear').addEventListener('click', () => { field('search').value = ''; field('filter-category').value = ''; resetResults(); field('search').focus(); });
+  el('more').addEventListener('click', () => { limit += 60; renderPapers(); });
+  el('back-to-list').addEventListener('click', () => { el('inbox').scrollIntoView({ block: 'start' }); field('search').focus({ preventScroll: true }); });
+  window.addEventListener('keydown', event => {
+    const target = event.target as HTMLElement | null;
+    if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !target?.closest('input,textarea,select,[contenteditable="true"]')) {
+      event.preventDefault(); field('search').focus();
+    }
+  });
   el('editor-form').addEventListener('input', () => { dirty = true; el('preview').textContent = field('body').value; controls(); });
   el('editor-form').addEventListener('submit', event => { event.preventDefault(); if (!selected || !article) return; void run('正在保存 Wiki 新版本…', async () => { const content: Content = { title: field('title').value, zh: field('zh').value, category: field('category').value, tags: split(field('tags').value), body: field('body').value }; const result = await request<Article | { article: Article }>('article', 'PUT', { id: selected!.id, expected_revision: article!.revision, summary: field('edit-summary').value, content }); article = 'article' in result ? result.article : result; dirty = false; fill(article); syncSavedMetadata(); renderHistory(); notice(`已保存为 v${article.revision}。`); }); });
   el('reload-article').addEventListener('click', () => { if (selected && (!dirty || window.confirm('放弃当前未保存的修改并载入最新版本？'))) void run('重新加载论文…', async () => { await selectPaper(selected!); notice('已载入最新版本。'); }); });

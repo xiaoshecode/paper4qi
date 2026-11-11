@@ -5,13 +5,72 @@ const base = import.meta.env.BASE_URL;
 ---
 <BaseLayout title="研究工作台" description="关注期刊会议，收集新论文，将研究笔记沉淀为可追溯的个人 Wiki。">
 <main class="wrap rw" id="research-workspace" data-base={base}>
-  <header class="rw-hero"><div><span class="rw-eyebrow">RESEARCH WORKSPACE / 研究工作台</span><h1>从新论文，到自己的知识库。</h1><p>关注来源 · 收集发现 · 阅读分析 · 沉淀 Wiki</p></div><a class="rw-back" href={`${base}research/`}>探索研究地图 ↗</a></header>
-  <section class="rw-connection" aria-labelledby="connection-title"><div><h2 id="connection-title">工作空间连接</h2><p id="rw-mode">正在检查本地服务…</p></div><form id="rw-connect"><label for="rw-token">本地会话令牌</label><div class="rw-row"><input id="rw-token" type="password" autocomplete="off" placeholder="从本地终端复制令牌" aria-describedby="rw-token-help" /><button type="submit">连接</button><button type="button" id="rw-disconnect" hidden>断开</button></div><small id="rw-token-help">仅保存在本页内存。DeepSeek API Key 只在服务端配置，切勿粘贴到此处。</small></form></section>
+  <header class="rw-hero">
+    <div><span class="rw-eyebrow">RESEARCH WORKSPACE / 研究工作台</span><h1>读有所获，研有所积。</h1><p>把新发现整理成笔记，让每一次阅读都有迹可循。</p></div>
+    <a class="rw-back" href={`${base}research/`}>探索研究地图 <span aria-hidden="true">↗</span></a>
+  </header>
+  <nav class="rw-workflow" aria-label="工作台步骤">
+    <a href="#rw-sources"><span>01</span>关注来源<small>期刊与会议</small></a>
+    <a href="#rw-inbox"><span>02</span>发现论文<small>搜索与筛选</small></a>
+    <a href="#rw-editor"><span>03</span>沉淀知识<small>笔记与版本</small></a>
+  </nav>
+  <section class="rw-connection" aria-labelledby="connection-title">
+    <div class="rw-connection-copy"><div class="rw-connection-heading"><span class="rw-state-dot" aria-hidden="true"></span><h2 id="connection-title">工作空间</h2><span id="rw-mode-badge" class="rw-pill">检查连接</span></div><p id="rw-mode">正在检查本地服务…</p></div>
+    <a class="rw-setup-link" id="rw-setup-link" href="#rw-local-help">如何开启编辑 <span aria-hidden="true">↗</span></a>
+    <form id="rw-connect" hidden><label for="rw-token">本地会话令牌</label><div class="rw-row"><input id="rw-token" type="password" autocomplete="off" placeholder="从本地终端复制令牌" aria-describedby="rw-token-help" /><button type="submit">连接</button><button type="button" id="rw-disconnect" hidden>断开</button></div><small id="rw-token-help">仅保存在本页内存。DeepSeek API Key 只在服务端配置，切勿粘贴到此处。</small></form>
+  </section>
   <p class="rw-notice" id="rw-status" role="status" aria-live="polite">正在读取公开快照…</p>
-  <details class="rw-panel rw-venues"><summary>01 / 关注来源 <span id="rw-venue-count"></span></summary><p class="rw-hint">按期刊 ISSN 或会议 container-title 检索；关键词用于筛选新论文。启用的来源会参与手动更新。</p><div id="rw-venue-list"></div><form id="rw-venue-form"><fieldset id="rw-venue-fields" disabled><div class="rw-fields"><label>来源 ID<input name="id" required placeholder="my-journal" pattern="[a-z0-9_-]+" /></label><label>显示名称<input name="name" required placeholder="Quantum" /></label><label>类型<select name="kind"><option value="journal">期刊</option><option value="conference">会议</option></select></label><label>ISSN / 会议 container-title<input name="identifier" required placeholder="2521-327X" /></label><label>关键词（逗号分隔）<input name="keywords" placeholder="quantum, compiler" /></label></div><button type="submit">添加 / 更新来源</button></fieldset></form><details><summary>高级：编辑来源 JSON</summary><label for="rw-venues-json">完整来源配置</label><textarea id="rw-venues-json" rows="8" spellcheck="false" disabled></textarea><button id="rw-save-venues" disabled>保存来源配置</button><button id="rw-reload-venues" disabled>重新加载服务端配置</button></details><div class="rw-row rw-venue-actions"><button id="rw-refresh" class="rw-primary" disabled>抓取关注来源的新论文</button><span class="rw-hint">主动点击后才联网检索，不自动运行。</span></div><pre id="rw-source-results" class="rw-text" hidden></pre></details>
-  <div class="rw-grid"><section class="rw-panel rw-inbox" aria-labelledby="inbox-title"><div class="rw-section-head"><h2 id="inbox-title">02 / 研究收件箱</h2><span id="rw-paper-count" class="rw-pill">0</span></div><label class="rw-search-label" for="rw-search">检索标题、摘要、标签或 DOI</label><input id="rw-search" type="search" placeholder="搜索你的研究主题…" /><div id="rw-paper-list" class="rw-paper-list" aria-label="论文列表"></div><button id="rw-more" hidden>显示更多</button></section>
-  <section class="rw-panel rw-editor" aria-labelledby="editor-title"><div class="rw-section-head"><h2 id="editor-title">03 / 论文 Wiki</h2><span id="rw-revision" class="rw-pill">未选择</span></div><p id="rw-empty" class="rw-empty">从左侧选择一篇论文。<br/>读懂研究，再留下自己的判断。</p><div id="rw-detail" hidden><div id="rw-paper-meta" class="rw-hint"></div><a id="rw-source-link" class="rw-back" target="_blank" rel="noopener noreferrer" hidden>阅读原文 DOI ↗</a><details><summary>原始摘要</summary><p id="rw-abstract" class="rw-text"></p></details><form id="rw-editor-form"><fieldset id="rw-editor-fields" disabled><label>标题<input id="rw-title" required /></label><label>中文研究摘要<textarea id="rw-zh" rows="3" placeholder="用自己的话概括贡献与局限…"></textarea></label><div class="rw-fields"><label>研究方向<select id="rw-category">{CATEGORIES.map(c => <option value={c.key}>{c.zh}</option>)}</select></label><label>标签（逗号分隔）<input id="rw-tags" /></label></div><label>Wiki 正文 · Markdown<textarea id="rw-body" rows="14" spellcheck="false" placeholder="## 研究问题\n\n## 核心方法\n\n## 证据与局限\n\n## 我的笔记"></textarea></label><label>本次修改说明<input id="rw-edit-summary" required placeholder="例如：补充实验结果与局限" /></label><div class="rw-row"><button type="submit" class="rw-primary">保存新版本</button><span id="rw-dirty" class="rw-hint">未修改</span></div></fieldset></form><button id="rw-reload-article" disabled>重新加载最新版本（放弃本地修改）</button><details><summary>正文预览（纯文本 Markdown）</summary><pre id="rw-preview" class="rw-text"></pre></details><section class="rw-analysis"><h3>DeepSeek 辅助阅读</h3><p class="rw-hint" id="rw-ai-info">公开站点仅展示已有分析草稿。</p><p class="rw-hint">DeepSeek 按 token 计费，单次请求有输入和输出上限，但不是固定金额上限。生成时会将当前论文的标题与摘要发送给 DeepSeek。草稿可能有误，不代表全文审阅；核对后再采纳。</p><button id="rw-analyze" disabled>发送标题与摘要给 DeepSeek，生成草稿</button><pre id="rw-analysis-text" class="rw-text">暂无分析草稿。</pre><button id="rw-adopt" disabled>将草稿载入编辑器（尚不保存）</button></section><details class="rw-history"><summary>版本历史与恢复</summary><div id="rw-history"></div></details></div></section></div>
-  <aside class="rw-local-help"><h2>让研究工作台在本地运行</h2><p>GitHub Pages 是公开只读快照，不能保存或调用模型。在项目目录先运行 <code>pnpm data &amp;&amp; pnpm build</code>，再运行 <code>pnpm workspace</code>，打开终端提供的本地地址并输入会话令牌。DeepSeek 密钥仅通过本地环境变量配置。保存后的数据需重新构建并发布，才会更新公开快照。发布时 Wiki 正文、完整版本历史与分析草稿都会进入公开快照，请勿写入私密笔记或密钥。</p></aside>
+  <details class="rw-panel rw-venues" id="rw-sources">
+    <summary><span class="rw-step-number">01</span>关注来源 <span id="rw-venue-count" class="rw-source-count"></span></summary>
+    <p class="rw-hint">按期刊 ISSN 或会议 container-title 检索；关键词用于筛选新论文。启用的来源会参与手动更新。</p>
+    <div id="rw-venue-list"></div>
+    <details class="rw-source-editor" id="rw-source-editor"><summary>添加或编辑来源</summary>
+      <form id="rw-venue-form"><fieldset id="rw-venue-fields" disabled><div class="rw-fields">
+        <label>来源 ID<input name="id" required placeholder="my-journal" pattern="[a-z0-9_-]+" /></label><label>显示名称<input name="name" required placeholder="Quantum" /></label>
+        <label>类型<select name="kind"><option value="journal">期刊</option><option value="conference">会议</option></select></label><label>ISSN / 会议 container-title<input name="identifier" required placeholder="2521-327X" /></label><label>关键词（逗号分隔）<input name="keywords" placeholder="quantum, compiler" /></label>
+      </div><button type="submit">添加 / 更新来源</button></fieldset></form>
+    </details>
+    <details class="rw-advanced"><summary>高级：编辑来源 JSON</summary><label for="rw-venues-json">完整来源配置</label><textarea id="rw-venues-json" rows="8" spellcheck="false" disabled></textarea><div class="rw-row rw-venue-actions"><button id="rw-save-venues" disabled>保存来源配置</button><button id="rw-reload-venues" disabled>重新加载服务端配置</button></div></details>
+    <div class="rw-row rw-venue-actions"><button id="rw-refresh" class="rw-primary" disabled>抓取关注来源的新论文</button><span class="rw-hint">主动点击后才联网检索，不自动运行。</span></div><pre id="rw-source-results" class="rw-text" hidden></pre>
+  </details>
+  <div class="rw-grid">
+    <section class="rw-panel rw-inbox" id="rw-inbox" aria-labelledby="inbox-title">
+      <div class="rw-section-head"><h2 id="inbox-title"><span class="rw-step-number">02</span>研究收件箱</h2><span id="rw-paper-count" class="rw-pill">0</span></div>
+      <label class="rw-search-label" for="rw-search">检索标题、摘要、标签或 DOI</label>
+      <div class="rw-search-box"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="rw-search" type="search" placeholder="搜索研究主题…" aria-keyshortcuts="/" /><kbd aria-hidden="true">/</kbd></div>
+      <div class="rw-filters"><label for="rw-filter-category">研究方向<select id="rw-filter-category"><option value="">全部方向</option>{CATEGORIES.map(c => <option value={c.key}>{c.zh}</option>)}</select></label><label for="rw-sort">排序<select id="rw-sort"><option value="recent">最近优先</option><option value="title">标题 A–Z</option></select></label></div>
+      <div class="rw-results-head"><span id="rw-results-label" aria-live="polite">正在加载论文</span><button id="rw-clear" type="button" hidden>清除筛选</button></div>
+      <div id="rw-paper-list" class="rw-paper-list" aria-label="论文列表" aria-busy="true"></div>
+      <button id="rw-more" class="rw-more" hidden>显示更多</button>
+    </section>
+    <section class="rw-panel rw-editor" id="rw-editor" aria-labelledby="rw-editor-title">
+      <div class="rw-section-head"><h2 id="rw-editor-title" tabindex="-1"><span class="rw-step-number">03</span>论文 Wiki</h2><span id="rw-revision" class="rw-pill">未选择</span></div>
+      <div id="rw-empty" class="rw-empty rw-welcome">
+        <svg class="rw-book" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="18" y="10" width="54" height="68" rx="5"/><path d="M28 10v68M37 27h23M37 35h17M37 51h23M37 59h17"/><path d="M54 10v12l5-3 5 3V10"/></svg>
+        <span class="rw-eyebrow">YOUR RESEARCH, CONNECTED</span><h3>让一篇论文，成为知识的起点。</h3><p>从研究收件箱选择论文，查看摘要与笔记。<br/>连接本地服务后，可辅助分析并保存 Wiki 版本。</p>
+        <div class="rw-welcome-steps"><span>阅读原始研究</span><span>记录你的判断</span><span>保留修改脉络</span></div>
+      </div>
+      <div id="rw-detail" hidden>
+        <button type="button" id="rw-back-to-list" class="rw-mobile-back">← 返回论文列表</button>
+        <div class="rw-paper-heading"><div id="rw-paper-meta" class="rw-hint"></div><h3 id="rw-selected-title"></h3><a id="rw-source-link" class="rw-back" target="_blank" rel="noopener noreferrer" hidden>阅读原文 DOI ↗</a></div>
+        <details class="rw-abstract"><summary>原始摘要</summary><p id="rw-abstract" class="rw-text"></p></details>
+        <p class="rw-readonly-note" id="rw-readonly-note">当前为只读视图。<a href="#rw-local-help">在本地开启编辑</a>，记录你的研究笔记。</p>
+        <form id="rw-editor-form"><fieldset id="rw-editor-fields" disabled>
+          <label>标题<input id="rw-title" required /></label><label>中文研究摘要<textarea id="rw-zh" rows="3" placeholder="用自己的话概括贡献与局限…"></textarea></label>
+          <div class="rw-fields"><label>研究方向<select id="rw-category">{CATEGORIES.map(c => <option value={c.key}>{c.zh}</option>)}</select></label><label>标签（逗号分隔）<input id="rw-tags" /></label></div>
+          <label class="rw-body-label">Wiki 正文 <span>Markdown</span><textarea id="rw-body" rows="12" spellcheck="false" placeholder={'## 研究问题\n\n## 核心方法\n\n## 证据与局限\n\n## 我的笔记'}></textarea></label>
+          <label>本次修改说明<input id="rw-edit-summary" required placeholder="例如：补充实验结果与局限" /></label>
+          <div class="rw-row rw-save-row"><button type="submit" class="rw-primary">保存新版本</button><span id="rw-dirty" class="rw-hint">未修改</span></div>
+        </fieldset></form>
+        <div class="rw-editor-secondary"><button id="rw-reload-article" disabled>重新加载最新版本（放弃本地修改）</button><details><summary>正文预览（纯文本 Markdown）</summary><pre id="rw-preview" class="rw-text"></pre></details></div>
+        <section class="rw-analysis"><div class="rw-section-head"><h3>DeepSeek 辅助阅读</h3><span class="rw-pill">AI 草稿</span></div><p class="rw-hint" id="rw-ai-info">公开站点仅展示已有分析草稿。</p><p class="rw-hint">DeepSeek 按 token 计费，单次请求有输入和输出上限，但不是固定金额上限。生成时会将当前论文的标题与摘要发送给 DeepSeek。草稿可能有误，不代表全文审阅；核对后再采纳。</p>
+          <button id="rw-analyze" disabled>发送标题与摘要给 DeepSeek，生成草稿</button><div id="rw-analysis-readable" class="rw-analysis-readable"></div><details class="rw-advanced"><summary>查看分析原始数据</summary><pre id="rw-analysis-text" class="rw-text">暂无分析草稿。</pre></details><button id="rw-adopt" disabled>将草稿载入编辑器（尚不保存）</button>
+        </section>
+        <details class="rw-history"><summary>版本历史与恢复</summary><div id="rw-history"></div></details>
+      </div>
+    </section>
+  </div>
+  <aside class="rw-local-help" id="rw-local-help"><span class="rw-eyebrow">LOCAL FIRST / 本地优先</span><h2>把工作台带到本地，开始自己的研究。</h2><p>GitHub Pages 是公开只读快照，不能保存或调用模型。在项目目录依次运行：</p><ol class="rw-setup-steps"><li><span>构建数据与页面</span><code>pnpm data &amp;&amp; pnpm build</code></li><li><span>启动本地工作台</span><code>pnpm workspace</code></li><li><span>连接并开始编辑</span><p>打开终端提供的本地地址，输入会话令牌。</p></li></ol><p>DeepSeek 密钥仅通过本地环境变量配置。保存后的数据需重新构建并发布，才会更新公开快照。</p><p class="rw-privacy-note"><strong>发布前检查：</strong>Wiki 正文、完整版本历史与分析草稿都会进入公开快照，请勿写入私密笔记或密钥。</p></aside>
 </main>
 <script>import '../../scripts/research-workspace';</script>
 </BaseLayout>
