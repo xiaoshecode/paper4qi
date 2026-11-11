@@ -286,6 +286,10 @@ if overrides:
 # --------------------------------------------------------------------------
 # 5. write qce.json / tqe.json
 # --------------------------------------------------------------------------
+from pathlib import Path
+from workspace_store import apply_editorial_overlays, empty_state, export_workspace, read_json
+workspace_state = read_json(Path(SRC) / "workspace.json", empty_state())
+apply_editorial_overlays(qce_papers + qce26_papers + tqe_papers, workspace_state)
 generated = datetime.now().astimezone().isoformat(timespec="seconds")
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -363,6 +367,7 @@ stats_size = write_json(os.path.join(OUT_DIR, "stats.json"), stats)
 # Add a portable discovery layer; existing browser-facing datasets stay intact.
 from build_agent_data import build_agent_exports
 agent_manifest = build_agent_exports(OUT_DIR, SRC, all_papers, generated)
+export_workspace(SRC, OUT_DIR, generated)
 print(f"Agent exports: manifest.json + {len(agent_manifest['resources'])} resources")
 
 # --------------------------------------------------------------------------

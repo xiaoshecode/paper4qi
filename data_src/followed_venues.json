@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "venues": [
+    {
+      "id": "tqe",
+      "name": "IEEE Transactions on Quantum Engineering",
+      "kind": "journal",
+      "issn": "2689-1808",
+      "enabled": true,
+      "keywords": []
+    },
+    {
+      "id": "qce",
+      "name": "IEEE International Conference on Quantum Computing and Engineering (QCE)",
+      "kind": "conference",
+      "enabled": true,
+      "keywords": [],
+      "container_title": "IEEE International Conference on Quantum Computing and Engineering (QCE)"
+    }
+  ]
+}

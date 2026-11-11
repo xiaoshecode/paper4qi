@@ -40,6 +40,8 @@ GitHub 部署前依次运行 `python scripts/build_data.py`、`python scripts/te
 
 ## 功能特性
 
+- **研究工作台（新增）**：`/workspace/` 提供关注来源收件箱、可追溯 Wiki 编辑/恢复、DeepSeek 分类与中文解读草稿。公开站点为只读快照，`pnpm workspace` 启动仅限本机的认证服务；新密钥只由服务端环境变量配置。支持 Crossref 有界增量抓取与显式启用的本地周期追踪，AI 需主动点击并人工采纳，不启用新的外部定时任务。[设置、安全与使用说明](docs/research-workspace.md)。
+
 - **OpenQASM 专题**：`/openqasm/`，涵盖 2/3/3.1 规范、时序与 OpenPulse、7 类平台/工具支持、13 篇代表文献及 Bell 接入建议。正文源为 `src/content/openqasm-research.md`（由专题页面直接引用），2026-10-27 人工核查，不属于周更数据管线的自动核验范围。
 - **研究地图**：`/research/` 与子主题页组织策展来源、待研究问题和可追溯的关键词匹配；提供 `research-map.json` 与 MCP 查询，方便 agent 继续筛选和读取原文。
 

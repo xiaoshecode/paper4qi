@@ -7,7 +7,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "data": "python scripts/build_data.py"
+    "data": "python scripts/build_data.py",
+    "workspace": "python scripts/serve_workspace.py",
+    "research:refresh": "python scripts/refresh_workspace.py",
+    "test": "python -m unittest discover -s scripts -p 'test_*.py' && node scripts/test-site-worker.mjs && node scripts/test_workspace_ui.mjs"
   },
   "dependencies": {
     "astro": "^5.13.4"

@@ -33,6 +33,7 @@ jobs:
 
       - name: Validate agent data contract
         run: |
+          python -m unittest discover -s scripts -p 'test_*.py'
           python scripts/test_research_data.py
           python scripts/validate_agent_data.py
 
@@ -79,7 +80,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Validate read-only Sites tools
-        run: node scripts/test-site-worker.mjs
+        run: |
+          node scripts/test-site-worker.mjs
+          node scripts/test_workspace_ui.mjs
 
       - name: Download data artifact
         uses: actions/download-artifact@v4
