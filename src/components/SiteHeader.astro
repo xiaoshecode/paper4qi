@@ -2,36 +2,64 @@
 import ThemeToggle from './ThemeToggle.astro';
 import LangToggle from './LangToggle.astro';
 import { SITE } from '../data/meta';
+import { navigation, matchesDestination } from '../data/navigation';
 interface Props { active: string; }
 const { active } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const links = [
-  { path: '', zh: '总览', en: 'Overview' },
-  { path: 'workspace/', zh: '研究工作台', en: 'Workspace' },
-  { path: 'research/', zh: '研究地图', en: 'Research map' },
-  { path: 'qce/', zh: 'QCE 会议', en: 'QCE papers' },
-  { path: 'tqe/', zh: 'TQE 期刊', en: 'TQE papers' },
-  { path: 'cs4q/', zh: 'CS4Q 导读', en: 'CS4Q guide' },
-  { path: 'openqasm/', zh: 'OpenQASM', en: 'OpenQASM' },
-  { path: 'venues/', zh: '期刊会议', en: 'Venues' },
-  { path: 'stats/', zh: '方向统计', en: 'Statistics' },
-  { path: 'agents/', zh: 'Agent 数据', en: 'Agent data' },
-  { path: 'about/', zh: '数据说明', en: 'About data' },
-];
-const isActive = (path: string) => path ? active.startsWith(`${base}${path}`) : active.replace(/\/$/, '') === base.replace(/\/$/, '');
+const isActive = (path: string) => matchesDestination(active, base, path);
 ---
-<header class="site-header">
+<header class="site-header organized-header">
   <div class="wrap header-top">
     <a class="brand" href={base}><span class="brand-mark" aria-hidden="true">q<span>i</span></span><span>{SITE.short}<span class="sub">{SITE.name}</span></span></a>
     <div class="header-tools"><a class="header-repo" href="https://github.com/xiaoshecode/paper4qi" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a><LangToggle /><ThemeToggle /></div>
   </div>
-  <div class="wrap header-nav-wrap"><nav class="site-nav" aria-label="主导航 / Main navigation">{links.map((l) => <a href={`${base}${l.path}`} class={isActive(l.path) ? 'active' : ''} aria-current={isActive(l.path) ? 'page' : undefined}><span class="i18n-zh">{l.zh}</span><span class="i18n-en">{l.en}</span></a>)}</nav></div>
+  <div class="wrap navigation-row">
+    <details class="navigation-shell" open>
+      <summary class="mobile-nav-toggle"><span class="i18n-zh">网站导航</span><span class="i18n-en">Site navigation</span><span class="nav-chevron" aria-hidden="true">⌄</span></summary>
+      <nav class="organized-nav" aria-label="主导航 / Main navigation">
+        {navigation.map((item) => item.children ? (
+          <details class:list={['nav-group', { 'is-current': item.children.some(l => isActive(l.path)) }]}>
+            <summary><span class="i18n-zh">{item.zh}</span><span class="i18n-en">{item.en}</span><span class="nav-chevron" aria-hidden="true">⌄</span></summary>
+            <div class="nav-group-panel">
+              <span class="nav-group-label"><span class="i18n-zh">{item.zh}</span><span class="i18n-en">{item.en}</span></span>
+              {item.children.map(l => <a href={`${base}${l.path}`} class:list={{ 'is-current': isActive(l.path) }} aria-current={isActive(l.path) ? (active.replace(/\/$/, '') === `${base}${l.path}`.replace(/\/$/, '') ? 'page' : 'location') : undefined}><span class="i18n-zh">{l.zh}</span><span class="i18n-en">{l.en}</span><span class="nav-item-marker" aria-hidden="true">{isActive(l.path) ? '•' : '→'}</span></a>)}
+            </div>
+          </details>
+        ) : <a href={`${base}${item.path}`} class:list={['nav-direct', { 'is-current': isActive(item.path!) }]} aria-current={isActive(item.path!) ? 'page' : undefined}><span class="i18n-zh">{item.zh}</span><span class="i18n-en">{item.en}</span></a>)}
+      </nav>
+    </details>
+  </div>
 </header>
 <script>
-  // Keep the current destination visible in the horizontally scrollable mobile navigation.
-  const nav = document.querySelector<HTMLElement>('.site-nav');
-  const current = nav?.querySelector<HTMLElement>('[aria-current="page"]');
-  if (nav && current && nav.scrollWidth > nav.clientWidth) {
-    nav.scrollLeft = Math.max(0, current.offsetLeft - nav.offsetLeft - (nav.clientWidth - current.clientWidth) / 2);
-  }
+  const header = document.querySelector<HTMLElement>('.organized-header')!;
+  const shell = header.querySelector<HTMLDetailsElement>('.navigation-shell')!;
+  const groups = [...header.querySelectorAll<HTMLDetailsElement>('.nav-group')];
+  const compact = matchMedia('(max-width: 700px)');
+  const closeGroups = () => groups.forEach(group => { group.open = false; });
+  const resetNavigation = () => { closeGroups(); shell.open = !compact.matches; };
+  resetNavigation();
+  compact.addEventListener('change', resetNavigation);
+  groups.forEach(group => group.addEventListener('toggle', () => {
+    if (group.open) groups.forEach(other => { if (other !== group) other.open = false; });
+  }));
+  document.addEventListener('click', event => {
+    if (!header.contains(event.target as Node)) {
+      closeGroups();
+      if (compact.matches) shell.open = false;
+    }
+  });
+  header.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const group = groups.find(g => g.open);
+    if (group) { group.open = false; group.querySelector('summary')?.focus(); }
+    else if (compact.matches && shell.open) { shell.open = false; shell.querySelector('summary')?.focus(); }
+  });
+  header.addEventListener('focusout', () => {
+    setTimeout(() => { if (!header.contains(document.activeElement)) closeGroups(); }, 0);
+  });
+  header.querySelectorAll('nav a').forEach(link => link.addEventListener('click', () => {
+    closeGroups();
+    if (compact.matches) shell.open = false;
+  }));
+  window.addEventListener('pageshow', resetNavigation);
 </script>
