@@ -13,7 +13,7 @@ from unittest.mock import patch
 from deepseek_client import DEFAULT_MODEL
 from serve_workspace import WorkspaceServer
 from workspace_store import (ConflictError, WorkspaceLease, WorkspaceStore,
-                             apply_editorial_overlays, export_workspace)
+                             apply_editorial_overlays, export_workspace, prepare_public_snapshot, read_public_snapshot)
 
 
 PAPER = {"id": "tqe:10.1109/tqe.2026.1", "doi": "10.1109/tqe.2026.1", "title": "Quantum compiler",
@@ -188,9 +188,81 @@ class StoreTests(unittest.TestCase):
         papers = [copy.deepcopy(PAPER)]
         apply_editorial_overlays(papers, self.store.state)
         self.assertEqual(papers[0]["zh"], "人工核对摘要")
+        self.assertFalse(export_workspace(self.root / "data_src", self.root / "public/data", "before")["articles"])
+        prepare_public_snapshot(self.root)
         output = export_workspace(self.root / "data_src", self.root / "public/data", "2026-11-01")
         self.assertEqual(output["articles"][PAPER["id"]]["revision"], 1)
         self.assertNotIn("checkpoints", output)
+
+    def test_publication_excludes_private_history_and_drafts(self):
+        self.store.save_article(PAPER["id"], 0, self.content(body="PRIVATE_OLD_BODY"), "PRIVATE_REASON")
+        self.store.save_article(PAPER["id"], 1, self.content(body="Reviewed current body"), "another reason")
+        self.store.analyze(PAPER["id"], lambda paper: {"model": DEFAULT_MODEL, "summary": "PRIVATE_AI_DRAFT"})
+        self.store.state["checkpoints"]["secret_source"] = "PRIVATE_CHECKPOINT"
+        self.store._commit(self.store.state)
+        snapshot = prepare_public_snapshot(self.root)
+        raw = (self.root / "data_src/workspace-public.json").read_text()
+        self.assertNotIn("PRIVATE_", raw)
+        self.assertEqual(snapshot["articles"][PAPER["id"]]["body"], "Reviewed current body")
+        self.assertFalse(snapshot["articles"][PAPER["id"]]["history"])
+        self.assertEqual(len(self.store.article(PAPER["id"])["article"]["history"]), 2)
+        self.store.save_article(PAPER["id"], 2, self.content(body="PRIVATE_LATER_EDIT"), "later")
+        exported = export_workspace(self.root / "data_src", self.root / "public/data", "now")
+        self.assertNotIn("PRIVATE_", json.dumps(exported))
+        self.assertEqual(exported["articles"][PAPER["id"]]["body"], "Reviewed current body")
+
+    def test_fresh_checkout_continues_reviewed_snapshot(self):
+        self.store.save_article(PAPER["id"], 0, self.content(body="Reviewed published body"), "private note")
+        prepare_public_snapshot(self.root)
+        self.store.path.unlink()
+        fresh = WorkspaceStore(self.root)
+        article = fresh.article(PAPER["id"])["article"]
+        self.assertEqual(article["body"], "Reviewed published body")
+        self.assertEqual(article["revision"], 1)
+        self.assertFalse(article["history"])
+        edited = fresh.save_article(PAPER["id"], 1, self.content(body="New local edit"), "new")
+        self.assertEqual(edited["revision"], 2)
+
+    def test_prepare_without_private_state_preserves_public_snapshot(self):
+        self.store.save_article(PAPER["id"], 0, self.content(body="Reviewed body"), "private note")
+        discovery = {**PAPER, "id": "discovery:10.1234/new", "doi": "10.1234/new",
+                     "first_seen_at": "2026-11-01T00:00:00Z", "last_seen_at": "2026-11-02T00:00:00Z"}
+        self.store.state["discoveries"][discovery["id"]] = discovery
+        self.store._commit(self.store.state)
+        first = prepare_public_snapshot(self.root)
+        self.store.path.unlink()
+        second = prepare_public_snapshot(self.root)
+        self.assertEqual(first, second)
+        self.assertEqual(second["discoveries"][discovery["id"]]["first_seen_at"], discovery["first_seen_at"])
+        self.assertEqual(second["discoveries"][discovery["id"]]["last_seen_at"], discovery["last_seen_at"])
+        self.assertFalse(self.store.path.exists())
+
+    def test_prepare_refuses_newer_or_divergent_public_revision(self):
+        self.store.save_article(PAPER["id"], 0, self.content(body="Local body"), "private note")
+        snapshot = prepare_public_snapshot(self.root)
+        path = self.root / "data_src/workspace-public.json"
+        snapshot["articles"][PAPER["id"]]["body"] = "Other editor body"
+        for revision in (1, 2):
+            snapshot["articles"][PAPER["id"]]["revision"] = revision
+            path.write_text(json.dumps(snapshot))
+            prior = path.read_bytes()
+            with self.assertRaises(ConflictError):
+                prepare_public_snapshot(self.root)
+            self.assertEqual(path.read_bytes(), prior)
+
+    def test_prepare_preserves_public_only_records(self):
+        self.store.save_article(PAPER["id"], 0, self.content(), "reviewed")
+        snapshot = prepare_public_snapshot(self.root)
+        self.store.state["articles"] = {}
+        self.store._commit(self.store.state)
+        self.assertEqual(prepare_public_snapshot(self.root)["articles"], snapshot["articles"])
+
+    def test_publication_filters_hand_edited_snapshot(self):
+        self.store.save_article(PAPER["id"], 0, self.content(), "PRIVATE_REASON")
+        (self.root / "data_src/workspace-public.json").write_text(json.dumps(self.store.state))
+        snapshot = read_public_snapshot(self.root / "data_src")
+        self.assertNotIn("PRIVATE_REASON", json.dumps(snapshot))
+        self.assertFalse(snapshot["analyses"])
 
     def test_exclusive_writer_lease(self):
         with WorkspaceLease(self.root):

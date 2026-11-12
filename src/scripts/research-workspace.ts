@@ -38,7 +38,7 @@ if (root) {
     el('readonly-note').hidden = connected;
     el('mode-badge').textContent = connected ? '本地已连接' : local ? '本地待连接' : '公开只读';
     el('dirty').textContent = dirty ? '有未保存修改' : '未修改';
-    el('mode').textContent = connected ? '本地可编辑 · 会话令牌仅保存在本页内存' : local ? '本地服务已就绪 · 输入会话令牌解锁编辑' : '公开只读模式 · 浏览已发布的历史快照；保存与抓取需本地服务';
+    el('mode').textContent = connected ? '本地可编辑 · 会话令牌仅保存在本页内存' : local ? '本地服务已就绪 · 输入会话令牌解锁编辑' : '公开只读模式 · 浏览已发布的内容快照；保存与抓取需本地服务';
   }
   async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
     let response: Response;
@@ -136,7 +136,7 @@ if (root) {
       button.addEventListener('click', () => { if (!selected || !article || !window.confirm(`恢复 v${h.revision} 为新的当前版本？${dirty ? '未保存修改将被替换。' : ''}`)) return; void run('正在恢复版本…', async () => { const result = await request<{ article: Article }>('restore', 'POST', { id: selected!.id, expected_revision: article!.revision, revision: h.revision, summary: `恢复至版本 ${h.revision}` }); article = result.article; dirty = false; fill(article); syncSavedMetadata(); renderHistory(); notice('历史版本已恢复，并创建了新版本。'); }); });
       detail.append(button); el('history').append(detail);
     }
-    if (!article?.history?.length) el('history').append(node('p', '尚无已保存版本。', 'rw-hint'));
+    if (!article?.history?.length) el('history').append(node('p', connected ? '尚无已保存版本。' : '版本历史仅在认证的本地工作台可见。', 'rw-hint'));
   }
   async function loadPrivate() {
     const [p, v] = await Promise.all([request<{ papers: Paper[]; discoveries: Paper[] }>('papers'), request<{ venues: Venue[]; revision: number }>('venues')]);
@@ -149,7 +149,7 @@ if (root) {
   field('venues-json').addEventListener('input', () => { venueDirty = true; });
   el('save-venues').addEventListener('click', () => void run('保存来源配置…', async () => { const data = JSON.parse(field('venues-json').value); if (!Array.isArray(data)) throw new Error('来源 JSON 必须是数组。'); await saveVenues(data); }));
   el('reload-venues').addEventListener('click', () => { if (venueDirty && !window.confirm('放弃未保存的来源 JSON 修改？')) return; void run('重新加载来源…', async () => { const data = await request<{ venues: Venue[]; revision: number }>('venues'); venues = data.venues; venueRevision = data.revision; renderVenues(); notice('已载入最新来源配置。'); }); });
-  el('refresh').addEventListener('click', () => void run('正在检索关注来源，请稍候…', async () => { const result = await request<{ added: number; updated: number; sources: unknown[] }>('refresh', 'POST', {}); el('source-results').hidden = false; el('source-results').textContent = JSON.stringify(result.sources, null, 2); const resultPapers = await request<{ papers: Paper[]; discoveries: Paper[] }>('papers'); papers = [...new Map([...resultPapers.papers, ...resultPapers.discoveries].map(p => [p.id, p])).values()];
+  el('refresh').addEventListener('click', () => void run('正在检索关注来源，请稍候…', async () => { const result = await request<{ added: number; updated: number; sources: { id: string; status: string; complete?: boolean; count?: number; scanned?: number }[] }>('refresh', 'POST', {}); el('source-results').hidden = false; el('source-results').textContent = result.sources.map(source => `${venues.find(v => v.id === source.id)?.name || source.id}：${source.status === 'ok' ? '本轮窗口完成' : source.status === 'error' ? '来源请求失败，旧数据和检查点已保留' : source.status === 'overflow' ? '单日数据较多，请尽快继续抓取' : '尚有数据待抓取，再次点击可续传'} · 扫描 ${source.scanned ?? '—'} 条 · 入库/更新 ${source.count ?? 0} 条`).join('\n\n'); const resultPapers = await request<{ papers: Paper[]; discoveries: Paper[] }>('papers'); papers = [...new Map([...resultPapers.papers, ...resultPapers.discoveries].map(p => [p.id, p])).values()];
     if (selected) {
       const refreshed = papers.find(p => p.id === selected!.id);
       if (refreshed) {
@@ -163,7 +163,7 @@ if (root) {
         // Keep the editor, dirty flag and revision intact, even if metadata changed.
       }
     }
-    renderPapers(); notice(`检索完成：新增 ${result.added} 篇，更新 ${result.updated} 篇。请检查各来源状态，部分来源可能未完整抓取。`); }));
+    renderPapers(); const failed = result.sources.filter(s => s.status === 'error').length; const pending = result.sources.filter(s => s.status !== 'ok' && s.status !== 'error').length; notice(`本轮新增 ${result.added} 篇，更新 ${result.updated} 篇。${failed ? `${failed} 个来源失败，旧数据保留。` : ''}${pending ? `${pending} 个来源尚未完成，请继续抓取。` : failed ? '' : '所有启用来源的当前窗口已完成。'}`, failed > 0); }));
   const resetResults = () => { limit = 60; renderPapers(); el('paper-list').scrollTop = 0; };
   field('search').addEventListener('input', resetResults);
   field('filter-category').addEventListener('change', resetResults);

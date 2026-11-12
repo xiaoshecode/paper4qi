@@ -41,7 +41,7 @@ const extraPaper = { id: 'test:2', title: 'A second paper', year: 2020, category
 let article = { ...paper, body: 'Original body', revision: 0, history: [] };
 const analysis = { summary: '分析草稿', category: 'ARCH', tags: [], contributions: ['贡献'], limitations: ['局限'], evidence_basis: 'title_and_abstract' };
 let venues = [{ id: 'original', name: 'Original journal', kind: 'journal', issn: '1234-5678', keywords: [], enabled: true }];
-let serviceReady = true;
+let serviceReady = true; let refreshSources = [];
 let venueRevision = 0; const writes = []; let simulateConflict = false;
 const response = (data, status = 200) => ({ ok: status === 200, status, headers: { get: () => 'application/json' }, json: async () => structuredClone(data) });
 const fetch = async (url, options = {}) => {
@@ -55,7 +55,7 @@ const fetch = async (url, options = {}) => {
   if (path === 'papers') return response({ papers: [paper, extraPaper], discoveries: [] });
   if (path === 'venues') { if (body) { venues = body.venues; venueRevision++; } return response({ venues, revision: venueRevision }); }
   if (path === 'analyze') return response({ analysis });
-  if (path === 'refresh') { paper.abstract = 'Updated abstract from the source'; return response({ added: 0, updated: 1, sources: [] }); }
+  if (path === 'refresh') { paper.abstract = 'Updated abstract from the source'; return response({ added: 0, updated: 1, sources: refreshSources }); }
   if (path === 'restore') { article = { ...article, title: 'Restored different title', revision: article.revision + 1 }; return response({ article }); }
   if (path === 'article') {
     if (body) {
@@ -146,6 +146,13 @@ assert.equal(unloadPrevented(), true, 'refresh must preserve editor dirty state'
 get('body').value = 'Preserve on conflict'; get('edit-summary').value = 'Conflict test'; get('editor-form').emit('input'); simulateConflict = true; await submit('editor-form');
 assert.equal(get('body').value, 'Preserve on conflict'); assert.equal(unloadPrevented(), true);
 assert.ok(get('status').textContent.includes('版本冲突'));
+refreshSources = [{id:'original',status:'partial',complete:false,scanned:100,count:0}];
+await click(get('refresh'));
+assert.ok(get('status').textContent.includes('1 个来源尚未完成'));
+assert.ok(get('source-results').textContent.includes('扫描 100 条'));
+refreshSources = [{id:'original',status:'error',complete:false,count:0}];
+await click(get('refresh'));
+assert.ok(get('status').textContent.includes('1 个来源失败'));
 assert.equal(get('source-editor').open, true, 'editing a venue opens its form');
 console.log('PASS: offline controller regressions (disabled FormData, independent venue drafts, edit cancellation, analysis preservation/invalidation including refreshed metadata, conflict retention, token clearing, category/search/reset/sort, keyboard focus, mobile reading navigation, structured analysis, source form disclosure).');
 

@@ -11,3 +11,6 @@ __pycache__/
 !.env.example
 *.local
 .workspace.lock
+
+# Private editing state: never commit history, drafts or checkpoints.
+data_src/workspace.json

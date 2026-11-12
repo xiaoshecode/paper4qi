@@ -287,8 +287,8 @@ if overrides:
 # 5. write qce.json / tqe.json
 # --------------------------------------------------------------------------
 from pathlib import Path
-from workspace_store import apply_editorial_overlays, empty_state, export_workspace, read_json
-workspace_state = read_json(Path(SRC) / "workspace.json", empty_state())
+from workspace_store import apply_editorial_overlays, export_workspace, read_public_snapshot
+workspace_state = read_public_snapshot(SRC)
 apply_editorial_overlays(qce_papers + qce26_papers + tqe_papers, workspace_state)
 generated = datetime.now().astimezone().isoformat(timespec="seconds")
 os.makedirs(OUT_DIR, exist_ok=True)

@@ -1,7 +1,7 @@
-"""Versioned research workspace. Public metadata only; never persist credentials.
+"""Versioned local research workspace; never persist credentials.
 
 The single JSON state is atomically replaced under an in-process lock. Run only
-one workspace writer per checkout. Git remains the publication/review boundary.
+one workspace writer per checkout. Only an explicit reviewed snapshot is public.
 """
 from __future__ import annotations
 
@@ -135,22 +135,63 @@ def apply_editorial_overlays(papers, state):
             paper.update({key: content[key] for key in ("title", "zh", "category", "tags")})
 
 
-def export_workspace(source_dir, out_dir, generated):
-    source_dir, out_dir = Path(source_dir), Path(out_dir)
-    state = read_json(source_dir / "workspace.json", empty_state())
+def public_snapshot(state, venues):
+    """Allowlist a reviewed snapshot: never export histories or AI drafts."""
+    article_fields = ("title", "zh", "category", "tags", "body")
+    articles = {}
+    for identifier, article in state.get("articles", {}).items():
+        content = validate_content({key: article[key] for key in article_fields})
+        articles[identifier] = {**content, "revision": article["revision"],
+                                "updated_at": article.get("updated_at"), "history": []}
+    paper_fields = ("id", "doi", "title", "authors", "abstract", "year", "venue", "source",
+                    "source_id", "category", "tags", "zh", "published", "published_precision",
+                    "url", "source_url", "licenses", "followed_venue_id", "indexed", "discovered_at", "first_seen_at", "last_seen_at", "front_matter")
+    discoveries = {identifier: {key: copy.deepcopy(paper[key]) for key in paper_fields if key in paper}
+                   for identifier, paper in state.get("discoveries", {}).items()}
+    return {"schema_version": 1, "articles": articles, "analyses": {},
+            "discoveries": discoveries, "venues": validate_venues(venues)}
+
+
+def read_public_snapshot(source_dir):
+    source_dir = Path(source_dir)
     defaults = read_json(source_dir / "followed_venues.json", {"venues": []})
+    state = read_json(source_dir / "workspace-public.json", empty_state())
+    if state.get("schema_version") != 1:
+        raise ValueError("Unsupported public snapshot schema")
+    # Sanitize again so even a hand-edited snapshot cannot export private fields.
+    return public_snapshot(state, state.get("venues", defaults["venues"]))
+
+
+def prepare_public_snapshot(root):
+    """Explicit local publication preparation; does not commit, push or deploy."""
+    root = Path(root)
+    published = read_public_snapshot(root / "data_src")
+    state = read_json(root / "data_src/workspace.json", published)
+    defaults = read_json(root / "data_src/followed_venues.json", {"venues": []})
+    payload = public_snapshot(state, state.get("venues", defaults["venues"]))
+    # A pulled public snapshot may have advanced independently of private state.
+    # Keep public-only records and refuse to overwrite newer/divergent revisions.
+    content_fields = ("title", "zh", "category", "tags", "body")
+    for identifier, article in published["articles"].items():
+        local = payload["articles"].get(identifier)
+        if local and (local["revision"] < article["revision"] or (
+                local["revision"] == article["revision"] and any(
+                    local[key] != article[key] for key in content_fields))):
+            raise ConflictError("Public snapshot has newer or conflicting article content; reconcile it with local edits before preparing publication")
+    payload["articles"] = {**published["articles"], **payload["articles"]}
+    payload["discoveries"] = {**published["discoveries"], **payload["discoveries"]}
+    atomic_write_json(str(root / "data_src/workspace-public.json"), payload, indent=2)
+    return payload
+
+
+def export_workspace(source_dir, out_dir, generated):
+    state = read_public_snapshot(source_dir)
     papers = list(copy.deepcopy(state["discoveries"]).values())
     apply_editorial_overlays(papers, state)
-    corpus = read_json(out_dir / "papers.json", {"papers": []})["papers"]
-    apply_editorial_overlays(corpus, state)
-    by_id = {paper["id"]: paper for paper in corpus + papers}
-    analyses = {identifier: analysis for identifier, stored in state["analyses"].items()
-                if identifier in by_id and (analysis := current_analysis(by_id[identifier], stored, check_model=False))}
     payload = {"schema_version": 1, "generated": generated, "papers": papers,
-               "articles": state["articles"], "analyses": analyses,
-               "venues": state.get("venues", defaults["venues"]),
-               "notice": "Discovery inbox is separate from the curated QCE/TQE corpus. AI output is unreviewed until explicitly saved by an editor. Public export includes wiki revision history; do not enter private information."}
-    atomic_write_json(str(out_dir / "workspace.json"), payload)
+               "articles": state["articles"], "analyses": {}, "venues": state["venues"],
+               "notice": "Reviewed public snapshot. Private revision history and unadopted AI drafts are excluded. Discovery inbox is separate from the curated QCE/TQE corpus."}
+    atomic_write_json(str(Path(out_dir) / "workspace.json"), payload)
     return payload
 
 
@@ -161,7 +202,12 @@ class WorkspaceStore:
         self.lock = threading.RLock()
         self.refresh_lock = threading.Lock()
         self.analysis_lock = threading.Lock()
-        self.state = read_json(self.path, empty_state())
+        if self.path.exists():
+            self.state = read_json(self.path, empty_state())
+        else:
+            # A fresh checkout can continue editing its last reviewed snapshot.
+            # Private revisions remain absent; subsequent edits create new history.
+            self.state = {**empty_state(), **read_public_snapshot(self.root / "data_src")}
         if self.state.get("schema_version") != 1:
             raise ValueError("Unsupported workspace schema")
         self.state.setdefault("pending_windows", {})
@@ -343,7 +389,7 @@ class WorkspaceStore:
                 complete = result["complete"] and not remaining
                 overflow = not result["complete"] and window_start == window_end and budget >= 10000
                 report["sources"].append({"id": venue["id"], "status": "overflow" if overflow else "ok" if complete else "partial",
-                    "count": count, "complete": complete, "message": "This indexed day exceeds 10,000 raw records. Run another refresh within four minutes to continue the live cursor; hourly retries cannot complete this dense day. Narrow the source configuration if needed. Checkpoint not advanced."
+                    "count": count, "scanned": result.get("scanned", 0), "complete": complete, "message": "This indexed day exceeds 10,000 raw records. Run another refresh within four minutes to continue the live cursor; hourly retries cannot complete this dense day. Narrow the source configuration if needed. Checkpoint not advanced."
                     if overflow else "Window completed" if complete else
                     "More data remains. Next refresh resumes a valid cursor or safely replays smaller date windows; only completed windows advance."})
             return report

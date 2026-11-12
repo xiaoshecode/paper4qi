@@ -63,14 +63,14 @@ const base = import.meta.env.BASE_URL;
           <div class="rw-row rw-save-row"><button type="submit" class="rw-primary">保存新版本</button><span id="rw-dirty" class="rw-hint">未修改</span></div>
         </fieldset></form>
         <div class="rw-editor-secondary"><button id="rw-reload-article" disabled>重新加载最新版本（放弃本地修改）</button><details><summary>正文预览（纯文本 Markdown）</summary><pre id="rw-preview" class="rw-text"></pre></details></div>
-        <section class="rw-analysis"><div class="rw-section-head"><h3>DeepSeek 辅助阅读</h3><span class="rw-pill">AI 草稿</span></div><p class="rw-hint" id="rw-ai-info">公开站点仅展示已有分析草稿。</p><p class="rw-hint">DeepSeek 按 token 计费，单次请求有输入和输出上限，但不是固定金额上限。生成时会将当前论文的标题与摘要发送给 DeepSeek。草稿可能有误，不代表全文审阅；核对后再采纳。</p>
+        <section class="rw-analysis"><div class="rw-section-head"><h3>DeepSeek 辅助阅读</h3><span class="rw-pill">AI 草稿</span></div><p class="rw-hint" id="rw-ai-info">分析草稿只在认证的本地工作台展示，不会自动公开。</p><p class="rw-hint">DeepSeek 按 token 计费，单次请求有输入和输出上限，但不是固定金额上限。生成时会将当前论文的标题与摘要发送给 DeepSeek。草稿可能有误，不代表全文审阅；核对后再采纳。</p>
           <button id="rw-analyze" disabled>发送标题与摘要给 DeepSeek，生成草稿</button><div id="rw-analysis-readable" class="rw-analysis-readable"></div><details class="rw-advanced"><summary>查看分析原始数据</summary><pre id="rw-analysis-text" class="rw-text">暂无分析草稿。</pre></details><button id="rw-adopt" disabled>将草稿载入编辑器（尚不保存）</button>
         </section>
         <details class="rw-history"><summary>版本历史与恢复</summary><div id="rw-history"></div></details>
       </div>
     </section>
   </div>
-  <aside class="rw-local-help" id="rw-local-help"><span class="rw-eyebrow">LOCAL FIRST / 本地优先</span><h2>把工作台带到本地，开始自己的研究。</h2><p>GitHub Pages 是公开只读快照，不能保存或调用模型。在项目目录依次运行：</p><ol class="rw-setup-steps"><li><span>构建数据与页面</span><code>pnpm data &amp;&amp; pnpm build</code></li><li><span>启动本地工作台</span><code>pnpm workspace</code></li><li><span>连接并开始编辑</span><p>打开终端提供的本地地址，输入会话令牌。</p></li></ol><p>DeepSeek 密钥仅通过本地环境变量配置。保存后的数据需重新构建并发布，才会更新公开快照。</p><p class="rw-privacy-note"><strong>发布前检查：</strong>Wiki 正文、完整版本历史与分析草稿都会进入公开快照，请勿写入私密笔记或密钥。</p></aside>
+  <aside class="rw-local-help" id="rw-local-help"><span class="rw-eyebrow">LOCAL FIRST / 本地优先</span><h2>把工作台带到本地，开始自己的研究。</h2><p>GitHub Pages 是公开只读快照，不能保存或调用模型。在项目目录依次运行：</p><ol class="rw-setup-steps"><li><span>构建数据与页面</span><code>pnpm data &amp;&amp; pnpm build</code></li><li><span>启动本地工作台</span><code>pnpm workspace</code></li><li><span>连接并开始编辑</span><p>打开终端提供的本地地址，输入会话令牌。</p></li></ol><p>DeepSeek 密钥仅通过本地环境变量配置。本地保存不会公开。先运行 python scripts/prepare_workspace_publication.py --confirm-public，审查生成的快照，再构建并发布。</p><p class="rw-privacy-note"><strong>发布前检查：</strong>只有显式准备的当前人工保存内容进入公开快照。旧版本、修改说明和未采纳 AI 草稿保留在本地；发布前仍需审查当前正文，请勿发布私密笔记或密钥。</p></aside>
 </main>
 <script>import '../../scripts/research-workspace';</script>
 </BaseLayout>
