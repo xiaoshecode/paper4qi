@@ -10,10 +10,18 @@ if (!rel || rel.startsWith('..') || !existsSync(join(target, '.git'))) throw new
 const manifestPath = join(target, '.openai/hosting.json');
 const hosting = JSON.parse(readFileSync(manifestPath, 'utf8'));
 if (hosting.project_id !== 'appgprj_6adffc3408608191a3ac6a3d3ccdcefc') throw new Error('Unexpected Sites project identity; do not overwrite another Site');
-const paths = ['data_src', 'public', 'src', 'scripts', 'sites', 'docs', '.gitignore', 'astro.config.mjs', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.json', 'LICENSE', 'README.md', 'CLAUDE.md'];
+const paths = ['data_src', 'public', 'src', 'scripts', 'sites', 'server', 'deploy', 'docs', 'drizzle', '.env.example', '.gitignore', 'astro.config.mjs', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.json', 'LICENSE', 'README.md', 'CLAUDE.md'];
+function publishableSource(source) {
+  const parts = relative(root, source).split(/[\\/]/);
+  if (parts.join('/') === 'data_src/workspace.json') return false;
+  return !parts.some(part =>
+    ['.git', '.openai', '.qa', '.sites-work', '.workspace.lock', '__pycache__', 'node_modules', '.astro', '.wrangler', 'coverage', 'test-results', 'playwright-report'].includes(part)
+    || (part.startsWith('.env') && part !== '.env.example')
+    || /(?:\.pyc|\.local|\.lock|\.sqlite(?:3)?(?:-wal|-shm)?|\.db(?:-wal|-shm)?|\.log|\.tmp)$/.test(part));
+}
 for (const path of paths) {
   if (!existsSync(resolve(root, path))) continue;
-  cpSync(resolve(root, path), join(target, path), { recursive: true, filter: source => !source.split(/[\\/]/).some(part => part === '__pycache__' || part.endsWith('.pyc')) });
+  cpSync(resolve(root, path), join(target, path), { recursive: true, filter: publishableSource });
 }
 delete hosting.static;
 hosting.capabilities = [...new Set([...(hosting.capabilities ?? []), 'mcp'])];
