@@ -30,6 +30,13 @@ for (const path of ['/data/papers.json', '/data/manifest.json', '/data/quality.j
 mkdirSync(join(dist, 'server'), { recursive: true });
 mkdirSync(join(dist, '.openai'), { recursive: true });
 const runtime = readFileSync(resolve(root, 'sites/worker.mjs'), 'utf8');
-writeFileSync(join(dist, 'server/index.js'), `${runtime}\nconst assets = ${JSON.stringify(assets)};\nexport default createWorker(assets);\n`);
+const workspaceRuntime = readFileSync(resolve(root, 'sites/workspace-api.mjs'), 'utf8');
+const chatRuntime = readFileSync(resolve(root, 'sites/chat-api.mjs'), 'utf8');
+const bundledRuntime = runtime.replace("import { createWorkspaceApi } from './workspace-api.mjs';", '');
+const bundledWorkspace = workspaceRuntime.replace("import { createResearchChat } from './chat-api.mjs';", '');
+function bundleModule(source, entry) {
+  return `const ${entry} = (() => {\n${source.replace(/^export /gm, '')}\nreturn ${entry};\n})();\n`;
+}
+writeFileSync(join(dist, 'server/index.js'), `${bundleModule(chatRuntime, 'createResearchChat')}\n${bundleModule(bundledWorkspace, 'createWorkspaceApi')}\n${bundledRuntime}\nconst assets = ${JSON.stringify(assets)};\nexport default createWorker(assets);\n`);
 writeFileSync(join(dist, '.openai/hosting.json'), JSON.stringify(manifest, null, 2) + '\n');
-console.log(`Sites Worker: ${Object.keys(assets).length} assets, ${Math.round(readFileSync(join(dist, 'server/index.js')).length / 1024)} KiB source; 6 read-only MCP tools.`);
+console.log(`Sites Worker: ${Object.keys(assets).length} assets, ${Math.round(readFileSync(join(dist, 'server/index.js')).length / 1024)} KiB source; 6 read-only MCP tools and authenticated online workspace.`);

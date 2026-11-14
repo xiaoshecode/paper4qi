@@ -38,6 +38,10 @@ try {
   const signed = await login.json();assert.match(signed.token,/^[a-f0-9]{64}$/);
   assert(!JSON.stringify(db.database.prepare('SELECT * FROM standalone_sessions').all()).includes(signed.token),'Session token is only stored as a hash');
   const status = await (await request('/api/status',{token:signed.token})).json();assert.equal(status.can_edit,true);assert.equal(status.auth_mode,'password');assert(!('editor_id' in status));
+  const disabledAi = createStandalone({worker:createWorker(assets),db,env:{...env,DEEPSEEK_API_KEY:'synthetic-private-model-credential',PAPER4QI_AI_ENABLED:'0'}});
+  const disabledStatus = await(await disabledAi.fetch(new Request(origin+'/api/status',{headers:{Origin:frontend,Authorization:'Bearer '+signed.token}}))).json();
+  assert.equal(disabledStatus.deepseek_configured,false,'An invalid or unverified model credential can be disabled without removing the integration');
+  assert.equal(disabledStatus.can_edit,true,'Disabling model requests does not disable owner editing');
   assert.equal((await request('/api/article',{method:'PUT',body:input,token:signed.token})).status,200);
   const publicArticle = await(await request('/api/article?id='+encodeURIComponent(paper.id))).json();assert.equal(publicArticle.article.history.length,1);assert.equal(publicArticle.article.body,'Public research');assert(!JSON.stringify(publicArticle).includes(signed.token));
   const stale = await request('/api/article',{method:'PUT',body:input,token:signed.token});assert.equal(stale.status,409);

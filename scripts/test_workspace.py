@@ -1,8 +1,10 @@
 """Offline persistence/API integration tests; never contact upstream providers."""
 import copy
 import http.client
+import hashlib
 import json
 import os
+import subprocess
 import tempfile
 import threading
 import unittest
@@ -14,6 +16,8 @@ from deepseek_client import DEFAULT_MODEL
 from serve_workspace import WorkspaceServer
 from workspace_store import (ConflictError, WorkspaceLease, WorkspaceStore,
                              apply_editorial_overlays, export_workspace, prepare_public_snapshot, read_public_snapshot)
+from build_agent_data import workspace_schema, build_agent_exports
+from validate_agent_data import validate_schema
 
 
 PAPER = {"id": "tqe:10.1109/tqe.2026.1", "doi": "10.1109/tqe.2026.1", "title": "Quantum compiler",
@@ -194,17 +198,21 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(output["articles"][PAPER["id"]]["revision"], 1)
         self.assertNotIn("checkpoints", output)
 
-    def test_publication_excludes_private_history_and_drafts(self):
-        self.store.save_article(PAPER["id"], 0, self.content(body="PRIVATE_OLD_BODY"), "PRIVATE_REASON")
+    def test_publication_includes_research_history_and_drafts_excludes_runtime_identity(self):
+        self.store.save_article(PAPER["id"], 0, self.content(body="PUBLIC_OLD_BODY"), "PUBLIC_REASON")
         self.store.save_article(PAPER["id"], 1, self.content(body="Reviewed current body"), "another reason")
-        self.store.analyze(PAPER["id"], lambda paper: {"model": DEFAULT_MODEL, "summary": "PRIVATE_AI_DRAFT"})
+        self.store.analyze(PAPER["id"], lambda paper: {"model": DEFAULT_MODEL, "summary": "PUBLIC_AI_DRAFT"})
         self.store.state["checkpoints"]["secret_source"] = "PRIVATE_CHECKPOINT"
+        self.store.state["articles"][PAPER["id"]]["history"][0]["actor"] = {"email": "PRIVATE_ACTOR"}
+        self.store.state["analyses"][PAPER["id"]]["api_key"] = "PRIVATE_CREDENTIAL"
+        self.store.state["token"] = "PRIVATE_TOKEN"
         self.store._commit(self.store.state)
         snapshot = prepare_public_snapshot(self.root)
         raw = (self.root / "data_src/workspace-public.json").read_text()
         self.assertNotIn("PRIVATE_", raw)
         self.assertEqual(snapshot["articles"][PAPER["id"]]["body"], "Reviewed current body")
-        self.assertFalse(snapshot["articles"][PAPER["id"]]["history"])
+        self.assertEqual(snapshot["articles"][PAPER["id"]]["history"][0]["summary"], "PUBLIC_REASON")
+        self.assertEqual(snapshot["analyses"][PAPER["id"]]["summary"], "PUBLIC_AI_DRAFT")
         self.assertEqual(len(self.store.article(PAPER["id"])["article"]["history"]), 2)
         self.store.save_article(PAPER["id"], 2, self.content(body="PRIVATE_LATER_EDIT"), "later")
         exported = export_workspace(self.root / "data_src", self.root / "public/data", "now")
@@ -219,7 +227,7 @@ class StoreTests(unittest.TestCase):
         article = fresh.article(PAPER["id"])["article"]
         self.assertEqual(article["body"], "Reviewed published body")
         self.assertEqual(article["revision"], 1)
-        self.assertFalse(article["history"])
+        self.assertEqual(len(article["history"]), 1)
         edited = fresh.save_article(PAPER["id"], 1, self.content(body="New local edit"), "new")
         self.assertEqual(edited["revision"], 2)
 
@@ -259,10 +267,144 @@ class StoreTests(unittest.TestCase):
 
     def test_publication_filters_hand_edited_snapshot(self):
         self.store.save_article(PAPER["id"], 0, self.content(), "PRIVATE_REASON")
+        self.store.state["articles"][PAPER["id"]]["history"][0]["actor_id"] = "PRIVATE_PERSONAL_ID"
+        self.store.state["session_token"] = "PRIVATE_TOKEN"
         (self.root / "data_src/workspace-public.json").write_text(json.dumps(self.store.state))
         snapshot = read_public_snapshot(self.root / "data_src")
-        self.assertNotIn("PRIVATE_REASON", json.dumps(snapshot))
+        self.assertIn("PRIVATE_REASON", json.dumps(snapshot))
+        self.assertNotIn("PRIVATE_PERSONAL_ID", json.dumps(snapshot))
+        self.assertNotIn("PRIVATE_TOKEN", json.dumps(snapshot))
         self.assertFalse(snapshot["analyses"])
+
+    def test_discovery_promoted_to_corpus_preserves_wiki_and_resolves_old_id(self):
+        discovery = {**PAPER, "id": "discovery:10.1234/new", "doi": "10.1234/new"}
+        self.store.state["discoveries"][discovery["id"]] = discovery
+        self.store._commit(self.store.state)
+        self.store.save_article(discovery["id"], 0, self.content(body="Discovery research"), "Reviewed discovery")
+        self.store.save_article(discovery["id"], 1, self.content(body="Second version"), "More evidence")
+        target = {**discovery, "id": "tqe:10.1234/new", "source": "tqe"}
+        (self.root / "public/data/papers.json").write_text(json.dumps({"papers": [PAPER, target]}))
+        result = self.store.article(discovery["id"])
+        self.assertEqual(result["paper"]["id"], target["id"])
+        self.assertEqual(result["article"]["revision"], 2)
+        self.assertEqual(len(result["article"]["history"]), 2)
+        self.assertFalse(self.store.papers()["discoveries"])
+        self.store.refresh(lambda *args, **kwargs: {"papers": [discovery], "complete": True, "checked_through": "2026-11-12"}, date(2026, 11, 12))
+        self.assertFalse(self.store.state["discoveries"])
+        self.store.save_article(discovery["id"], 2, self.content(), "Save via retired URL")
+        self.assertEqual(self.store.article(target["id"])["article"]["revision"], 3)
+        snapshot = prepare_public_snapshot(self.root)
+        self.assertFalse(snapshot["discoveries"])
+        self.assertNotIn(discovery["id"], snapshot["articles"])
+        self.assertEqual(snapshot["id_redirects"][discovery["id"]], target["id"])
+        self.store.state["articles"] = {}
+        self.store.state["id_redirects"] = {}
+        self.store._commit(self.store.state)
+        self.assertEqual(prepare_public_snapshot(self.root)["id_redirects"][discovery["id"]], target["id"])
+
+    def test_retired_qce26_wiki_migrates_through_existing_redirect(self):
+        old = {**PAPER, "id": "qce26:QSYS-1", "doi": None}
+        (self.root / "public/data/papers.json").write_text(json.dumps({"papers": [old]}))
+        self.store.save_article(old["id"], 0, self.content(body="Program research"), "Reviewed")
+        (self.root / "public/data/papers.json").write_text(json.dumps({"papers": [PAPER]}))
+        (self.root / "public/data/id-redirects.json").write_text(json.dumps({"redirects": [{"old_id": old["id"], "new_id": PAPER["id"]}]}))
+        result = self.store.article(old["id"])
+        self.assertEqual(result["paper"]["id"], PAPER["id"])
+        self.assertEqual(result["article"]["body"], "Program research")
+        self.store.restore(old["id"], 1, 1, "Restore via old URL")
+        self.assertEqual(self.store.article(PAPER["id"])["article"]["revision"], 2)
+
+    def test_promoted_wiki_conflict_keeps_both_histories_untouched(self):
+        discovery = {**PAPER, "id": "discovery:10.1234/new", "doi": "10.1234/new"}
+        self.store.state["discoveries"][discovery["id"]] = discovery
+        self.store._commit(self.store.state)
+        self.store.save_article(discovery["id"], 0, self.content(body="Discovery version"), "First editor")
+        self.store.save_article(PAPER["id"], 0, self.content(body="Corpus version"), "Second editor")
+        target = {**PAPER, "doi": "10.1234/new"}
+        (self.root / "public/data/papers.json").write_text(json.dumps({"papers": [target]}))
+        prior = self.store.path.read_bytes()
+        with self.assertRaisesRegex(ConflictError, "Wiki versions conflict"):
+            self.store.papers()
+        self.assertEqual(self.store.path.read_bytes(), prior)
+        self.assertEqual(set(self.store.state["articles"]), {PAPER["id"], discovery["id"]})
+
+    def test_workspace_schema_rejects_runtime_fields_and_preserves_research(self):
+        self.store.save_article(PAPER["id"], 0, self.content(), "Research version")
+        prepare_public_snapshot(self.root)
+        output = export_workspace(self.root / "data_src", self.root / "public/data", "now")
+        validate_schema(output, workspace_schema())
+        for field in ("actor", "api_key", "checkpoints", "pending_windows", "session_token"):
+            with self.assertRaises(AssertionError):
+                validate_schema({**output, field: "not public"}, workspace_schema())
+
+    def test_workspace_resource_digest_covers_reviewed_history(self):
+        self.store.save_article(PAPER["id"], 0, self.content(), "Research version")
+        prepare_public_snapshot(self.root)
+        out = self.root / "public/data"
+        export_workspace(self.root / "data_src", out, "snapshot-time")
+        for filename in ("qce.json", "tqe.json", "stats.json"):
+            (out / filename).write_text("{}")
+        manifest = build_agent_exports(out, self.root / "data_src", [{**PAPER, "source": "tqe"}], "snapshot-time")
+        resources = {resource["id"]: resource for resource in manifest["resources"]}
+        for identifier in ("workspace", "workspace_schema"):
+            resource = resources[identifier]
+            raw = (out / resource["url"]).read_bytes()
+            self.assertEqual(resource["sha256"], hashlib.sha256(raw).hexdigest())
+            self.assertEqual(resource["bytes"], len(raw))
+        self.assertEqual(json.loads((out / "workspace.json").read_text())["articles"][PAPER["id"]]["history"][0]["summary"], "Research version")
+
+    def test_workspace_schema_allows_live_research_incremental_fields_only(self):
+        self.store.save_article(PAPER["id"], 0, self.content(), "Research version")
+        prepare_public_snapshot(self.root)
+        output = export_workspace(self.root / "data_src", self.root / "public/data", "now")
+        self.assertNotIn("runtime_revision", output)
+        self.assertNotIn("analysis_history", output)
+        draft = {"summary": "公开草稿", "category": "ARCH", "stale": True, "analysis_id": "public-analysis-id"}
+        article = output["articles"][PAPER["id"]]
+        live = {**output, "live_updated_at": None, "runtime_revision": 2, "venue_revision": 1,
+                "data_semantics": "Public persistent research with separate discoveries",
+                "analysis_history": {PAPER["id"]: [draft]}, "analyses": {PAPER["id"]: draft},
+                "archived_articles": {"retired-id": article},
+                "conflicts": [{"id": PAPER["id"], "original_ids": ["retired-id", PAPER["id"]], "reason": "Two reviewed versions require reconciliation"}],
+                "papers": [{**PAPER, "id": "discovery:10.1234/new", "doi": "10.1234/new",
+                            "authors": [], "indexed": None, "has_notes": True, "wiki_revision": 1}]}
+        validate_schema(live, workspace_schema())
+        for field in ("runtime_revision", "venue_revision"):
+            with self.assertRaises(AssertionError):
+                validate_schema({**live, field: -1}, workspace_schema())
+        for identifier in ("analysis_history", "archived_articles"):
+            bad = copy.deepcopy(live)
+            row = bad[identifier][next(iter(bad[identifier]))]
+            (row[0] if isinstance(row, list) else row)["editor_id"] = "private-identity"
+            with self.assertRaises(AssertionError):
+                validate_schema(bad, workspace_schema())
+        bad = copy.deepcopy(live)
+        bad["conflicts"][0]["actor"] = "private-identity"
+        with self.assertRaises(AssertionError):
+            validate_schema(bad, workspace_schema())
+
+    def test_sites_source_sync_excludes_runtime_files_preserves_identity_and_migrations(self):
+        target = self.root / "sites-checkout"
+        (target / ".git").mkdir(parents=True)
+        (target / ".openai").mkdir()
+        identity = {"project_id": "appgprj_6adffc3408608191a3ac6a3d3ccdcefc", "custom_identity": "preserve"}
+        (target / ".openai/hosting.json").write_text(json.dumps(identity))
+        (self.root / "data_src/workspace.json").write_text("synthetic private state")
+        (self.root / "data_src/workspace-public.json").write_text("reviewed public state")
+        (self.root / ".env.example").write_text("PUBLIC_VARIABLE_NAME=")
+        (self.root / "drizzle").mkdir()
+        (self.root / "drizzle/0001.sql").write_text("CREATE TABLE public_research (id TEXT);")
+        for name in (".env", ".env.local", "runtime.db", "runtime.log", ".workspace.lock"):
+            (self.root / "data_src" / name).write_text("synthetic secret")
+        script = Path(__file__).resolve().parent / "sync-sites-source.mjs"
+        subprocess.run(["node", str(script), str(target)], cwd=self.root, check=True, capture_output=True)
+        self.assertFalse((target / "data_src/workspace.json").exists())
+        for name in (".env", ".env.local", "runtime.db", "runtime.log", ".workspace.lock"):
+            self.assertFalse((target / "data_src" / name).exists())
+        self.assertTrue((target / "data_src/workspace-public.json").exists())
+        self.assertTrue((target / ".env.example").exists())
+        self.assertTrue((target / "drizzle/0001.sql").exists())
+        self.assertEqual(json.loads((target / ".openai/hosting.json").read_text())["custom_identity"], "preserve")
 
     def test_exclusive_writer_lease(self):
         with WorkspaceLease(self.root):

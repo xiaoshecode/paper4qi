@@ -24,12 +24,13 @@ const CAT_EN: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => 
     <h1><span class="i18n-zh">方向统计仪表盘</span><span class="i18n-en">Research Area Dashboard</span></h1>
     <p class="lede"><span class="i18n-zh">13 类统一分类法下，QCE 会议与 TQE 期刊的逐年结构、增长与引用影响力。</span><span class="i18n-en">Year-by-year structure, growth and citation impact of the QCE conference and the TQE journal under a unified 13-category taxonomy.</span></p>
   </div>
-  <div class="wrap page-body">
+  <div class="wrap page-body" data-live-library="stats" data-base={import.meta.env.BASE_URL}>
+    <p class="hint" data-live-status hidden></p>
     <div class="card chart-card">
       <h3><span class="i18n-zh">年 × 研究方向（两源合并）</span><span class="i18n-en">Year × Research Area (both sources combined)</span></h3>
       <p class="hint"><span class="i18n-zh">每年一根竖条，按 13 类堆叠 · 悬停查看各类别数值</span><span class="i18n-en">One bar per year, stacked across the 13 categories · Hover for per-category counts</span></p>
-      <StackedBars years={years} cats={cats} matrix={combined} catZh={CAT_ZH} catEn={CAT_EN} />
-      <div class="legend">
+      <div data-live-stacked><StackedBars years={years} cats={cats} matrix={combined} catZh={CAT_ZH} catEn={CAT_EN} /></div>
+      <div class="legend" data-live-legend>
         {catTotals.map(([key, n]) => (
           <span class="lg"><span class="sw" style={`background:var(--c-${key})`}></span><span class="i18n-zh">{CAT_ZH[key]} {n}</span><span class="i18n-en">{CAT_EN[key]} {n}</span></span>
         ))}
@@ -39,10 +40,10 @@ const CAT_EN: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => 
     <div class="card chart-card">
       <h3><span class="i18n-zh">两源逐年论文数</span><span class="i18n-en">Papers per Year by Source</span></h3>
       <p class="hint"><span class="i18n-zh">QCE = 会议论文集 2020–2025 + 2026 日程口径 · TQE = 期刊正式论文（不含前置页）</span><span class="i18n-en">QCE = 2020–2025 proceedings + 2026 program · TQE = journal articles (front matter excluded)</span></p>
-      <LineChart series={[
+      <div data-live-growth><LineChart series={[
         { name: 'QCE', color: 'var(--c-ALG)', points: growth.map((g) => [g.year, g.qce]) },
         { name: 'TQE', color: 'var(--c-QEC)', points: growth.map((g) => [g.year, g.tqe]) },
-      ]} />
+      ]} /></div>
       <div class="legend">
         <span class="lg"><span class="sw" style="background:var(--c-ALG)"></span>QCE</span>
         <span class="lg"><span class="sw" style="background:var(--c-QEC)"></span>TQE</span>
@@ -52,7 +53,7 @@ const CAT_EN: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => 
     <div class="card chart-card">
       <h3><span class="i18n-zh">TQE 被引 Top 20（OpenAlex）</span><span class="i18n-en">TQE Top 20 by Citations (OpenAlex)</span></h3>
       <p class="hint"><span class="i18n-zh">IEEE TQE 2020–2026 被引量最高的论文，周更时同步刷新</span><span class="i18n-en">The most-cited IEEE TQE papers, 2020–2026, refreshed with the weekly update</span></p>
-      <ol class="toplist">
+      <ol class="toplist" data-live-top-cited>
         {topCited.map((p) => (
           <li>
             <a href={`https://doi.org/${p.id.replace('tqe:', '')}`} target="_blank" rel="noopener">{p.title}</a>

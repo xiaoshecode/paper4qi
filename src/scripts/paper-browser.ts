@@ -5,6 +5,7 @@
 import { CATEGORIES, CAT_ZH } from '../data/meta';
 import { esc, hasHit, hl, parseTerms } from './highlight';
 import type { BrowserState, DataFile, Paper } from './types';
+import { apiFetch, getDataURL } from './api-client';
 
 const BATCH = 60; // 每批渲染条数
 const DEBOUNCE = 100; // 搜索输入防抖（ms）
@@ -278,6 +279,7 @@ function main(): void {
     const L = T[lang];
     const catKey = CAT_KEYS.has(p.category) ? p.category : 'OTHER';
     const url = paperUrl(p);
+    const wiki = `${import.meta.env.BASE_URL}workspace/#${new URLSearchParams({ id: p.id })}`;
     const titleHtml = hl(p.title, terms);
     const title = url
       ? `<a href="${esc(url)}" target="_blank" rel="noopener">${titleHtml}</a>`
@@ -322,6 +324,7 @@ function main(): void {
     const descHtml = desc ? `<div class="paper-zh">${desc}</div>` : '';
 
     const meta: string[] = [];
+    meta.push(`<a href="${esc(wiki)}">Wiki →</a>`);
     if (p.venue) meta.push(hl(p.venue, terms));
     if (p.pages) meta.push(`pp. ${esc(p.pages)}`);
     if (p.cited_by != null) meta.push(fmt(L.cited, { n: p.cited_by }));
@@ -504,9 +507,9 @@ function main(): void {
   }
 
   async function load(): Promise<void> {
-    const url = `${import.meta.env.BASE_URL}data/${source}.json`;
+    const url = getDataURL(`${source}.json`);
     try {
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as DataFile;
       all = Array.isArray(data.papers) ? data.papers : [];

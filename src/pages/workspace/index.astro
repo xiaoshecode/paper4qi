@@ -3,10 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { CATEGORIES } from '../../data/meta';
 const base = import.meta.env.BASE_URL;
 ---
-<BaseLayout title="研究工作台" description="关注期刊会议，收集新论文，将研究笔记沉淀为可追溯的个人 Wiki。">
-<main class="wrap rw" id="research-workspace" data-base={base}>
+<BaseLayout title="研究工作台" description="关注期刊会议，手动发现论文，审阅 AI 草稿并公开保存可追溯的研究 Wiki。">
+<main class="wrap rw" id="research-workspace" data-base={base} lang="zh-CN">
   <header class="rw-hero">
-    <div><span class="rw-eyebrow">RESEARCH WORKSPACE / 研究工作台</span><h1>读有所获，研有所积。</h1><p>把新发现整理成笔记，让每一次阅读都有迹可循。</p></div>
+    <div><span class="rw-eyebrow">RESEARCH WORKSPACE / 中文研究工作台</span><h1>读有所获，研有所积。</h1><p>阅读公开研究内容，审阅后保存，让每一次修改都有迹可循。</p></div>
     <a class="rw-back" href={`${base}research/`}>探索研究地图 <span aria-hidden="true">↗</span></a>
   </header>
   <nav class="rw-workflow" aria-label="工作台步骤">
@@ -15,8 +15,10 @@ const base = import.meta.env.BASE_URL;
     <a href="#rw-editor"><span>03</span>沉淀知识<small>笔记与版本</small></a>
   </nav>
   <section class="rw-connection" aria-labelledby="connection-title">
-    <div class="rw-connection-copy"><div class="rw-connection-heading"><span class="rw-state-dot" aria-hidden="true"></span><h2 id="connection-title">工作空间</h2><span id="rw-mode-badge" class="rw-pill">检查连接</span></div><p id="rw-mode">正在检查本地服务…</p></div>
+    <div class="rw-connection-copy"><div class="rw-connection-heading"><span class="rw-state-dot" aria-hidden="true"></span><h2 id="connection-title">工作空间</h2><span id="rw-mode-badge" class="rw-pill">检查连接</span></div><p id="rw-mode">正在检查在线或本地服务…</p></div>
+    <a class="rw-setup-link" id="rw-login-link" href={`/signin-with-chatgpt?return_to=${encodeURIComponent(`${base}workspace/`)}`} target="_top" hidden>登录并检查编辑权限 <span aria-hidden="true">↗</span></a>
     <a class="rw-setup-link" id="rw-setup-link" href="#rw-local-help">如何开启编辑 <span aria-hidden="true">↗</span></a>
+    <form id="rw-password-login" hidden><label for="rw-password">所有者编辑密码</label><div class="rw-row"><input id="rw-password" type="password" autocomplete="current-password" aria-describedby="rw-password-help" required /><button type="submit">登录编辑</button><button id="rw-password-logout" type="button" hidden>退出编辑</button></div><small id="rw-password-help">密码仅发送至配置的研究后端；登录令牌只保留在本页内存，刷新后需重新登录。</small></form>
     <form id="rw-connect" hidden><label for="rw-token">本地会话令牌</label><div class="rw-row"><input id="rw-token" type="password" autocomplete="off" placeholder="从本地终端复制令牌" aria-describedby="rw-token-help" /><button type="submit">连接</button><button type="button" id="rw-disconnect" hidden>断开</button></div><small id="rw-token-help">仅保存在本页内存。DeepSeek API Key 只在服务端配置，切勿粘贴到此处。</small></form>
   </section>
   <p class="rw-notice" id="rw-status" role="status" aria-live="polite">正在读取公开快照…</p>
@@ -33,12 +35,26 @@ const base = import.meta.env.BASE_URL;
     <details class="rw-advanced"><summary>高级：编辑来源 JSON</summary><label for="rw-venues-json">完整来源配置</label><textarea id="rw-venues-json" rows="8" spellcheck="false" disabled></textarea><div class="rw-row rw-venue-actions"><button id="rw-save-venues" disabled>保存来源配置</button><button id="rw-reload-venues" disabled>重新加载服务端配置</button></div></details>
     <div class="rw-row rw-venue-actions"><button id="rw-refresh" class="rw-primary" disabled>抓取关注来源的新论文</button><span class="rw-hint">主动点击后才联网检索，不自动运行。</span></div><pre id="rw-source-results" class="rw-text" hidden></pre>
   </details>
+  <details class="rw-panel rc-panel" id="rc-root" data-base={base} open>
+    <summary class="rc-heading"><span>研究对话</span><span class="rw-pill">DeepSeek · 公开会话</span></summary>
+    <p class="rw-hint rc-intro">围绕论文提问，按需思考、搜索网页或阅读链接。问题、回答、思考与引用公开保留；回答不会自动写入 Wiki。发送会产生模型费用。</p>
+    <p id="rc-status" class="rw-notice" role="status" aria-live="polite">正在检查聊天服务…</p>
+    <a id="rc-login" class="rw-back" href={`/signin-with-chatgpt?return_to=${encodeURIComponent(`${base}workspace/#rc-root`)}`} target="_top" hidden>登录并检查发送权限 ↗</a>
+    <div class="rc-grid">
+      <aside class="rc-sidebar" aria-labelledby="rc-list-title"><div class="rc-list-heading"><h3 id="rc-list-title">公开会话</h3><button id="rc-new" type="button" disabled>新会话</button></div><div id="rc-chat-list" class="rc-chat-list"></div><button id="rc-more" type="button" hidden>更多会话</button></aside>
+      <section class="rc-conversation" aria-labelledby="rc-title"><div class="rc-conversation-heading"><h3 id="rc-title">选择会话，或开始一个研究问题</h3><button id="rc-reload" type="button" disabled>核对最新结果</button></div><p id="rc-chat-context" class="rw-hint"></p><div id="rc-messages" class="rc-messages" aria-label="公开对话消息" aria-busy="false"><p class="rc-empty">从左侧打开公开会话。创建会话时可附带当前选择的论文。</p></div>
+<form id="rc-composer"><div class="rc-options"><label><input id="rc-context" type="checkbox" checked />新会话附带所选论文</label><span id="rc-paper-chip" class="rc-paper-chip">尚未选择论文</span></div><label for="rc-input" class="sr-only">研究问题</label><textarea id="rc-input" rows="3" maxlength="6000" placeholder="例如：这篇论文的主要证据是什么？与相关工作相比有哪些局限？" disabled></textarea><div class="rc-options"><label><input id="rc-thinking" type="checkbox" />思考</label><label><input id="rc-web-search" type="checkbox" />搜索网页</label><label><input id="rc-read-url" type="checkbox" />阅读问题中的链接</label></div><div class="rw-row rc-actions"><button id="rc-send" class="rw-primary" type="submit" disabled>公开发送</button><button id="rc-stop" type="button" hidden>停止接收</button><button id="rc-retry" type="button" hidden>核对并重试同一请求</button><button id="rc-next-turn" type="button" hidden>开始新问题</button><span class="rw-hint">主动发送才调用模型；联网默认关闭。</span></div></form>
+      </section>
+    </div>
+  </details>
   <div class="rw-grid">
     <section class="rw-panel rw-inbox" id="rw-inbox" aria-labelledby="inbox-title">
       <div class="rw-section-head"><h2 id="inbox-title"><span class="rw-step-number">02</span>研究收件箱</h2><span id="rw-paper-count" class="rw-pill">0</span></div>
-      <label class="rw-search-label" for="rw-search">检索标题、摘要、标签或 DOI</label>
+      <label class="rw-search-label" for="rw-search">检索标题、摘要、标签或 DOI（空格分词，全部匹配）</label>
       <div class="rw-search-box"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="rw-search" type="search" placeholder="搜索研究主题…" aria-keyshortcuts="/" /><kbd aria-hidden="true">/</kbd></div>
       <div class="rw-filters"><label for="rw-filter-category">研究方向<select id="rw-filter-category"><option value="">全部方向</option>{CATEGORIES.map(c => <option value={c.key}>{c.zh}</option>)}</select></label><label for="rw-sort">排序<select id="rw-sort"><option value="recent">最近优先</option><option value="title">标题 A–Z</option></select></label></div>
+      <div class="rw-filters"><label for="rw-filter-source">来源<select id="rw-filter-source"><option value="">全部来源</option><option value="qce">QCE 论文集</option><option value="qce26">QCE 2026 日程</option><option value="tqe">TQE 期刊</option><option value="crossref">Crossref 新发现</option></select></label><label for="rw-filter-year">年份<select id="rw-filter-year"><option value="">全部年份</option></select></label></div>
+      <div class="rw-filters rw-view-filters"><label for="rw-view">浏览范围<select id="rw-view"><option value="all">全部研究记录</option><option value="new">新发现收件箱</option><option value="notes">已保存 Wiki</option></select></label><label class="rw-front-toggle" for="rw-show-front"><input id="rw-show-front" type="checkbox" />显示前置页</label></div>
       <div class="rw-results-head"><span id="rw-results-label" aria-live="polite">正在加载论文</span><button id="rw-clear" type="button" hidden>清除筛选</button></div>
       <div id="rw-paper-list" class="rw-paper-list" aria-label="论文列表" aria-busy="true"></div>
       <button id="rw-more" class="rw-more" hidden>显示更多</button>
@@ -47,30 +63,34 @@ const base = import.meta.env.BASE_URL;
       <div class="rw-section-head"><h2 id="rw-editor-title" tabindex="-1"><span class="rw-step-number">03</span>论文 Wiki</h2><span id="rw-revision" class="rw-pill">未选择</span></div>
       <div id="rw-empty" class="rw-empty rw-welcome">
         <svg class="rw-book" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="18" y="10" width="54" height="68" rx="5"/><path d="M28 10v68M37 27h23M37 35h17M37 51h23M37 59h17"/><path d="M54 10v12l5-3 5 3V10"/></svg>
-        <span class="rw-eyebrow">YOUR RESEARCH, CONNECTED</span><h3>让一篇论文，成为知识的起点。</h3><p>从研究收件箱选择论文，查看摘要与笔记。<br/>连接本地服务后，可辅助分析并保存 Wiki 版本。</p>
+        <span class="rw-eyebrow">YOUR RESEARCH, CONNECTED</span><h3>让一篇论文，成为知识的起点。</h3><p>选择研究记录，阅读公开正文、版本历史和 AI 草稿。<br/>拥有编辑权限后，可手动分析、审阅并保存新版本。</p>
         <div class="rw-welcome-steps"><span>阅读原始研究</span><span>记录你的判断</span><span>保留修改脉络</span></div>
       </div>
       <div id="rw-detail" hidden>
         <button type="button" id="rw-back-to-list" class="rw-mobile-back">← 返回论文列表</button>
-        <div class="rw-paper-heading"><div id="rw-paper-meta" class="rw-hint"></div><h3 id="rw-selected-title"></h3><a id="rw-source-link" class="rw-back" target="_blank" rel="noopener noreferrer" hidden>阅读原文 DOI ↗</a></div>
+        <div class="rw-paper-heading"><div id="rw-paper-meta" class="rw-hint"></div><h3 id="rw-selected-title"></h3><a id="rw-source-link" class="rw-back" target="_blank" rel="noopener noreferrer" hidden>阅读原文 ↗</a></div>
         <details class="rw-abstract"><summary>原始摘要</summary><p id="rw-abstract" class="rw-text"></p></details>
-        <p class="rw-readonly-note" id="rw-readonly-note">当前为只读视图。<a href="#rw-local-help">在本地开启编辑</a>，记录你的研究笔记。</p>
+        <section class="rw-public-content" aria-labelledby="rw-public-title"><h3 id="rw-public-title">当前公开正文</h3><pre id="rw-public-body" class="rw-text"></pre></section>
+        <p class="rw-readonly-note" id="rw-readonly-note">当前为只读视图，可以阅读公开正文、版本历史和 AI 草稿。</p>
         <form id="rw-editor-form"><fieldset id="rw-editor-fields" disabled>
           <label>标题<input id="rw-title" required /></label><label>中文研究摘要<textarea id="rw-zh" rows="3" placeholder="用自己的话概括贡献与局限…"></textarea></label>
           <div class="rw-fields"><label>研究方向<select id="rw-category">{CATEGORIES.map(c => <option value={c.key}>{c.zh}</option>)}</select></label><label>标签（逗号分隔）<input id="rw-tags" /></label></div>
           <label class="rw-body-label">Wiki 正文 <span>Markdown</span><textarea id="rw-body" rows="12" spellcheck="false" placeholder={'## 研究问题\n\n## 核心方法\n\n## 证据与局限\n\n## 我的笔记'}></textarea></label>
-          <label>本次修改说明<input id="rw-edit-summary" required placeholder="例如：补充实验结果与局限" /></label>
-          <div class="rw-row rw-save-row"><button type="submit" class="rw-primary">保存新版本</button><span id="rw-dirty" class="rw-hint">未修改</span></div>
+          <label>公开修改说明<input id="rw-edit-summary" required placeholder="例如：补充实验结果与局限" /></label>
+          <p class="rw-hint">保存后，标题、中文摘要、分类和标签成为该记录的正式内容；正文、修改说明及历次版本公开保留。AI 草稿只有经你审阅并保存后才覆盖正式内容。</p>
+          <div class="rw-row rw-save-row"><button type="submit" class="rw-primary">审阅并保存新版本</button><span id="rw-dirty" class="rw-hint">未修改</span></div>
         </fieldset></form>
         <div class="rw-editor-secondary"><button id="rw-reload-article" disabled>重新加载最新版本（放弃本地修改）</button><details><summary>正文预览（纯文本 Markdown）</summary><pre id="rw-preview" class="rw-text"></pre></details></div>
-        <section class="rw-analysis"><div class="rw-section-head"><h3>DeepSeek 辅助阅读</h3><span class="rw-pill">AI 草稿</span></div><p class="rw-hint" id="rw-ai-info">分析草稿只在认证的本地工作台展示，不会自动公开。</p><p class="rw-hint">DeepSeek 按 token 计费，单次请求有输入和输出上限，但不是固定金额上限。生成时会将当前论文的标题与摘要发送给 DeepSeek。草稿可能有误，不代表全文审阅；核对后再采纳。</p>
+        <section class="rw-analysis"><div class="rw-section-head"><h3>DeepSeek 辅助阅读</h3><span class="rw-pill">公开 AI 草稿</span></div><p class="rw-hint" id="rw-ai-info">AI 草稿及其历史公开展示，生成不会改动正式内容。</p><p class="rw-hint">只有主动点击才会将当前论文的标题与摘要发送给 DeepSeek。草稿公开供阅读，但可能有误，不代表全文审阅；核对后再采纳。DeepSeek 按 token 计费，单次有输入和输出上限，费用以服务端及服务商配置为准。</p>
           <button id="rw-analyze" disabled>发送标题与摘要给 DeepSeek，生成草稿</button><div id="rw-analysis-readable" class="rw-analysis-readable"></div><details class="rw-advanced"><summary>查看分析原始数据</summary><pre id="rw-analysis-text" class="rw-text">暂无分析草稿。</pre></details><button id="rw-adopt" disabled>将草稿载入编辑器（尚不保存）</button>
         </section>
+        <details class="rw-analysis-history"><summary>公开 AI 草稿历史</summary><div id="rw-analysis-history"></div></details>
         <details class="rw-history"><summary>版本历史与恢复</summary><div id="rw-history"></div></details>
       </div>
     </section>
   </div>
-  <aside class="rw-local-help" id="rw-local-help"><span class="rw-eyebrow">LOCAL FIRST / 本地优先</span><h2>把工作台带到本地，开始自己的研究。</h2><p>GitHub Pages 是公开只读快照，不能保存或调用模型。在项目目录依次运行：</p><ol class="rw-setup-steps"><li><span>构建数据与页面</span><code>pnpm data &amp;&amp; pnpm build</code></li><li><span>启动本地工作台</span><code>pnpm workspace</code></li><li><span>连接并开始编辑</span><p>打开终端提供的本地地址，输入会话令牌。</p></li></ol><p>DeepSeek 密钥仅通过本地环境变量配置。本地保存不会公开。先运行 python scripts/prepare_workspace_publication.py --confirm-public，审查生成的快照，再构建并发布。</p><p class="rw-privacy-note"><strong>发布前检查：</strong>只有显式准备的当前人工保存内容进入公开快照。旧版本、修改说明和未采纳 AI 草稿保留在本地；发布前仍需审查当前正文，请勿发布私密笔记或密钥。</p></aside>
+  <aside class="rw-local-help" id="rw-local-help"><span class="rw-eyebrow">PUBLIC RESEARCH / 公开研究</span><h2>公开阅读，审阅后保存。</h2><p>在线服务支持跨设备读取研究内容；具有编辑权限的登录用户可手动抓取来源、生成 AI 草稿并保存 Wiki。全部研究正文、修改说明、历史版本和 AI 草稿公开，生成草稿不会自动覆盖主库。没有自动定时抓取。</p><p>GitHub Pages 提供构建时的只读快照。本地模式仍可在项目目录依次运行：</p><ol class="rw-setup-steps"><li><span>构建数据与页面</span><code>pnpm data &amp;&amp; pnpm build</code></li><li><span>启动本地工作台</span><code>pnpm workspace</code></li><li><span>连接并开始编辑</span><p>打开终端提供的本地地址，输入会话令牌。本地修改需导出并重新构建后进入静态快照。</p></li></ol><p class="rw-privacy-note"><strong>凭据仅用于服务端：</strong>DeepSeek 密钥由服务端环境配置；登录凭据和本地会话令牌不会写入研究内容。研究内容公开，请只保存愿意公开的正文及说明。</p></aside>
 </main>
 <script>import '../../scripts/research-workspace';</script>
+<script>import '../../scripts/research-chat';</script>
 </BaseLayout>

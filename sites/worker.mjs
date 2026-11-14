@@ -1,5 +1,7 @@
-// Read-only MCP service. Asset bytes and their checksums come from the same build.
-// Sites authenticates requests before forwarding them to this Worker.
+import { createWorkspaceApi } from './workspace-api.mjs';
+
+// Public reading and read-only MCP share the live library. Sites supplies editor
+// identity; only the workspace API authorizes mutations against persistent D1.
 export function createWorker(assets) {
   let corpusPromise;
   const decoder = new TextDecoder();
@@ -9,12 +11,63 @@ export function createWorker(assets) {
     const compressed = Uint8Array.from(atob(asset.body), c => c.charCodeAt(0));
     return new Uint8Array(await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
   }
-  async function jsonAsset(path) { return JSON.parse(decoder.decode(await bytes(path))); }
-  function corpus() { return corpusPromise ??= jsonAsset('/data/papers.json').then(data => data.papers); }
+  async function staticJson(path) { return assets[path] ? JSON.parse(decoder.decode(await bytes(path))) : null; }
+  const workspace = createWorkspaceApi({ readAsset: staticJson });
+  const livePaths = new Set(['/data/papers.json', '/data/qce.json', '/data/tqe.json', '/data/workspace.json', '/data/stats.json', '/data/research-map.json']);
+  async function jsonAsset(path, env = {}) {
+    if (env.DB && livePaths.has(path)) return workspace.readPublicResource(path, env);
+    if (env.DB && path === '/data/manifest.json') return liveManifest(env);
+    if (env.DB && path === '/data/quality.json') return liveQuality(env);
+    return staticJson(path);
+  }
+  async function liveManifest(env) {
+    const manifest = structuredClone(await staticJson('/data/manifest.json'));
+    if (!manifest) return null;
+    const current = await jsonAsset('/data/papers.json', env);
+    manifest.runtime = { mode: 'online', public_content: true, runtime_revision: current.runtime_revision,
+      live_updated_at: current.live_updated_at,
+      publication: 'Human-reviewed saved revisions immediately override the current library. AI drafts and version history are public; drafts do not change the saved annotation.', discovery_scope: 'Independent inbox, excluded from QCE/TQE corpus totals.' };
+    manifest.counts = qualityCoverage(current.papers);
+    for (const resource of manifest.resources ?? []) {
+      if (!livePaths.has('/data/' + resource.url) && resource.url !== 'quality.json') continue;
+      delete resource.sha256;
+      delete resource.bytes;
+      resource.runtime = true;
+      resource.integrity_semantics = 'Live database resource; static build hash does not apply. Read the runtime revision returned with the resource.';
+    }
+    return manifest;
+  }
+  function qualityCoverage(papers) {
+    const research = papers.filter(p => !p.front_matter);
+    return { records: papers.length, research_records: research.length, front_matter: papers.length - research.length,
+      research_with_abstract: research.filter(p => !!p.abstract).length,
+      research_with_doi: research.filter(p => !!p.doi).length,
+      research_with_arxiv: research.filter(p => !!p.arxiv).length,
+      research_with_citation_count: research.filter(p => p.cited_by != null).length,
+      research_missing_chinese_note: research.filter(p => !p.zh || p.zh.includes('待补充')).length,
+      research_with_schedule_note: research.filter(p => (p.zh ?? '').startsWith('QCE26 官方日程')).length };
+  }
+  async function liveQuality(env) {
+    const current = await jsonAsset('/data/papers.json', env);
+    const quality = structuredClone(await staticJson('/data/quality.json')) ?? {};
+    quality.overall = qualityCoverage(current.papers);
+    quality.by_source = Object.fromEntries(['qce', 'qce26', 'tqe'].map(source => [source, qualityCoverage(current.papers.filter(p => p.source === source))]));
+    quality.runtime_revision = current.runtime_revision;
+    quality.live_updated_at = current.live_updated_at;
+    return quality;
+  }
+  async function corpus(env = {}, includeDiscoveries = false) {
+    const papers = env.DB ? (await jsonAsset('/data/papers.json', env)).papers
+      : await (corpusPromise ??= staticJson('/data/papers.json').then(data => data.papers));
+    if (!includeDiscoveries) return papers;
+    const extra = await jsonAsset('/data/workspace.json', env);
+    return [...papers, ...(extra?.papers ?? [])];
+  }
   const tool = (name, description, properties, required = []) => ({ name, description, annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }, inputSchema: { type: 'object', properties, required, additionalProperties: false } });
   const TOOLS = [
-    tool('search_papers', 'Search the paper4qi snapshot. Space-separated terms use AND across title, authors, abstract, Chinese notes, DOI and tags. Excludes front matter by default. QCE26 means program records, not verified publication. Returns stable IDs, citation links and pagination.', {
-      query: { type: 'string', maxLength: 300 }, source: { type: 'string', enum: ['qce', 'qce26', 'tqe'] },
+    tool('search_papers', 'Search the paper4qi library with reviewed live annotations when online. Space-separated terms use AND. Excludes front matter and the independent discovery inbox by default. QCE26 means program records, not verified publication. Returns stable IDs, citation links and pagination.', {
+      query: { type: 'string', maxLength: 300 }, source: { type: 'string', enum: ['qce', 'qce26', 'tqe', 'crossref'] },
+      include_discoveries: { type: 'boolean', default: false, description: 'Include the separate Crossref discovery inbox; QCE/TQE statistics retain their original scope.' },
       year: { type: 'integer', minimum: 2000, maximum: 2100 }, category: { type: 'string' },
       subtopic: { type: 'string', maxLength: 100, description: 'Exact topic key from get_research_map; applies transparent keyword associations, not manual paper review.' },
       include_front_matter: { type: 'boolean', default: false }, limit: { type: 'integer', minimum: 1, maximum: 50, default: 20 }, offset: { type: 'integer', minimum: 0, default: 0 }
@@ -25,7 +78,7 @@ export function createWorker(assets) {
     tool('get_research_map', 'List research domains and subtopics, or read one subtopic with primary sources, questions, editorial research hypotheses and associated corpus IDs. Keyword associations are unreviewed leads.', { topic: { type: 'string', maxLength: 100 } }),
     tool('read_research_guide', 'Read OpenQASM research notes, the agent usage guide, the CS4Q bibliography or venue reference data. These are dated editorial guides; verify scientific claims and current submission details against primary sources.', { guide: { type: 'string', enum: ['openqasm', 'agents', 'cs4q', 'venues'] } }, ['guide'])
   ];
-  const sources = { qce: 'proceedings_metadata', qce26: 'program_entry', tqe: 'journal_metadata' };
+  const sources = { qce: 'proceedings_metadata', qce26: 'program_entry', tqe: 'journal_metadata', crossref: 'discovery_metadata' };
   const evidence = 'Chinese notes and category labels are secondary annotations. Cite the original DOI/arXiv work; a program entry is not proof of publication. Missing abstracts/citation counts are not zero or negative evidence.';
   function links(p) {
     return { doi: p.doi ? `https://doi.org/${p.doi}` : null, arxiv: p.arxiv ? `https://arxiv.org/abs/${p.arxiv}` : null };
@@ -44,18 +97,20 @@ export function createWorker(assets) {
       if (rule.maxLength != null && value.length > rule.maxLength || rule.minLength != null && value.length < rule.minLength) throw new Error(`Invalid ${key} length`);
     }
   }
-  async function call(name, args) {
+  async function call(name, args, env = {}) {
     validate(name, args);
-    if (name === 'get_library_overview') return { manifest: await jsonAsset('/data/manifest.json'), quality: await jsonAsset('/data/quality.json'), evidence_note: evidence };
-    if (name === 'get_research_statistics') return { statistics: await jsonAsset('/data/stats.json'), evidence_note: evidence };
+    if (name === 'get_library_overview') return { manifest: await jsonAsset('/data/manifest.json', env), quality: await jsonAsset('/data/quality.json', env), workspace_url: 'data/workspace.json', evidence_note: evidence };
+    if (name === 'get_research_statistics') return { statistics: await jsonAsset('/data/stats.json', env), evidence_note: evidence };
     if (name === 'get_research_map') {
-      const map = await jsonAsset('/data/research-map.json');
+      const map = await jsonAsset('/data/research-map.json', env);
       if (args.topic) {
         const topic = map.topics.find(t => t.key === args.topic);
         if (!topic) throw new Error('Unknown topic; call get_research_map without arguments first');
-        return { generated: map.generated, method: map.method, limitations: map.limitations, topic };
+        return { generated: map.generated, method: map.method, limitations: map.limitations, topic,
+          ...(env.DB ? { runtime_revision: map.runtime_revision, live_updated_at: map.live_updated_at, association_semantics: map.association_semantics } : {}) };
       }
       return { generated: map.generated, counts: map.counts, domains: map.domains, method: map.method, limitations: map.limitations,
+        ...(env.DB ? { runtime_revision: map.runtime_revision, live_updated_at: map.live_updated_at, association_semantics: map.association_semantics } : {}),
         topics: map.topics.map(({ matched_papers, sources, ...topic }) => ({ ...topic, source_count: sources.length })) };
     }
     if (name === 'read_research_guide') {
@@ -66,9 +121,15 @@ export function createWorker(assets) {
       const path = args.guide === 'openqasm' ? '/guides/openqasm.md' : '/guides/agents.md';
       return { guide: args.guide, text: decoder.decode(await bytes(path)), evidence_note: evidence };
     }
-    const papers = await corpus();
+    const papers = await corpus(env, name === 'get_paper' || args.include_discoveries || args.source === 'crossref');
     if (name === 'get_paper') {
       let id = args.id;
+      const state = await jsonAsset('/data/workspace.json', env);
+      const seen = new Set();
+      while (state?.id_redirects?.[id]) {
+        if (seen.has(id)) throw new Error('Invalid record redirect cycle');
+        seen.add(id); id = state.id_redirects[id];
+      }
       let p = papers.find(p => p.id === id);
       if (!p && assets['/data/id-redirects.json']) {
         const redirects = await jsonAsset('/data/id-redirects.json');
@@ -78,12 +139,15 @@ export function createWorker(assets) {
         p = papers.find(p => p.id === id);
       }
       if (!p) throw new Error(`Record not found: ${args.id}`);
-      return { requested_id: args.id, paper: p, record_kind: sources[p.source], links: links(p), evidence_note: evidence };
+      return { requested_id: args.id, paper: p, record_kind: sources[p.source], links: links(p),
+        ...(state ? { wiki: state.articles?.[p.id] ?? null, analysis: state.analyses?.[p.id] ?? null,
+          analysis_history: state.analysis_history?.[p.id] ?? [], conflicts: (state.conflicts ?? []).filter(row => row.id === p.id),
+          archived_wikis: Object.fromEntries(Object.entries(state.archived_articles ?? {}).filter(([old]) => state.id_redirects?.[old] === p.id || old === p.id || old === `published:${p.id}`)) } : {}), evidence_note: evidence };
     }
     if (args.category && !papers.some(p => p.category === args.category)) throw new Error('Unknown category; get_library_overview lists the taxonomy');
     let topicIds;
     if (args.subtopic) {
-      const map = await jsonAsset('/data/research-map.json');
+      const map = await jsonAsset('/data/research-map.json', env);
       const topic = map.topics.find(t => t.key === args.subtopic);
       if (!topic) throw new Error('Unknown subtopic; call get_research_map to list available keys');
       topicIds = new Set(topic.matched_papers.map(p => p.id));
@@ -95,7 +159,7 @@ export function createWorker(assets) {
     return { total: matches.length, offset, limit, next_offset: offset + limit < matches.length ? offset + limit : null, results: matches.slice(offset, offset + limit).map(p => ({ id: p.id, title: p.title, year: p.year, source: p.source, record_kind: sources[p.source], category: p.category, authors: p.authors, has_abstract: !!p.abstract, front_matter: p.front_matter, links: links(p) })), evidence_note: evidence };
   }
   const response = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...extra } });
-  async function rpc(request) {
+  async function rpc(request, env = {}) {
     if (request.method !== 'POST') return response({ error: 'Use JSON-RPC POST /mcp' }, 405, { Allow: 'POST' });
     if (Number(request.headers.get('content-length')) > 65536) return response({ error: 'Request too large' }, 413);
     const raw = await request.text();
@@ -110,15 +174,16 @@ export function createWorker(assets) {
     if (input.method === 'ping') return ok({});
     if (input.method === 'tools/list') return ok({ tools: TOOLS });
     if (input.method === 'tools/call') {
-      try { const result = await call(input.params?.name, input.params?.arguments ?? {}); return ok({ content: [{ type: 'text', text: JSON.stringify(result) }], isError: false }); }
-      catch (error) { return ok({ content: [{ type: 'text', text: error.message }], isError: true }); }
+      try { const result = await call(input.params?.name, input.params?.arguments ?? {}, env); return ok({ content: [{ type: 'text', text: JSON.stringify(result) }], isError: false }); }
+      catch (error) { return ok({ content: [{ type: 'text', text: env.DB ? 'Unable to read this library result. Check the tool arguments and retry; runtime details are not exposed.' : error.message }], isError: true }); }
     }
     return response({ jsonrpc: '2.0', id: input.id, error: { code: -32601, message: 'Method not found' } });
   }
   return {
-    async fetch(request) {
+    async fetch(request, env = {}, ctx = {}) {
       const url = new URL(request.url);
-      if (url.pathname === '/mcp' || url.pathname === '/mcp/') return rpc(request);
+      if (url.pathname === '/mcp' || url.pathname === '/mcp/') return rpc(request, env);
+      if (/^(?:\/paper4qi)?\/api\//.test(url.pathname)) return await workspace.fetch(request, env, ctx) ?? response({ error: 'Unknown workspace API route' }, 404);
       if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
       let path;
       try { path = decodeURIComponent(url.pathname); } catch { return new Response('Bad path', { status: 400 }); }
@@ -133,6 +198,17 @@ export function createWorker(assets) {
         return Response.redirect(target.href, 308);
       }
       if (path.endsWith('/')) path += 'index.html';
+      if (env.DB && (livePaths.has(path) || path === '/data/manifest.json' || path === '/data/quality.json')) {
+        try {
+          const value = await jsonAsset(path, env);
+          if (value === null) return new Response('Not found', { status: 404 });
+          return new Response(request.method === 'HEAD' ? null : JSON.stringify(value), {
+            headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+          });
+        } catch {
+          return response({ error: 'Live library is temporarily unavailable; retry without resubmitting changes.' }, 503);
+        }
+      }
       const asset = assets[path];
       if (!asset) return new Response('Not found', { status: 404 });
       const headers = { 'Content-Type': asset.type, 'Cache-Control': 'private, max-age=0, must-revalidate', 'ETag': `"${asset.sha256}"`, 'X-Content-Type-Options': 'nosniff' };

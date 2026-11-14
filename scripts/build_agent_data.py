@@ -65,6 +65,60 @@ def coverage(rows):
     }
 
 
+def workspace_schema():
+    text = {"type": "string"}
+    strings = {"type": "array", "items": text}
+    content = {"type": "object", "additionalProperties": False,
+               "required": ["title", "zh", "category", "tags", "body"],
+               "properties": {"title": {"type": "string", "minLength": 1}, "zh": text,
+                              "category": {"enum": CAT_ORDER}, "tags": strings, "body": text}}
+    revision = {"type": "object", "additionalProperties": False,
+                "required": ["revision", "at", "summary", "content"],
+                "properties": {"revision": {"type": "integer", "minimum": 1}, "at": text,
+                               "summary": text, "content": content}}
+    article = {**content, "required": content["required"] + ["revision", "updated_at", "history"],
+               "properties": {**content["properties"], "revision": {"type": "integer", "minimum": 0},
+                              "updated_at": {"type": ["string", "null"]},
+                              "history": {"type": "array", "items": revision}}}
+    analysis = {"type": "object", "additionalProperties": False,
+                "properties": {key: text for key in ("summary", "evidence_basis", "model", "generated_at", "input_hash", "workspace_input_hash")}}
+    analysis["properties"].update({"category": {"enum": CAT_ORDER}, "contributions": strings,
+                                   "limitations": strings, "tags": strings,
+                                   "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+                                   "stale": {"type": "boolean"}, "analysis_id": text})
+    discovery = {"type": "object", "additionalProperties": False,
+                 "required": ["id", "doi", "title", "authors", "abstract", "year", "venue", "category", "tags", "zh", "front_matter"],
+                 "properties": {key: text for key in ("id", "doi", "title", "venue", "source", "source_id", "zh", "published", "published_precision", "url", "source_url", "followed_venue_id", "indexed", "discovered_at", "first_seen_at", "last_seen_at")}}
+    discovery["properties"].update({"authors": strings, "abstract": {"type": ["string", "null"]},
+                                     "year": {"type": "integer"}, "category": {"enum": CAT_ORDER},
+                                     "tags": strings, "front_matter": {"const": False},
+                                     "indexed": {"type": ["string", "null"]}, "has_notes": {"type": "boolean"},
+                                     "wiki_revision": {"type": "integer", "minimum": 0},
+                                     "licenses": {"type": "array", "items": {"type": "object", "additionalProperties": False,
+                                        "properties": {key: text for key in ("url", "content_version", "start")}}}})
+    venue = {"type": "object", "additionalProperties": False,
+             "required": ["id", "name", "kind", "enabled"],
+             "properties": {"id": text, "name": text, "kind": {"enum": ["journal", "conference"]},
+                            "enabled": {"type": "boolean"}, "issn": text, "container_title": text, "keywords": strings}}
+    return {"$schema": "https://json-schema.org/draft/2020-12/schema", "title": "paper4qi public research workspace",
+            "schema_version": SCHEMA_VERSION, "type": "object", "additionalProperties": False,
+            "required": ["schema_version", "generated", "papers", "articles", "analyses", "venues", "id_redirects", "notice"],
+            "properties": {"schema_version": {"const": 1}, "generated": text, "notice": text,
+                           "papers": {"type": "array", "items": discovery},
+                           "articles": {"type": "object", "additionalProperties": article},
+                           "analyses": {"type": "object", "additionalProperties": analysis},
+                           "analysis_history": {"type": "object", "additionalProperties": {"type": "array", "items": analysis}},
+                           "archived_articles": {"type": "object", "additionalProperties": article},
+                           "conflicts": {"type": "array", "items": {"type": "object", "additionalProperties": False,
+                                "required": ["id", "original_ids"], "properties": {"id": text, "original_ids": strings,
+                                    "reason": {"type": "string", "maxLength": 500}}}},
+                           "live_updated_at": {"type": ["string", "null"]},
+                           "runtime_revision": {"type": "integer", "minimum": 0}, "data_semantics": text,
+                           "venue_revision": {"type": "integer", "minimum": 0},
+                           "venues": {"type": "array", "items": venue},
+                           "id_redirects": {"type": "object", "additionalProperties": text}}}
+
+
 def build_agent_exports(out_dir, source_dir, papers, generated):
     out = Path(out_dir)
     source = Path(source_dir)
@@ -76,6 +130,7 @@ def build_agent_exports(out_dir, source_dir, papers, generated):
               "count": len(papers), "papers": papers}
     write_json(out / "papers.json", corpus)
     write_json(out / "paper.schema.json", paper_schema())
+    write_json(out / "workspace.schema.json", workspace_schema())
     categories = [{"key": key, "label_zh": CAT_NAMES[key]} for key in CAT_ORDER]
     write_json(out / "categories.json", {"schema_version": SCHEMA_VERSION, "categories": categories})
 
@@ -121,6 +176,8 @@ def build_agent_exports(out_dir, source_dir, papers, generated):
         ("quality", "quality.json", "Field coverage, provenance limits and freshness semantics."),
         ("id_redirects", "id-redirects.json", "Program IDs superseded by proceedings DOI records."),
         ("research_map", "research-map.json", "Curated subtopics, primary sources, research questions and transparent keyword associations to corpus IDs."),
+        ("workspace", "workspace.json", "Explicit public Wiki content, research history and AI drafts, with a separate discovery inbox excluded from QCE/TQE statistics."),
+        ("workspace_schema", "workspace.schema.json", "JSON Schema for the independent public research workspace; runtime identity, credentials and checkpoints are excluded."),
     ]
     resources = []
     for key, filename, description in asset_info:

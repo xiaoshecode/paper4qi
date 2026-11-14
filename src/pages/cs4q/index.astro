@@ -235,7 +235,7 @@ const groups: { key: 'P' | 'S' | 'R'; }[] = [{ key: 'P' }, { key: 'S' }, { key: 
   .cs4q-compare-row .mono { color: var(--ink); }
   .cs4q-not { color: var(--muted); }
 
-  .cs4q-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .cs4q-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
   .cs4q-path { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 13px 15px; background: var(--line2); }
   .cs4q-path-name { font-weight: 680; font-size: 13.5px; margin-bottom: 5px; }
   .cs4q-path-seq { color: var(--accent-ink); font-size: 12px; margin-bottom: 7px; line-height: 1.7; }

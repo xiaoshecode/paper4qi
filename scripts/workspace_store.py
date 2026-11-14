@@ -33,7 +33,7 @@ def read_json(path, default):
 
 def empty_state():
     return {"schema_version": 1, "venue_revision": 0, "articles": {}, "analyses": {},
-            "discoveries": {}, "checkpoints": {}, "pending_windows": {}}
+            "discoveries": {}, "checkpoints": {}, "pending_windows": {}, "id_redirects": {}}
 
 
 def analysis_fingerprint(paper):
@@ -136,61 +136,180 @@ def apply_editorial_overlays(papers, state):
 
 
 def public_snapshot(state, venues):
-    """Allowlist a reviewed snapshot: never export histories or AI drafts."""
+    """Explicitly reviewed research is public; runtime identity and secrets are not."""
     article_fields = ("title", "zh", "category", "tags", "body")
     articles = {}
     for identifier, article in state.get("articles", {}).items():
         content = validate_content({key: article[key] for key in article_fields})
+        history = []
+        for entry in article.get("history", []):
+            if (type(entry.get("revision")) is not int or entry["revision"] < 1
+                    or not isinstance(entry.get("summary"), str) or len(entry["summary"]) > 500
+                    or not isinstance(entry.get("at"), str)):
+                raise ValueError("Invalid public research revision")
+            history.append({"revision": entry["revision"], "at": entry["at"],
+                            "summary": entry["summary"], "content": validate_content(entry["content"])})
+        if (type(article.get("revision")) is not int or article["revision"] < 0
+                or len({entry["revision"] for entry in history}) != len(history)
+                or any(entry["revision"] > article["revision"] for entry in history)):
+            raise ValueError("Invalid public article revision history")
+        if article.get("updated_at") is not None and not isinstance(article["updated_at"], str):
+            raise ValueError("Invalid public article update time")
         articles[identifier] = {**content, "revision": article["revision"],
-                                "updated_at": article.get("updated_at"), "history": []}
+                                "updated_at": article.get("updated_at"), "history": history}
     paper_fields = ("id", "doi", "title", "authors", "abstract", "year", "venue", "source",
                     "source_id", "category", "tags", "zh", "published", "published_precision",
                     "url", "source_url", "licenses", "followed_venue_id", "indexed", "discovered_at", "first_seen_at", "last_seen_at", "front_matter")
-    discoveries = {identifier: {key: copy.deepcopy(paper[key]) for key in paper_fields if key in paper}
-                   for identifier, paper in state.get("discoveries", {}).items()}
-    return {"schema_version": 1, "articles": articles, "analyses": {},
-            "discoveries": discoveries, "venues": validate_venues(venues)}
+    discoveries = {}
+    for identifier, paper in state.get("discoveries", {}).items():
+        record = {key: copy.deepcopy(paper[key]) for key in paper_fields if key in paper}
+        if "licenses" in record:
+            record["licenses"] = [{key: entry[key] for key in ("url", "content_version", "start") if key in entry}
+                                  for entry in record["licenses"]]
+            if any(not isinstance(value, str) for entry in record["licenses"] for value in entry.values()):
+                raise ValueError("Invalid public discovery license")
+        for key, value in record.items():
+            if key == "licenses":
+                continue
+            if key in ("authors", "tags"):
+                valid = isinstance(value, list) and all(isinstance(entry, str) for entry in value)
+            elif key == "year":
+                valid = type(value) is int
+            elif key == "front_matter":
+                valid = type(value) is bool
+            else:
+                valid = value is None or isinstance(value, str)
+            if not valid:
+                raise ValueError("Invalid public discovery field")
+        discoveries[identifier] = record
+    analysis_fields = ("category", "summary", "contributions", "limitations", "evidence_basis",
+                       "confidence", "tags", "model", "generated_at", "input_hash", "workspace_input_hash")
+    analyses = {identifier: {key: copy.deepcopy(analysis[key]) for key in analysis_fields if key in analysis}
+                for identifier, analysis in state.get("analyses", {}).items()}
+    # Generated provider data has only text/numeric/list fields, never nested identity records.
+    for analysis in analyses.values():
+        for key, value in analysis.items():
+            if key in ("contributions", "limitations", "tags"):
+                if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+                    raise ValueError("Invalid public AI draft list")
+            elif key == "confidence":
+                if type(value) not in (int, float) or not 0 <= value <= 1:
+                    raise ValueError("Invalid public AI draft confidence")
+            elif not isinstance(value, str):
+                raise ValueError("Invalid public AI draft field")
+    return {"schema_version": 1, "articles": articles, "analyses": analyses,
+            "discoveries": discoveries, "venues": validate_venues(venues),
+            "id_redirects": {key: value for key, value in state.get("id_redirects", {}).items()
+                             if isinstance(key, str) and isinstance(value, str)}}
 
 
-def read_public_snapshot(source_dir):
+def merge_article_versions(first, second):
+    """Merge one shared revision chain, refusing independently edited content."""
+    fields = ("title", "zh", "category", "tags", "body")
+    low, high = sorted((first, second), key=lambda article: article["revision"])
+    low_content = {key: low[key] for key in fields}
+    high_content = {key: high[key] for key in fields}
+    history = {entry["revision"]: copy.deepcopy(entry) for entry in high.get("history", [])}
+    if low["revision"] == high["revision"]:
+        compatible = low_content == high_content
+    else:
+        compatible = low["revision"] == 0 or history.get(low["revision"], {}).get("content") == low_content
+    if not compatible:
+        raise ConflictError("Record IDs now refer to the same paper but their Wiki versions conflict; review and reconcile both histories before saving")
+    for entry in low.get("history", []):
+        existing = history.get(entry["revision"])
+        if existing and existing != entry:
+            raise ConflictError("Wiki revision histories diverge; neither version was overwritten")
+        history[entry["revision"]] = copy.deepcopy(entry)
+    return {**copy.deepcopy(high), "history": [history[key] for key in sorted(history)]}
+
+
+def canonicalize_workspace(state, papers, redirects=None):
+    """Retire discoveries/old program IDs without losing the shared Wiki history."""
+    state = copy.deepcopy(state)
+    ids = {paper["id"] for paper in papers}
+    by_doi = {normalize_doi(paper.get("doi")): paper["id"] for paper in papers if paper.get("doi")}
+    aliases = {**state.get("id_redirects", {}), **(redirects or {})}
+    for identifier in set(state.get("discoveries", {})) | set(state.get("articles", {})) | set(state.get("analyses", {})):
+        doi = normalize_doi(identifier[len("discovery:"):]) if identifier.startswith("discovery:") else ""
+        if doi in by_doi:
+            aliases[identifier] = by_doi[doi]
+    for old, target in list(aliases.items()):
+        visited = {old}
+        while target in aliases and target not in visited:
+            visited.add(target)
+            target = aliases[target]
+        if target in visited:
+            raise ConflictError("Workspace ID redirect cycle; no content was changed")
+        if target not in ids:
+            continue
+        aliases[old] = target
+        if old in state.get("articles", {}):
+            prior = state["articles"].pop(old)
+            state["articles"][target] = (merge_article_versions(prior, state["articles"][target])
+                                          if target in state["articles"] else prior)
+        if old in state.get("analyses", {}):
+            draft = state["analyses"].pop(old)
+            if target in state["analyses"] and state["analyses"][target] != draft:
+                raise ConflictError("Migrated paper has two different AI drafts; review both before resolving its ID")
+            state["analyses"][target] = draft
+        state.get("discoveries", {}).pop(old, None)
+    state["id_redirects"] = aliases
+    return state
+
+
+def source_redirects(source_dir):
+    replaced = read_json(Path(source_dir) / "qce/replaced_qce26.json", {})
+    return {f"qce26:{key}": f"qce:{normalize_doi(doi)}" for key, doi in replaced.items()}
+
+
+def read_public_snapshot(source_dir, papers=None):
     source_dir = Path(source_dir)
     defaults = read_json(source_dir / "followed_venues.json", {"venues": []})
     state = read_json(source_dir / "workspace-public.json", empty_state())
     if state.get("schema_version") != 1:
         raise ValueError("Unsupported public snapshot schema")
     # Sanitize again so even a hand-edited snapshot cannot export private fields.
-    return public_snapshot(state, state.get("venues", defaults["venues"]))
+    snapshot = public_snapshot(state, state.get("venues", defaults["venues"]))
+    return canonicalize_workspace(snapshot, papers, source_redirects(source_dir)) if papers is not None else snapshot
 
 
 def prepare_public_snapshot(root):
     """Explicit local publication preparation; does not commit, push or deploy."""
     root = Path(root)
-    published = read_public_snapshot(root / "data_src")
+    papers = read_json(root / "public/data/papers.json", {"papers": []})["papers"]
+    published = read_public_snapshot(root / "data_src", papers)
     state = read_json(root / "data_src/workspace.json", published)
     defaults = read_json(root / "data_src/followed_venues.json", {"venues": []})
-    payload = public_snapshot(state, state.get("venues", defaults["venues"]))
+    payload = canonicalize_workspace(public_snapshot(state, state.get("venues", defaults["venues"])),
+                                     papers, source_redirects(root / "data_src"))
     # A pulled public snapshot may have advanced independently of private state.
     # Keep public-only records and refuse to overwrite newer/divergent revisions.
-    content_fields = ("title", "zh", "category", "tags", "body")
     for identifier, article in published["articles"].items():
         local = payload["articles"].get(identifier)
-        if local and (local["revision"] < article["revision"] or (
-                local["revision"] == article["revision"] and any(
-                    local[key] != article[key] for key in content_fields))):
-            raise ConflictError("Public snapshot has newer or conflicting article content; reconcile it with local edits before preparing publication")
+        if local:
+            if local["revision"] < article["revision"]:
+                raise ConflictError("Public snapshot has newer or conflicting article content; reconcile it with local edits before preparing publication")
+            payload["articles"][identifier] = merge_article_versions(article, local)
     payload["articles"] = {**published["articles"], **payload["articles"]}
     payload["discoveries"] = {**published["discoveries"], **payload["discoveries"]}
+    payload["analyses"] = {**published["analyses"], **payload["analyses"]}
+    payload["id_redirects"] = {**published["id_redirects"], **payload["id_redirects"]}
+    payload = canonicalize_workspace(payload, papers, source_redirects(root / "data_src"))
     atomic_write_json(str(root / "data_src/workspace-public.json"), payload, indent=2)
     return payload
 
 
-def export_workspace(source_dir, out_dir, generated):
-    state = read_public_snapshot(source_dir)
+def export_workspace(source_dir, out_dir, generated, corpus=None):
+    if corpus is None:
+        corpus = read_json(Path(out_dir) / "papers.json", {"papers": []})["papers"]
+    state = read_public_snapshot(source_dir, corpus)
     papers = list(copy.deepcopy(state["discoveries"]).values())
     apply_editorial_overlays(papers, state)
     payload = {"schema_version": 1, "generated": generated, "papers": papers,
-               "articles": state["articles"], "analyses": {}, "venues": state["venues"],
-               "notice": "Reviewed public snapshot. Private revision history and unadopted AI drafts are excluded. Discovery inbox is separate from the curated QCE/TQE corpus."}
+               "articles": state["articles"], "analyses": state["analyses"], "venues": state["venues"],
+               "id_redirects": state["id_redirects"],
+               "notice": "Explicit public research snapshot, including Wiki versions, edit summaries and unadopted AI drafts. Drafts are not reviewed claims. Runtime credentials, identities and checkpoints are excluded. Discovery inbox is separate from QCE/TQE statistics."}
     atomic_write_json(str(Path(out_dir) / "workspace.json"), payload)
     return payload
 
@@ -206,11 +325,12 @@ class WorkspaceStore:
             self.state = read_json(self.path, empty_state())
         else:
             # A fresh checkout can continue editing its last reviewed snapshot.
-            # Private revisions remain absent; subsequent edits create new history.
+            # Only explicitly published research history is restored.
             self.state = {**empty_state(), **read_public_snapshot(self.root / "data_src")}
         if self.state.get("schema_version") != 1:
             raise ValueError("Unsupported workspace schema")
         self.state.setdefault("pending_windows", {})
+        self.state.setdefault("id_redirects", {})
         self.defaults = read_json(self.root / "data_src/followed_venues.json", {"venues": []})
 
     def _commit(self, state):
@@ -226,6 +346,11 @@ class WorkspaceStore:
     def papers(self):
         with self.lock:
             papers = self.corpus()
+            redirects = read_json(self.root / "public/data/id-redirects.json", {"redirects": []})["redirects"]
+            aliases = {entry["old_id"]: entry["new_id"] for entry in redirects}
+            canonical = canonicalize_workspace(self.state, papers, aliases)
+            if canonical != self.state:
+                self._commit(canonical)
             discoveries = list(copy.deepcopy(self.state["discoveries"]).values())
             apply_editorial_overlays(papers + discoveries, self.state)
             return {"papers": papers, "discoveries": discoveries}
@@ -234,6 +359,7 @@ class WorkspaceStore:
         if not isinstance(identifier, str) or not 1 <= len(identifier) <= 400:
             raise ValueError("Invalid paper ID")
         data = self.papers()
+        identifier = self.state.get("id_redirects", {}).get(identifier, identifier)
         paper = next((p for p in data["papers"] + data["discoveries"] if p["id"] == identifier), None)
         if not paper:
             raise ValueError("Unknown paper ID")
@@ -242,6 +368,7 @@ class WorkspaceStore:
     def article(self, identifier):
         with self.lock:
             paper = self._paper(identifier)
+            identifier = paper["id"]
             article = self.state["articles"].get(identifier) or {
                 "revision": 0, "title": paper["title"], "zh": paper.get("zh") or "",
                 "category": paper.get("category", "OTHER"), "tags": paper.get("tags", []),
@@ -256,7 +383,9 @@ class WorkspaceStore:
         if not isinstance(summary, str) or not 1 <= len(summary.strip()) <= 500:
             raise ValueError("Describe the edit in 1–500 characters")
         with self.lock:
-            prior = self.article(identifier)["article"]
+            selected = self.article(identifier)
+            identifier = selected["paper"]["id"]
+            prior = selected["article"]
             if prior["revision"] != expected_revision:
                 raise ConflictError("This article changed. Reload its history before saving; your draft was not saved.")
             revision, at = expected_revision + 1, now()
@@ -308,7 +437,7 @@ class WorkspaceStore:
         try:
             config = self.venues()
             report = {"added": 0, "updated": 0, "sources": []}
-            known_dois = {normalize_doi(p.get("doi")) for p in self.corpus()} - {""}
+            known_dois = {normalize_doi(p.get("doi")) for p in self.papers()["papers"]} - {""}
             for venue in config["venues"]:
                 if not venue["enabled"]:
                     continue
@@ -404,6 +533,7 @@ class WorkspaceStore:
         try:
             with self.lock:
                 paper = self._paper(identifier)
+                identifier = paper["id"]
                 # Cache key covers only information transmitted to the model.
                 fingerprint = analysis_fingerprint(paper)
                 cached = self.state["analyses"].get(identifier)

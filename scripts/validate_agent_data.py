@@ -22,7 +22,62 @@ def check_type(value, expected):
         return value is None
     if expected == "integer":
         return type(value) is int
+    if expected == "number":
+        return type(value) in (int, float)
     return isinstance(value, {"string": str, "boolean": bool, "array": list, "object": dict}[expected])
+
+
+def validate_schema(value, rules, path="workspace"):
+    if "const" in rules:
+        assert value == rules["const"] and type(value) is type(rules["const"]), f"Invalid constant: {path}"
+    if "enum" in rules:
+        assert value in rules["enum"], f"Invalid enum: {path}"
+    if "type" in rules:
+        allowed = rules["type"] if isinstance(rules["type"], list) else [rules["type"]]
+        assert any(check_type(value, kind) for kind in allowed), f"Invalid type: {path}"
+    if value is None:
+        return
+    if "minimum" in rules:
+        assert value >= rules["minimum"], f"Below minimum: {path}"
+    if "maximum" in rules:
+        assert value <= rules["maximum"], f"Above maximum: {path}"
+    if "minLength" in rules:
+        assert len(value) >= rules["minLength"], f"Empty value: {path}"
+    if isinstance(value, dict):
+        properties = rules.get("properties", {})
+        assert set(rules.get("required", [])).issubset(value), f"Missing field: {path}"
+        for key, entry in value.items():
+            additional = rules.get("additionalProperties", True)
+            assert key in properties or additional is not False, f"Unexpected field: {path}.{key}"
+            child = properties.get(key, additional if isinstance(additional, dict) else {})
+            validate_schema(entry, child, f"{path}.{key}")
+    elif isinstance(value, list) and "items" in rules:
+        for index, entry in enumerate(value):
+            validate_schema(entry, rules["items"], f"{path}[{index}]")
+
+
+def validate_workspace(workspace, corpus, generated):
+    from workspace_store import validate_venues
+    validate_schema(workspace, read("workspace.schema.json"))
+    assert workspace["generated"] == generated, "Mixed workspace snapshot"
+    validate_venues(workspace["venues"])
+    ids = {paper["id"] for paper in corpus}
+    dois = {paper["doi"] for paper in corpus if paper.get("doi")}
+    seen = set()
+    for paper in workspace["papers"]:
+        assert paper["id"] == "discovery:" + paper["doi"] and paper["doi"] not in dois, "Discovery must be independent from the main corpus"
+        assert paper["id"] not in ids | seen, "Duplicate workspace record"
+        seen.add(paper["id"])
+    known = ids | seen
+    assert set(workspace["articles"]) <= known, "Orphan Wiki article"
+    assert set(workspace["analyses"]) <= known, "Orphan AI draft"
+    for article in workspace["articles"].values():
+        revisions = [entry["revision"] for entry in article["history"]]
+        assert revisions == sorted(set(revisions)) and all(version <= article["revision"] for version in revisions), "Invalid Wiki history"
+        if revisions and revisions[-1] == article["revision"]:
+            assert article["history"][-1]["content"] == {key: article[key] for key in ("title", "zh", "category", "tags", "body")}, "Current Wiki differs from its revision"
+    for old, target in workspace["id_redirects"].items():
+        assert old != target and target in known, "Unresolved workspace ID redirect"
 
 
 def main():
@@ -103,8 +158,11 @@ def main():
     assert set(key for domain in topic_map['domains'] for key in domain['topics']) == topic_keys
     for redirect in read("id-redirects.json")["redirects"]:
         assert redirect["old_id"] not in ids and redirect["new_id"] in ids, "Unresolved ID replacement"
+    validate_workspace(read("workspace.json"), rows, manifest["generated"])
     print(f"Agent data validated: {len(rows)} records, {len(manifest['resources'])} resources, schema {manifest['schema_version']}")
     if args.site_dir:
+        published_workspace = json.loads((args.site_dir / "data/workspace.json").read_text(encoding="utf-8"))
+        assert published_workspace == read("workspace.json"), "Published workspace differs from the reviewed snapshot"
         exported = json.loads((args.site_dir / "data" / "guides.json").read_text(encoding="utf-8"))
         assert exported["schema_version"] == manifest["schema_version"], "Guide export version mismatch"
         assert exported["generated"] == manifest["generated"], "Curated export built against a different data snapshot"

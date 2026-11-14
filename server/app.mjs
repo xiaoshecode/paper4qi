@@ -134,7 +134,7 @@ export function createStandalone({ worker, db, env, now = () => Date.now() }) {
   const cookieName = secure ? COOKIE : 'paper4qi_dev_session';
   if (!/^scrypt\$[a-f0-9]{32}\$[a-f0-9]{128}$/.test(env.PAPER4QI_OWNER_PASSWORD_HASH ?? '')) throw new Error('Configure PAPER4QI_OWNER_PASSWORD_HASH using scrypt');
   const runtime = { DB: db, PAPER4QI_EDITOR_IDS: 'owner', PAPER4QI_EDITOR_EMAILS: '',
-    DEEPSEEK_API_KEY: env.DEEPSEEK_API_KEY, DEEPSEEK_MODEL: env.DEEPSEEK_MODEL,
+    DEEPSEEK_API_KEY: env.PAPER4QI_AI_ENABLED === '0' ? undefined : env.DEEPSEEK_API_KEY, DEEPSEEK_MODEL: env.DEEPSEEK_MODEL,
     PAPER4QI_MAX_AI_REQUESTS: env.PAPER4QI_MAX_AI_REQUESTS };
   const epoch = () => Math.floor(now() / 1000);
   function cookie(token, maxAge) { return `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secure ? '; Secure' : ''}`; }

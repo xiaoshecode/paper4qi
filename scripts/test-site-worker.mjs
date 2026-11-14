@@ -117,6 +117,8 @@ assert.equal((await malformed.json()).error.code, -32700);
 const notification = await worker.fetch(new Request('https://library.example/mcp', { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) }));
 assert.equal(notification.status, 202);
 assert.equal((await worker.fetch(new Request('https://library.example/mcp', { method: 'POST', body: 'x'.repeat(65537) }))).status, 413);
+assert.equal((await worker.fetch(new Request('https://library.example/api/chats'))).status, 200);
+assert.equal((await worker.fetch(new Request('https://library.example/api/chat', { method: 'POST', body: '{}' }))).status, 403);
 console.log('Sites Worker contract: discovery, 6 tools, subtopics, filters, pagination, ID redirects, invalid input, assets and redirects passed.');
 
 if (process.argv[2]) {
@@ -134,7 +136,7 @@ if (process.argv[2]) {
   for (const guide of ['openqasm', 'agents']) assert((await tool(built, 'read_research_guide', { guide })).text.length > 100);
   assert((await tool(built, 'read_research_guide', { guide: 'cs4q' })).data.entries.length > 0);
   assert((await tool(built, 'read_research_guide', { guide: 'venues' })).data.journals.length > 0);
-  for (const path of ['/', '/agents/', '/qce/', '/tqe/', '/stats/', '/about/', '/openqasm/', '/llms.txt', '/data/papers.json', '/data/guides.json']) {
+  for (const path of ['/', '/agents/', '/qce/', '/tqe/', '/stats/', '/about/', '/openqasm/', '/workspace/', '/api/chats', '/llms.txt', '/data/papers.json', '/data/guides.json']) {
     const response = await built.fetch(new Request('https://library.example' + path));
     assert.equal(response.status, 200, path);
   }
