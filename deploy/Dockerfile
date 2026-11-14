@@ -1,13 +1,16 @@
-# Build Astro with --base / and package using scripts/build-server.mjs first.
-# This image contains public assets and source only; secrets arrive at runtime.
-FROM node:24-slim
-ENV NODE_ENV=production
-ENV PORT=8787
-ENV PAPER4QI_DB_PATH=/var/lib/paper4qi/library.sqlite
+FROM node:24-bookworm-slim
+RUN groupadd --gid 10001 paper4qi \
+    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin paper4qi \
+    && mkdir -p /app /var/lib/paper4qi \
+    && chown 10001:10001 /app /var/lib/paper4qi
 WORKDIR /app
-COPY dist/standalone/ /app/
-RUN groupadd --system paper4qi && useradd --system --gid paper4qi paper4qi && mkdir -p /var/lib/paper4qi && chown paper4qi:paper4qi /var/lib/paper4qi
-USER paper4qi
-VOLUME ["/var/lib/paper4qi"]
+COPY --chown=10001:10001 app.mjs sqlite-d1.mjs worker.mjs workspace-api.mjs chat-api.mjs /app/
+COPY --chown=10001:10001 drizzle /app/drizzle
+USER 10001:10001
+ENV NODE_ENV=production \
+    PORT=8787 \
+    PAPER4QI_BIND_HOST=0.0.0.0 \
+    PAPER4QI_DB_PATH=/var/lib/paper4qi/library.sqlite
 EXPOSE 8787
-CMD ["node", "app.mjs"]
+VOLUME ["/var/lib/paper4qi"]
+CMD ["node", "/app/app.mjs"]
