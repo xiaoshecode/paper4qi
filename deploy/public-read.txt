@@ -1,0 +1,1 @@
+// Public research data is read without an owner session.
