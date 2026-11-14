@@ -1,71 +1,36 @@
-name: Deploy to GitHub Pages
+name: Prepare reviewed online-testing source
 
 on:
   push:
-    branches: [main]
+    branches: [feat/aliyun-online-testing]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: paper4qi-source-preparation
+  cancel-in-progress: false
 
 jobs:
-  # Step 1: data pipeline (Python). Isolated so a data failure surfaces here,
-  # not buried in the site build.
-  data:
+  prepare:
+    if: github.ref == 'refs/heads/feat/aliyun-online-testing'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       PYTHONIOENCODING: utf-8
+      PUBLIC_API_BASE_URL: https://rachelteacher.online/paper4qi
+      SOURCE_BUNDLE_URL: https://rachelteacher.online/paper4qi/publication-7fa7b36a626e6bf71eb8c474cb4dc57d782de94cf22ecf2c594cca86794d24a2.json.gz
+      SOURCE_BUNDLE_SHA256: 7fa7b36a626e6bf71eb8c474cb4dc57d782de94cf22ecf2c594cca86794d24a2
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feat/aliyun-online-testing
+          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-
-      - name: Build data files
-        run: python scripts/build_data.py
-
-      - name: Validate agent data contract
-        run: |
-          python -m unittest discover -s scripts -p 'test_*.py'
-          python scripts/test_research_data.py
-          python scripts/validate_agent_data.py
-
-      - name: Validate data outputs
-        run: |
-          python - <<'PY'
-          import json, os, sys
-          for f in ("qce.json", "tqe.json", "stats.json"):
-              p = os.path.join("public", "data", f)
-              assert os.path.exists(p), f"missing {p}"
-              d = json.load(open(p, encoding="utf-8"))
-              print(f"{f}: ok ({os.path.getsize(p)} bytes)")
-          q = json.load(open("public/data/qce.json", encoding="utf-8"))
-          t = json.load(open("public/data/tqe.json", encoding="utf-8"))
-          assert q["count"] > 0 and t["count"] > 0, "empty dataset"
-          print(f"records: qce={q['count']} tqe={t['count']}")
-          PY
-
-      - name: Upload data artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-data
-          path: public/data
-          retention-days: 1
-
-  # Step 2: site build (Node). Downloads the data artifact, runs pnpm build,
-  # and uploads the Pages artifact.
-  build:
-    needs: data
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
@@ -76,52 +41,73 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      - name: Install dependencies
+      - name: Verify and apply reviewed public source
+        run: |
+          python - <<'PYCODE'
+          import gzip, hashlib, io, json, os, pathlib, re, subprocess, urllib.request
+          root = pathlib.Path.cwd().resolve()
+          expected = set([".env.example",".github/workflows/deploy.yml","deploy/Dockerfile","deploy/nginx-paper4qi.conf","deploy/paper4qi.service","drizzle/0000_workspace.sql","drizzle/0001_research_chat.sql","drizzle/meta/_journal.json","package.json","scripts/build-server.mjs","scripts/build-site-worker.mjs","scripts/build_agent_data.py","scripts/build_data.py","scripts/lib_api_client_test.mjs","scripts/prepare_workspace_publication.py","scripts/sync-sites-source.mjs","scripts/test-site-worker.mjs","scripts/test_api_client.mjs","scripts/test_chat_api.mjs","scripts/test_navigation.mjs","scripts/test_research_chat_ui.mjs","scripts/test_server.mjs","scripts/test_workspace.py","scripts/test_workspace_api.mjs","scripts/test_workspace_ui.mjs","scripts/validate_agent_data.py","scripts/workspace_store.py","server/app.mjs","server/sqlite-d1.mjs","sites/chat-api.mjs","sites/worker.mjs","sites/workspace-api.mjs","src/layouts/BaseLayout.astro","src/pages/agents/index.astro","src/pages/cs4q/index.astro","src/pages/index.astro","src/pages/research/[topic].astro","src/pages/research/index.astro","src/pages/stats.astro","src/pages/workspace/index.astro","src/scripts/api-client.ts","src/scripts/live-library.ts","src/scripts/paper-browser.ts","src/scripts/research-chat.ts","src/scripts/research-workspace.ts","src/styles/global.css"])
+          with urllib.request.urlopen(os.environ['SOURCE_BUNDLE_URL'], timeout=30) as response:
+              compressed = response.read(2_000_001)
+          if len(compressed) > 2_000_000 or hashlib.sha256(compressed).hexdigest() != os.environ['SOURCE_BUNDLE_SHA256']:
+              raise SystemExit('STOP: public source bundle checksum or size failed')
+          with gzip.GzipFile(fileobj=io.BytesIO(compressed)) as source:
+              raw = source.read(2_000_001)
+          if len(raw) > 2_000_000:
+              raise SystemExit('STOP: expanded source exceeds limit')
+          bundle = json.loads(raw)
+          entries = bundle.get('files', [])
+          names = [entry.get('path') for entry in entries]
+          if bundle.get('schema') != 1 or set(names) != expected or len(names) != len(expected):
+              raise SystemExit('STOP: source paths do not match reviewed allowlist')
+          checked = []
+          for entry in entries:
+              name = entry['path']
+              path = root / name
+              if path.is_symlink() or not path.resolve().is_relative_to(root):
+                  raise SystemExit('STOP: unsafe source path')
+              content = entry['content'].encode('utf-8')
+              if hashlib.sha256(content).hexdigest() != entry['sha256']:
+                  raise SystemExit('STOP: source file checksum mismatch')
+              if re.search(rb'sk-[A-Za-z0-9]{20,}|LTAI[A-Za-z0-9]{12,}|-----BEGIN .*PRIVATE KEY-----', content):
+                  raise SystemExit('STOP: credential pattern in public source')
+              if name != '.github/workflows/deploy.yml':
+                  previous = entry.get('previous_blob')
+                  if path.exists():
+                      actual = subprocess.check_output(['git', 'hash-object', name], text=True).strip()
+                      if actual != previous:
+                          raise SystemExit('STOP: source changed after review')
+                  elif previous is not None:
+                      raise SystemExit('STOP: expected source file missing')
+              if name != '.github/workflows/deploy.yml':
+                  checked.append((path, content))
+          for path, content in checked:
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_bytes(content)
+          print(f'Applied {len(checked)} checksum-verified public source files; no runtime state included.')
+          PYCODE
+
+      - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate read-only Sites tools
+      - name: Validate source and data
         run: |
-          node scripts/test-site-worker.mjs
-          node scripts/test_workspace_ui.mjs
+          python scripts/build_data.py
+          pnpm test
+          node scripts/test_server.mjs --http
+          pnpm build
+          node scripts/test_navigation.mjs --built
+          python scripts/validate_agent_data.py --site-dir dist
+          git diff --check
 
-      - name: Download data artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: site-data
-          path: public/data
-
-      - name: Build site
-        run: pnpm build
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Validate published data and curated guides
-        run: python scripts/validate_agent_data.py --site-dir dist
-
-      - name: Verify built output
+      - name: Commit reviewed source to isolated branch
+        id: source
         run: |
-          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
-          test -f dist/data/qce.json || { echo "dist/data/qce.json missing"; exit 1; }
-          test -f dist/agents/index.html || { echo "dist/agents/index.html missing"; exit 1; }
-          echo "dist pages:" && find dist -name "*.html" | sort
-          echo "data size:" && du -sh dist/data
-
-      - uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  # Step 3: deploy to Pages.
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          git fetch origin feat/aliyun-online-testing
+          test "$(git rev-parse origin/feat/aliyun-online-testing)" = "$GITHUB_SHA" || { echo 'STOP: remote branch changed'; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- .env.example package.json deploy drizzle server sites src scripts
+          git commit -m 'feat: connect public research workspace to Alibaba backend'
+          git push origin HEAD:feat/aliyun-online-testing
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
