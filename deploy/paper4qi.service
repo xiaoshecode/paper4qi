@@ -1,0 +1,27 @@
+[Unit]
+Description=paper4qi public research library
+After=network.target
+
+[Service]
+Type=simple
+User=paper4qi
+Group=paper4qi
+WorkingDirectory=/opt/paper4qi/current
+EnvironmentFile=/etc/paper4qi/env
+Environment=NODE_ENV=production
+Environment=PORT=8787
+Environment=PAPER4QI_DB_PATH=/var/lib/paper4qi/library.sqlite
+ExecStart=/opt/paper4qi/node/bin/node /opt/paper4qi/current/app.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+UMask=0077
+StateDirectory=paper4qi
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/paper4qi
+
+[Install]
+WantedBy=multi-user.target
