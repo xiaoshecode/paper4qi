@@ -10,7 +10,8 @@
     "data": "python scripts/build_data.py",
     "workspace": "python scripts/serve_workspace.py",
     "research:refresh": "python scripts/refresh_workspace.py",
-    "test": "python -m unittest discover -s scripts -p 'test_*.py' && node scripts/test-site-worker.mjs && node scripts/test_workspace_ui.mjs && node scripts/test_navigation.mjs"
+    "storage:check": "node server/app.mjs --storage-check",
+    "test": "python -m unittest discover -s scripts -p 'test_*.py' && node scripts/test-site-worker.mjs && node scripts/test_workspace_api.mjs && node scripts/test_chat_api.mjs && node scripts/test_api_client.mjs && node scripts/test_workspace_ui.mjs && node scripts/test_research_chat_ui.mjs && node scripts/test_navigation.mjs && node scripts/test_server.mjs"
   },
   "dependencies": {
     "astro": "^5.13.4"
